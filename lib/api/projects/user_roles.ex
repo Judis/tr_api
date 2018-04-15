@@ -3,7 +3,7 @@ defmodule I18NAPI.Projects.UserRoles do
   import Ecto.Changeset
 
   schema "user_roles" do
-    field(:role, :integer)
+    field(:role, RoleEnum)
 
     belongs_to(:user, I18NAPI.Accounts.User)
     belongs_to(:project, I18NAPI.Projects.Project)
