@@ -16,7 +16,10 @@ defmodule I18NAPIWeb.TranslationKeyController do
            Translations.create_translation_key(translation_key_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", project_locale_translation_key_path(conn, :show, translation_key.locale, translation_key))
+      |> put_resp_header(
+        "location",
+        project_locale_translation_key_path(conn, :show, translation_key.locale, translation_key)
+      )
       |> render("show.json", translation_key: translation_key)
     end
   end

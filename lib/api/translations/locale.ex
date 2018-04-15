@@ -10,7 +10,7 @@ defmodule I18NAPI.Translations.Locale do
     field(:is_removed, :boolean, default: false)
     field(:locale, :string)
     field(:removed_at, :naive_datetime)
-    
+
     belongs_to(:project, I18NAPI.Projects.Project)
 
     timestamps()
@@ -29,5 +29,6 @@ defmodule I18NAPI.Translations.Locale do
       :is_default,
       :project_id
     ])
+    |> unique_constraint(:locale, name: :locales_project_id_locale_index)
   end
 end

@@ -16,5 +16,6 @@ defmodule I18NAPI.Projects.UserRoles do
     user_roles
     |> cast(attrs, [:role, :project_id, :user_id])
     |> validate_required([:role, :project_id, :user_id])
+    |> unique_constraint(:project_id, name: :user_roles_user_id_project_id_index)
   end
 end
