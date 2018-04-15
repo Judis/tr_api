@@ -56,6 +56,15 @@ defmodule I18NAPI.Projects do
     |> create_owner_for_project(user)
   end
 
+  @doc """
+  Creates a owner for project.
+
+  ## Examples
+
+      iex> create_owner_for_project({:ok, %Project{}}, %User{})
+      {:ok, %Project{}}
+
+  """
   def create_owner_for_project({:ok, %Project{} = project}, %{} = user) do
     create_user_roles(%{
       project_id: project.id,
