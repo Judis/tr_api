@@ -49,10 +49,21 @@ defmodule I18NAPI.Projects do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_project(attrs \\ %{}) do
+  def create_project(attrs \\ %{}, user) do
     %Project{}
     |> Project.changeset(attrs)
     |> Repo.insert()
+    |> create_owner_for_project(user)
+  end
+
+  def create_owner_for_project({:ok, %Project{} = project}, %{} = user) do
+    create_user_roles(%{
+      project_id: project.id,
+      user_id: user.id,
+      role: 1
+    })
+
+    {:ok, project}
   end
 
   @doc """

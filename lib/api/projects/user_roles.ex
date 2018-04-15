@@ -4,8 +4,9 @@ defmodule I18NAPI.Projects.UserRoles do
 
   schema "user_roles" do
     field(:role, :integer)
-    field(:user_id, :id)
-    field(:project_id, :id)
+
+    belongs_to(:user, I18NAPI.Accounts.User)
+    belongs_to(:project, I18NAPI.Projects.Project)
 
     timestamps()
   end
@@ -13,7 +14,7 @@ defmodule I18NAPI.Projects.UserRoles do
   @doc false
   def changeset(user_roles, attrs) do
     user_roles
-    |> cast(attrs, [:role])
-    |> validate_required([:role])
+    |> cast(attrs, [:role, :project_id, :user_id])
+    |> validate_required([:role, :project_id, :user_id])
   end
 end

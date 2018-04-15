@@ -12,7 +12,8 @@ defmodule I18NAPIWeb.ProjectController do
   end
 
   def create(conn, %{"project" => project_params}) do
-    with {:ok, %Project{} = project} <- Projects.create_project(project_params) do
+    with {:ok, %Project{} = project} <-
+           Projects.create_project(project_params, conn.assigns[:user]) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", project_path(conn, :show, project))
