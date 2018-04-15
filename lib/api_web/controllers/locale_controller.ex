@@ -12,10 +12,12 @@ defmodule I18NAPIWeb.LocaleController do
   end
 
   def create(conn, %{"locale" => locale_params}) do
+    locale_params = Map.put(locale_params, "project_id", conn.params["project_id"])
+
     with {:ok, %Locale{} = locale} <- Translations.create_locale(locale_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", locale_path(conn, :show, locale))
+      |> put_resp_header("location", project_locale_path(conn, :show, locale.project_id, locale))
       |> render("show.json", locale: locale)
     end
   end

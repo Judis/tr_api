@@ -10,7 +10,8 @@ defmodule I18NAPI.Translations.Locale do
     field(:is_removed, :boolean, default: false)
     field(:locale, :string)
     field(:removed_at, :naive_datetime)
-    field(:project_id, :id)
+    
+    belongs_to(:project, I18NAPI.Projects.Project)
 
     timestamps()
   end
@@ -21,20 +22,12 @@ defmodule I18NAPI.Translations.Locale do
     |> cast(attrs, [
       :locale,
       :is_default,
-      :count_of_keys,
-      :count_of_words,
-      :count_of_translated_keys,
-      :is_removed,
-      :removed_at
+      :project_id
     ])
     |> validate_required([
       :locale,
       :is_default,
-      :count_of_keys,
-      :count_of_words,
-      :count_of_translated_keys,
-      :is_removed,
-      :removed_at
+      :project_id
     ])
   end
 end

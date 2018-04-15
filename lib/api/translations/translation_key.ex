@@ -9,7 +9,8 @@ defmodule I18NAPI.Translations.TranslationKey do
     field(:removed_at, :naive_datetime)
     field(:status, :integer)
     field(:value, :string)
-    field(:locale_id, :id)
+
+    belongs_to(:locale, I18NAPI.Translations.Locale)
 
     timestamps()
   end
