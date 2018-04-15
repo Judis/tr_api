@@ -6,9 +6,57 @@ defmodule I18NAPI.AccountsTest do
   describe "users" do
     alias I18NAPI.Accounts.User
 
-    @valid_attrs %{confirmation_sent_at: ~N[2010-04-17 14:00:00.000000], confirmation_token: "some confirmation_token", confirmed_at: ~N[2010-04-17 14:00:00.000000], email: "some email", failed_restore_attempts: 42, failed_sign_in_attempts: 42, invited_at: ~N[2010-04-17 14:00:00.000000], is_confirmed: true, last_visited_at: ~N[2010-04-17 14:00:00.000000], name: "some name", password_hash: "some password_hash", restore_accepted_at: ~N[2010-04-17 14:00:00.000000], restore_requested_at: ~N[2010-04-17 14:00:00.000000], restore_token: "some restore_token", source: "some source"}
-    @update_attrs %{confirmation_sent_at: ~N[2011-05-18 15:01:01.000000], confirmation_token: "some updated confirmation_token", confirmed_at: ~N[2011-05-18 15:01:01.000000], email: "some updated email", failed_restore_attempts: 43, failed_sign_in_attempts: 43, invited_at: ~N[2011-05-18 15:01:01.000000], is_confirmed: false, last_visited_at: ~N[2011-05-18 15:01:01.000000], name: "some updated name", password_hash: "some updated password_hash", restore_accepted_at: ~N[2011-05-18 15:01:01.000000], restore_requested_at: ~N[2011-05-18 15:01:01.000000], restore_token: "some updated restore_token", source: "some updated source"}
-    @invalid_attrs %{confirmation_sent_at: nil, confirmation_token: nil, confirmed_at: nil, email: nil, failed_restore_attempts: nil, failed_sign_in_attempts: nil, invited_at: nil, is_confirmed: nil, last_visited_at: nil, name: nil, password_hash: nil, restore_accepted_at: nil, restore_requested_at: nil, restore_token: nil, source: nil}
+    @valid_attrs %{
+      confirmation_sent_at: ~N[2010-04-17 14:00:00.000000],
+      confirmation_token: "some confirmation_token",
+      confirmed_at: ~N[2010-04-17 14:00:00.000000],
+      email: "some email",
+      failed_restore_attempts: 42,
+      failed_sign_in_attempts: 42,
+      invited_at: ~N[2010-04-17 14:00:00.000000],
+      is_confirmed: true,
+      last_visited_at: ~N[2010-04-17 14:00:00.000000],
+      name: "some name",
+      password_hash: "some password_hash",
+      restore_accepted_at: ~N[2010-04-17 14:00:00.000000],
+      restore_requested_at: ~N[2010-04-17 14:00:00.000000],
+      restore_token: "some restore_token",
+      source: "some source"
+    }
+    @update_attrs %{
+      confirmation_sent_at: ~N[2011-05-18 15:01:01.000000],
+      confirmation_token: "some updated confirmation_token",
+      confirmed_at: ~N[2011-05-18 15:01:01.000000],
+      email: "some updated email",
+      failed_restore_attempts: 43,
+      failed_sign_in_attempts: 43,
+      invited_at: ~N[2011-05-18 15:01:01.000000],
+      is_confirmed: false,
+      last_visited_at: ~N[2011-05-18 15:01:01.000000],
+      name: "some updated name",
+      password_hash: "some updated password_hash",
+      restore_accepted_at: ~N[2011-05-18 15:01:01.000000],
+      restore_requested_at: ~N[2011-05-18 15:01:01.000000],
+      restore_token: "some updated restore_token",
+      source: "some updated source"
+    }
+    @invalid_attrs %{
+      confirmation_sent_at: nil,
+      confirmation_token: nil,
+      confirmed_at: nil,
+      email: nil,
+      failed_restore_attempts: nil,
+      failed_sign_in_attempts: nil,
+      invited_at: nil,
+      is_confirmed: nil,
+      last_visited_at: nil,
+      name: nil,
+      password_hash: nil,
+      restore_accepted_at: nil,
+      restore_requested_at: nil,
+      restore_token: nil,
+      source: nil
+    }
 
     def user_fixture(attrs \\ %{}) do
       {:ok, user} =

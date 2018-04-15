@@ -2,11 +2,10 @@ defmodule I18NAPI.Projects.UserRoles do
   use Ecto.Schema
   import Ecto.Changeset
 
-
   schema "user_roles" do
-    field :role, :integer
-    field :user_id, :id
-    field :project_id, :id
+    field(:role, :integer)
+    field(:user_id, :id)
+    field(:project_id, :id)
 
     timestamps()
   end

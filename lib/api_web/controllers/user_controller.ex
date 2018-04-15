@@ -4,7 +4,7 @@ defmodule I18NAPIWeb.UserController do
   alias I18NAPI.Accounts
   alias I18NAPI.Accounts.User
 
-  action_fallback I18NAPIWeb.FallbackController
+  action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
     users = Accounts.list_users()
@@ -35,6 +35,7 @@ defmodule I18NAPIWeb.UserController do
 
   def delete(conn, %{"id" => id}) do
     user = Accounts.get_user!(id)
+
     with {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")
     end

@@ -11,13 +11,15 @@ defmodule I18NAPIWeb.LocaleView do
   end
 
   def render("locale.json", %{locale: locale}) do
-    %{id: locale.id,
+    %{
+      id: locale.id,
       locale: locale.locale,
       is_default: locale.is_default,
       count_of_keys: locale.count_of_keys,
       count_of_words: locale.count_of_words,
       count_of_translated_keys: locale.count_of_translated_keys,
       is_removed: locale.is_removed,
-      removed_at: locale.removed_at}
+      removed_at: locale.removed_at
+    }
   end
 end

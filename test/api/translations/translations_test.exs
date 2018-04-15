@@ -6,9 +6,33 @@ defmodule I18NAPI.TranslationsTest do
   describe "locales" do
     alias I18NAPI.Translations.Locale
 
-    @valid_attrs %{count_of_keys: 42, count_of_translated_keys: 42, count_of_words: 42, is_default: true, is_removed: true, locale: "some locale", removed_at: ~N[2010-04-17 14:00:00.000000]}
-    @update_attrs %{count_of_keys: 43, count_of_translated_keys: 43, count_of_words: 43, is_default: false, is_removed: false, locale: "some updated locale", removed_at: ~N[2011-05-18 15:01:01.000000]}
-    @invalid_attrs %{count_of_keys: nil, count_of_translated_keys: nil, count_of_words: nil, is_default: nil, is_removed: nil, locale: nil, removed_at: nil}
+    @valid_attrs %{
+      count_of_keys: 42,
+      count_of_translated_keys: 42,
+      count_of_words: 42,
+      is_default: true,
+      is_removed: true,
+      locale: "some locale",
+      removed_at: ~N[2010-04-17 14:00:00.000000]
+    }
+    @update_attrs %{
+      count_of_keys: 43,
+      count_of_translated_keys: 43,
+      count_of_words: 43,
+      is_default: false,
+      is_removed: false,
+      locale: "some updated locale",
+      removed_at: ~N[2011-05-18 15:01:01.000000]
+    }
+    @invalid_attrs %{
+      count_of_keys: nil,
+      count_of_translated_keys: nil,
+      count_of_words: nil,
+      is_default: nil,
+      is_removed: nil,
+      locale: nil,
+      removed_at: nil
+    }
 
     def locale_fixture(attrs \\ %{}) do
       {:ok, locale} =
@@ -78,9 +102,30 @@ defmodule I18NAPI.TranslationsTest do
   describe "translation_keys" do
     alias I18NAPI.Translations.TranslationKey
 
-    @valid_attrs %{context: "some context", is_removed: true, key: "some key", removed_at: ~N[2010-04-17 14:00:00.000000], status: 42, value: "some value"}
-    @update_attrs %{context: "some updated context", is_removed: false, key: "some updated key", removed_at: ~N[2011-05-18 15:01:01.000000], status: 43, value: "some updated value"}
-    @invalid_attrs %{context: nil, is_removed: nil, key: nil, removed_at: nil, status: nil, value: nil}
+    @valid_attrs %{
+      context: "some context",
+      is_removed: true,
+      key: "some key",
+      removed_at: ~N[2010-04-17 14:00:00.000000],
+      status: 42,
+      value: "some value"
+    }
+    @update_attrs %{
+      context: "some updated context",
+      is_removed: false,
+      key: "some updated key",
+      removed_at: ~N[2011-05-18 15:01:01.000000],
+      status: 43,
+      value: "some updated value"
+    }
+    @invalid_attrs %{
+      context: nil,
+      is_removed: nil,
+      key: nil,
+      removed_at: nil,
+      status: nil,
+      value: nil
+    }
 
     def translation_key_fixture(attrs \\ %{}) do
       {:ok, translation_key} =
@@ -102,7 +147,9 @@ defmodule I18NAPI.TranslationsTest do
     end
 
     test "create_translation_key/1 with valid data creates a translation_key" do
-      assert {:ok, %TranslationKey{} = translation_key} = Translations.create_translation_key(@valid_attrs)
+      assert {:ok, %TranslationKey{} = translation_key} =
+               Translations.create_translation_key(@valid_attrs)
+
       assert translation_key.context == "some context"
       assert translation_key.is_removed == true
       assert translation_key.key == "some key"
@@ -117,7 +164,10 @@ defmodule I18NAPI.TranslationsTest do
 
     test "update_translation_key/2 with valid data updates the translation_key" do
       translation_key = translation_key_fixture()
-      assert {:ok, translation_key} = Translations.update_translation_key(translation_key, @update_attrs)
+
+      assert {:ok, translation_key} =
+               Translations.update_translation_key(translation_key, @update_attrs)
+
       assert %TranslationKey{} = translation_key
       assert translation_key.context == "some updated context"
       assert translation_key.is_removed == false
@@ -129,14 +179,20 @@ defmodule I18NAPI.TranslationsTest do
 
     test "update_translation_key/2 with invalid data returns error changeset" do
       translation_key = translation_key_fixture()
-      assert {:error, %Ecto.Changeset{}} = Translations.update_translation_key(translation_key, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Translations.update_translation_key(translation_key, @invalid_attrs)
+
       assert translation_key == Translations.get_translation_key!(translation_key.id)
     end
 
     test "delete_translation_key/1 deletes the translation_key" do
       translation_key = translation_key_fixture()
       assert {:ok, %TranslationKey{}} = Translations.delete_translation_key(translation_key)
-      assert_raise Ecto.NoResultsError, fn -> Translations.get_translation_key!(translation_key.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Translations.get_translation_key!(translation_key.id)
+      end
     end
 
     test "change_translation_key/1 returns a translation_key changeset" do

@@ -4,7 +4,7 @@ defmodule I18NAPIWeb.ProjectController do
   alias I18NAPI.Projects
   alias I18NAPI.Projects.Project
 
-  action_fallback I18NAPIWeb.FallbackController
+  action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
     projects = Projects.list_projects()
@@ -35,6 +35,7 @@ defmodule I18NAPIWeb.ProjectController do
 
   def delete(conn, %{"id" => id}) do
     project = Projects.get_project!(id)
+
     with {:ok, %Project{}} <- Projects.delete_project(project) do
       send_resp(conn, :no_content, "")
     end

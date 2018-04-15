@@ -11,7 +11,8 @@ defmodule I18NAPIWeb.UserView do
   end
 
   def render("user.json", %{user: user}) do
-    %{id: user.id,
+    %{
+      id: user.id,
       name: user.name,
       email: user.email,
       password_hash: user.password_hash,
@@ -26,6 +27,7 @@ defmodule I18NAPIWeb.UserView do
       restore_requested_at: user.restore_requested_at,
       restore_accepted_at: user.restore_accepted_at,
       last_visited_at: user.last_visited_at,
-      invited_at: user.invited_at}
+      invited_at: user.invited_at
+    }
   end
 end

@@ -2,15 +2,14 @@ defmodule I18NAPI.Translations.TranslationKey do
   use Ecto.Schema
   import Ecto.Changeset
 
-
   schema "translation_keys" do
-    field :context, :string
-    field :is_removed, :boolean, default: false
-    field :key, :string
-    field :removed_at, :naive_datetime
-    field :status, :integer
-    field :value, :string
-    field :locale_id, :id
+    field(:context, :string)
+    field(:is_removed, :boolean, default: false)
+    field(:key, :string)
+    field(:removed_at, :naive_datetime)
+    field(:status, :integer)
+    field(:value, :string)
+    field(:locale_id, :id)
 
     timestamps()
   end

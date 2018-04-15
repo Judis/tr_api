@@ -11,12 +11,14 @@ defmodule I18NAPIWeb.TranslationKeyView do
   end
 
   def render("translation_key.json", %{translation_key: translation_key}) do
-    %{id: translation_key.id,
+    %{
+      id: translation_key.id,
       key: translation_key.key,
       value: translation_key.value,
       context: translation_key.context,
       status: translation_key.status,
       is_removed: translation_key.is_removed,
-      removed_at: translation_key.removed_at}
+      removed_at: translation_key.removed_at
+    }
   end
 end

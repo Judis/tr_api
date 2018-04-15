@@ -11,7 +11,6 @@ defmodule I18NAPIWeb.UserRolesView do
   end
 
   def render("user_roles.json", %{user_roles: user_roles}) do
-    %{id: user_roles.id,
-      role: user_roles.role}
+    %{id: user_roles.id, role: user_roles.role}
   end
 end

@@ -11,7 +11,6 @@ defmodule I18NAPIWeb.UserLocalesView do
   end
 
   def render("user_locales.json", %{user_locales: user_locales}) do
-    %{id: user_locales.id,
-      role: user_locales.role}
+    %{id: user_locales.id, role: user_locales.role}
   end
 end

@@ -4,7 +4,7 @@ defmodule I18NAPIWeb.UserLocalesController do
   alias I18NAPI.Projects
   alias I18NAPI.Projects.UserLocales
 
-  action_fallback I18NAPIWeb.FallbackController
+  action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
     user_locales = Projects.list_user_locales()
@@ -28,13 +28,15 @@ defmodule I18NAPIWeb.UserLocalesController do
   def update(conn, %{"id" => id, "user_locales" => user_locales_params}) do
     user_locales = Projects.get_user_locales!(id)
 
-    with {:ok, %UserLocales{} = user_locales} <- Projects.update_user_locales(user_locales, user_locales_params) do
+    with {:ok, %UserLocales{} = user_locales} <-
+           Projects.update_user_locales(user_locales, user_locales_params) do
       render(conn, "show.json", user_locales: user_locales)
     end
   end
 
   def delete(conn, %{"id" => id}) do
     user_locales = Projects.get_user_locales!(id)
+
     with {:ok, %UserLocales{}} <- Projects.delete_user_locales(user_locales) do
       send_resp(conn, :no_content, "")
     end

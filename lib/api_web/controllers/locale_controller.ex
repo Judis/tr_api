@@ -4,7 +4,7 @@ defmodule I18NAPIWeb.LocaleController do
   alias I18NAPI.Translations
   alias I18NAPI.Translations.Locale
 
-  action_fallback I18NAPIWeb.FallbackController
+  action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
     locales = Translations.list_locales()
@@ -35,6 +35,7 @@ defmodule I18NAPIWeb.LocaleController do
 
   def delete(conn, %{"id" => id}) do
     locale = Translations.get_locale!(id)
+
     with {:ok, %Locale{}} <- Translations.delete_locale(locale) do
       send_resp(conn, :no_content, "")
     end

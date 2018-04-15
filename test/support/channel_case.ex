@@ -25,13 +25,13 @@ defmodule I18NAPIWeb.ChannelCase do
     end
   end
 
-
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+
     unless tags[:async] do
       Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
     end
+
     :ok
   end
-
 end

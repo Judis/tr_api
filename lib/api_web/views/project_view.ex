@@ -11,9 +11,11 @@ defmodule I18NAPIWeb.ProjectView do
   end
 
   def render("project.json", %{project: project}) do
-    %{id: project.id,
+    %{
+      id: project.id,
       name: project.name,
       is_removed: project.is_removed,
-      removed_at: project.removed_at}
+      removed_at: project.removed_at
+    }
   end
 end

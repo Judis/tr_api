@@ -28,8 +28,9 @@ defmodule I18NAPIWeb do
 
   def view do
     quote do
-      use Phoenix.View, root: "lib/api_web/templates",
-                        namespace: I18NAPIWeb
+      use Phoenix.View,
+        root: "lib/api_web/templates",
+        namespace: I18NAPIWeb
 
       # Import convenience functions from controllers
       import Phoenix.Controller, only: [get_flash: 2, view_module: 1]

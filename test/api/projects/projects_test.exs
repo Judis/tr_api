@@ -6,8 +6,16 @@ defmodule I18NAPI.ProjectsTest do
   describe "projects" do
     alias I18NAPI.Projects.Project
 
-    @valid_attrs %{is_removed: true, name: "some name", removed_at: ~N[2010-04-17 14:00:00.000000]}
-    @update_attrs %{is_removed: false, name: "some updated name", removed_at: ~N[2011-05-18 15:01:01.000000]}
+    @valid_attrs %{
+      is_removed: true,
+      name: "some name",
+      removed_at: ~N[2010-04-17 14:00:00.000000]
+    }
+    @update_attrs %{
+      is_removed: false,
+      name: "some updated name",
+      removed_at: ~N[2011-05-18 15:01:01.000000]
+    }
     @invalid_attrs %{is_removed: nil, name: nil, removed_at: nil}
 
     def project_fixture(attrs \\ %{}) do
@@ -171,7 +179,10 @@ defmodule I18NAPI.ProjectsTest do
 
     test "update_user_locales/2 with invalid data returns error changeset" do
       user_locales = user_locales_fixture()
-      assert {:error, %Ecto.Changeset{}} = Projects.update_user_locales(user_locales, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Projects.update_user_locales(user_locales, @invalid_attrs)
+
       assert user_locales == Projects.get_user_locales!(user_locales.id)
     end
 
