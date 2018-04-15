@@ -14,6 +14,7 @@ defmodule I18NAPI.Accounts.User do
     field :is_confirmed, :boolean, default: false
     field :last_visited_at, :naive_datetime
     field :name, :string
+    field :password, :string, virtual: true
     field :password_hash, :string
     field :restore_accepted_at, :naive_datetime
     field :restore_requested_at, :naive_datetime
@@ -27,7 +28,7 @@ defmodule I18NAPI.Accounts.User do
   def changeset(user, attrs) do
     user
     |> cast(attrs, [:name, :email, :password_hash, :is_confirmed, :source, :confirmation_token, :restore_token, :failed_sign_in_attempts, :failed_restore_attempts, :confirmed_at, :confirmation_sent_at, :restore_requested_at, :restore_accepted_at, :last_visited_at, :invited_at])
-    |> validate_required([:name, :email, :password_hash, :is_confirmed, :source, :confirmation_token, :restore_token, :failed_sign_in_attempts, :failed_restore_attempts, :confirmed_at, :confirmation_sent_at, :restore_requested_at, :restore_accepted_at, :last_visited_at, :invited_at])
+    |> validate_required([:name, :email, :password])
     |> unique_constraint(:email)
   end
 end
