@@ -14,8 +14,8 @@ defmodule I18NAPIWeb.LocaleController do
   def create(conn, %{"locale" => locale_params}) do
     with {:ok, %Locale{} = locale} <-
            Translations.create_locale(
-             locale_params
-             |> set_project_id(conn)
+             locale_params,
+             conn.params["project_id"]
            ) do
       conn
       |> put_status(:created)
@@ -43,9 +43,5 @@ defmodule I18NAPIWeb.LocaleController do
     with {:ok, %Locale{}} <- Translations.delete_locale(locale) do
       send_resp(conn, :no_content, "")
     end
-  end
-
-  defp set_project_id(locale, conn) do
-    Map.put(locale, "project_id", conn.params["project_id"])
   end
 end

@@ -49,9 +49,11 @@ defmodule I18NAPI.Translations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_locale(attrs \\ %{}) do
+  def create_locale(attrs \\ %{}, project_id) do
+    changeset = Map.put(attrs, "project_id", project_id)
+
     %Locale{}
-    |> Locale.changeset(attrs)
+    |> Locale.changeset(changeset)
     |> Repo.insert()
   end
 
