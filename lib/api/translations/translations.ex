@@ -147,9 +147,11 @@ defmodule I18NAPI.Translations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_translation_key(attrs \\ %{}) do
+  def create_translation_key(attrs \\ %{}, locale_id) do
+    changeset = Map.put(attrs, "locale_id", locale_id)
+
     %TranslationKey{}
-    |> TranslationKey.changeset(attrs)
+    |> TranslationKey.changeset(changeset)
     |> Repo.insert()
   end
 
