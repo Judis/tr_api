@@ -7,7 +7,7 @@ defmodule I18NAPIWeb.ProjectController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    projects = Projects.list_projects()
+    projects = Projects.list_projects(conn.assigns[:user].id)
     render(conn, "index.json", projects: projects)
   end
 
