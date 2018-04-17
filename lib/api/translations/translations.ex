@@ -21,6 +21,18 @@ defmodule I18NAPI.Translations do
     Repo.all(Locale)
   end
 
+  def list_locales(project_id) do
+    query =
+      from(
+        p in Locale,
+        join: pr in I18NAPI.Projects.Project,
+        on: p.project_id == pr.id,
+        where: pr.id == ^project_id
+      )
+
+    Repo.all(query)
+  end
+
   @doc """
   Gets a single locale.
 

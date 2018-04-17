@@ -22,9 +22,13 @@ defmodule I18NAPI.Projects do
   end
 
   def list_projects(user_id) do
-    query = from p in Project,
-            join: ur in "user_roles", on: p.id == ur.project_id,
-            where: ur.user_id == ^user_id
+    query =
+      from(
+        p in Project,
+        join: ur in "user_roles",
+        on: p.id == ur.project_id,
+        where: ur.user_id == ^user_id
+      )
 
     Repo.all(query)
   end
