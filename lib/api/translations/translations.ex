@@ -21,6 +21,15 @@ defmodule I18NAPI.Translations do
     Repo.all(Locale)
   end
 
+  @doc """
+  Returns the list of locales chained with specific project.
+
+  ## Examples
+
+      iex> list_locales(1)
+      [%Locale{}, ...]
+
+  """
   def list_locales(project_id) do
     query =
       from(

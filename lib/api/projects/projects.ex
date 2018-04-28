@@ -21,6 +21,15 @@ defmodule I18NAPI.Projects do
     Repo.all(Project)
   end
 
+  @doc """
+  Returns the list of projects chained with specific user.
+
+  ## Examples
+
+      iex> list_projects(1)
+      [%Project{}, ...]
+
+  """
   def list_projects(user_id) do
     query =
       from(
