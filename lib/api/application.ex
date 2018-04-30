@@ -11,7 +11,7 @@ defmodule I18NAPI.Application do
       # Start the Ecto repository
       supervisor(I18NAPI.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(I18NAPIWeb.Endpoint, []),
+      supervisor(I18NAPIWeb.Endpoint, [])
       # Start your own worker by calling: I18NAPI.Worker.start_link(arg1, arg2, arg3)
       # worker(I18NAPI.Worker, [arg1, arg2, arg3]),
     ]

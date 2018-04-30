@@ -26,13 +26,13 @@ defmodule I18NAPIWeb.ConnCase do
     end
   end
 
-
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+
     unless tags[:async] do
       Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
     end
+
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
-
 end
