@@ -200,4 +200,79 @@ defmodule I18NAPI.TranslationsTest do
       assert %Ecto.Changeset{} = Translations.change_translation_key(translation_key)
     end
   end
+
+  describe "translations" do
+    alias I18NAPI.Translations.Translation
+
+    @valid_attrs %{
+      is_removed: true,
+      removed_at: ~N[2010-04-17 14:00:00.000000],
+      value: "some value"
+    }
+    @update_attrs %{
+      is_removed: false,
+      removed_at: ~N[2011-05-18 15:01:01.000000],
+      value: "some updated value"
+    }
+    @invalid_attrs %{is_removed: nil, removed_at: nil, value: nil}
+
+    def translation_fixture(attrs \\ %{}) do
+      {:ok, translation} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Translations.create_translation()
+
+      translation
+    end
+
+    test "list_translations/0 returns all translations" do
+      translation = translation_fixture()
+      assert Translations.list_translations() == [translation]
+    end
+
+    test "get_translation!/1 returns the translation with given id" do
+      translation = translation_fixture()
+      assert Translations.get_translation!(translation.id) == translation
+    end
+
+    test "create_translation/1 with valid data creates a translation" do
+      assert {:ok, %Translation{} = translation} = Translations.create_translation(@valid_attrs)
+      assert translation.is_removed == true
+      assert translation.removed_at == ~N[2010-04-17 14:00:00.000000]
+      assert translation.value == "some value"
+    end
+
+    test "create_translation/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Translations.create_translation(@invalid_attrs)
+    end
+
+    test "update_translation/2 with valid data updates the translation" do
+      translation = translation_fixture()
+      assert {:ok, translation} = Translations.update_translation(translation, @update_attrs)
+      assert %Translation{} = translation
+      assert translation.is_removed == false
+      assert translation.removed_at == ~N[2011-05-18 15:01:01.000000]
+      assert translation.value == "some updated value"
+    end
+
+    test "update_translation/2 with invalid data returns error changeset" do
+      translation = translation_fixture()
+
+      assert {:error, %Ecto.Changeset{}} =
+               Translations.update_translation(translation, @invalid_attrs)
+
+      assert translation == Translations.get_translation!(translation.id)
+    end
+
+    test "delete_translation/1 deletes the translation" do
+      translation = translation_fixture()
+      assert {:ok, %Translation{}} = Translations.delete_translation(translation)
+      assert_raise Ecto.NoResultsError, fn -> Translations.get_translation!(translation.id) end
+    end
+
+    test "change_translation/1 returns a translation changeset" do
+      translation = translation_fixture()
+      assert %Ecto.Changeset{} = Translations.change_translation(translation)
+    end
+  end
 end

@@ -22,7 +22,10 @@ defmodule I18NAPIWeb.Router do
 
     resources("/projects", ProjectController) do
       resources("/translation_keys", TranslationKeyController)
-      resources("/locales", LocaleController)
+
+      resources("/locales", LocaleController) do
+        resources("/translations", TranslationController)
+      end
     end
 
     resources("/user_locales", UserLocalesController)
