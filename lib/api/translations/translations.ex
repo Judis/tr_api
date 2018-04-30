@@ -141,6 +141,27 @@ defmodule I18NAPI.Translations do
   end
 
   @doc """
+  Returns the list of translation keys chained with specific locale.
+
+  ## Examples
+
+      iex> list_translation_keys(1)
+      [%Locale{}, ...]
+
+  """
+  def list_translation_keys(locale_id) do
+    query =
+      from(
+        p in TranslationKey,
+        join: pr in I18NAPI.Translations.Locale,
+        on: p.locale_id == pr.id,
+        where: pr.id == ^locale_id
+      )
+
+    Repo.all(query)
+  end
+
+  @doc """
   Gets a single translation_key.
 
   Raises `Ecto.NoResultsError` if the Translation key does not exist.

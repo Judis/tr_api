@@ -7,7 +7,7 @@ defmodule I18NAPIWeb.TranslationKeyController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    translation_keys = Translations.list_translation_keys()
+    translation_keys = Translations.list_translation_keys(conn.params["locale_id"])
     render(conn, "index.json", translation_keys: translation_keys)
   end
 
