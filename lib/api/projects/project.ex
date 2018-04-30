@@ -20,4 +20,11 @@ defmodule I18NAPI.Projects.Project do
     |> validate_required([:name])
     |> validate_length(:name, min: 3, max: 255)
   end
+
+  @doc false
+  def remove_changeset(project, attrs) do
+    project
+    |> cast(attrs, [:is_removed, :removed_at])
+    |> validate_required([:is_removed, :removed_at])
+  end
 end

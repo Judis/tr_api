@@ -131,6 +131,29 @@ defmodule I18NAPI.Projects do
   end
 
   @doc """
+  Deletes a Project.
+
+  ## Examples
+
+      iex> delete_project(project)
+      {:ok, %Project{}}
+
+      iex> delete_project(project)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def safely_delete_project(%Project{} = project) do
+    chaneset = %{
+      is_removed: true,
+      removed_at: DateTime.utc_now()
+    }
+
+    project
+    |> Project.remove_changeset(chaneset)
+    |> Repo.update()
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking project changes.
 
   ## Examples
