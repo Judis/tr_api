@@ -113,6 +113,29 @@ defmodule I18NAPI.Translations do
   end
 
   @doc """
+  Safely Deletes a Locale.
+
+  ## Examples
+
+      iex> safely_delete_locale(locale)
+      {:ok, %Locale{}}
+
+      iex> safely_delete_locale(locale)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def safely_delete_locale(%Locale{} = locale) do
+    chaneset = %{
+      is_removed: true,
+      removed_at: DateTime.utc_now()
+    }
+
+    locale
+    |> Locale.remove_changeset(chaneset)
+    |> Repo.update()
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking locale changes.
 
   ## Examples

@@ -40,8 +40,8 @@ defmodule I18NAPIWeb.LocaleController do
   def delete(conn, %{"id" => id}) do
     locale = Translations.get_locale!(id)
 
-    with {:ok, %Locale{}} <- Translations.delete_locale(locale) do
-      send_resp(conn, :no_content, "")
+    with {:ok, %Locale{} = locale} <- Translations.safely_delete_locale(locale) do
+      render(conn, "show.json", locale: locale)
     end
   end
 end

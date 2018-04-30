@@ -31,4 +31,11 @@ defmodule I18NAPI.Translations.Locale do
     ])
     |> unique_constraint(:locale, name: :locales_project_id_locale_index)
   end
+
+  @doc false
+  def remove_changeset(locale, attrs) do
+    locale
+    |> cast(attrs, [:is_removed, :removed_at])
+    |> validate_required([:is_removed, :removed_at])
+  end
 end
