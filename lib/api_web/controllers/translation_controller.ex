@@ -50,8 +50,9 @@ defmodule I18NAPIWeb.TranslationController do
   def delete(conn, %{"id" => id}) do
     translation = Translations.get_translation!(id)
 
-    with {:ok, %Translation{}} <- Translations.delete_translation(translation) do
-      send_resp(conn, :no_content, "")
+    with {:ok, %Translation{} = translation} <-
+           Translations.safely_delete_translation(translation) do
+      render(conn, "show.json", translation: translation)
     end
   end
 end

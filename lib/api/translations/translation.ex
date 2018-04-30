@@ -22,4 +22,11 @@ defmodule I18NAPI.Translations.Translation do
       name: :translations_locale_id_translation_key_id_is_removed_index
     )
   end
+
+  @doc false
+  def remove_changeset(translation, attrs) do
+    translation
+    |> cast(attrs, [:is_removed, :removed_at])
+    |> validate_required([:is_removed, :removed_at])
+  end
 end

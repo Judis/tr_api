@@ -259,10 +259,10 @@ defmodule I18NAPI.Translations do
 
   ## Examples
 
-      iex> delete_translation_key(translation_key)
+      iex> safely_delete_translation_key(translation_key)
       {:ok, %TranslationKey{}}
 
-      iex> delete_translation_key(translation_key)
+      iex> safely_delete_translation_key(translation_key)
       {:error, %Ecto.Changeset{}}
 
   """
@@ -394,6 +394,29 @@ defmodule I18NAPI.Translations do
   """
   def delete_translation(%Translation{} = translation) do
     Repo.delete(translation)
+  end
+
+  @doc """
+  Safely Deletes a Translation.
+
+  ## Examples
+
+      iex> safely_delete_translation(translation)
+      {:ok, %Translation{}}
+
+      iex> safely_delete_translation(translation)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def safely_delete_translation(%Translation{} = translation) do
+    chaneset = %{
+      is_removed: true,
+      removed_at: DateTime.utc_now()
+    }
+
+    translation
+    |> Translation.remove_changeset(chaneset)
+    |> Repo.update()
   end
 
   @doc """
