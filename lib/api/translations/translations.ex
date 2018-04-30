@@ -141,21 +141,21 @@ defmodule I18NAPI.Translations do
   end
 
   @doc """
-  Returns the list of translation keys chained with specific locale.
+  Returns the list of translation keys chained with specific project.
 
   ## Examples
 
       iex> list_translation_keys(1)
-      [%Locale{}, ...]
+      [%TranslationKey{}, ...]
 
   """
-  def list_translation_keys(locale_id) do
+  def list_translation_keys(project_id) do
     query =
       from(
         p in TranslationKey,
-        join: pr in I18NAPI.Translations.Locale,
-        on: p.locale_id == pr.id,
-        where: pr.id == ^locale_id
+        join: pr in I18NAPI.Projects.Project,
+        on: p.project_id == pr.id,
+        where: pr.id == ^project_id
       )
 
     Repo.all(query)
@@ -189,8 +189,8 @@ defmodule I18NAPI.Translations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_translation_key(attrs \\ %{}, locale_id) do
-    changeset = Map.put(attrs, "locale_id", locale_id)
+  def create_translation_key(attrs \\ %{}, project_id) do
+    changeset = Map.put(attrs, "project_id", project_id)
 
     %TranslationKey{}
     |> TranslationKey.changeset(changeset)

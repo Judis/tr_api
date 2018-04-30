@@ -21,9 +21,8 @@ defmodule I18NAPIWeb.Router do
     pipe_through(:authenticated)
 
     resources("/projects", ProjectController) do
-      resources("/locales", LocaleController) do
-        resources("/translation_keys", TranslationKeyController)
-      end
+      resources("/translation_keys", TranslationKeyController)
+      resources("/locales", LocaleController)
     end
 
     resources("/user_locales", UserLocalesController)

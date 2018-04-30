@@ -7,7 +7,7 @@ defmodule I18NAPIWeb.TranslationKeyController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    translation_keys = Translations.list_translation_keys(conn.params["locale_id"])
+    translation_keys = Translations.list_translation_keys(conn.params["project_id"])
     render(conn, "index.json", translation_keys: translation_keys)
   end
 
@@ -15,17 +15,16 @@ defmodule I18NAPIWeb.TranslationKeyController do
     with {:ok, %TranslationKey{} = translation_key} <-
            Translations.create_translation_key(
              translation_key_params,
-             conn.params["locale_id"]
+             conn.params["project_id"]
            ) do
       conn
       |> put_status(:created)
       |> put_resp_header(
         "location",
-        project_locale_translation_key_path(
+        project_translation_key_path(
           conn,
           :show,
-          conn.params["project_id"],
-          translation_key.locale_id,
+          translation_key.project_id,
           translation_key
         )
       )
