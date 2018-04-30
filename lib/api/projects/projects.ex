@@ -131,14 +131,14 @@ defmodule I18NAPI.Projects do
   end
 
   @doc """
-  Deletes a Project.
+  Safely Deletes a Project.
 
   ## Examples
 
-      iex> delete_project(project)
+      iex> safely_delete_project(project)
       {:ok, %Project{}}
 
-      iex> delete_project(project)
+      iex> safely_delete_project(project)
       {:error, %Ecto.Changeset{}}
 
   """
