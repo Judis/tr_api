@@ -37,7 +37,7 @@ defmodule I18NAPIWeb.ProjectController do
   def delete(conn, %{"id" => id}) do
     project = Projects.get_project!(id)
 
-    with {:ok, %Project{}} <- Projects.safely_delete_project(project) do
+    with {:ok, %Project{} = project} <- Projects.safely_delete_project(project) do
       render(conn, "show.json", project: project)
     end
   end

@@ -255,6 +255,29 @@ defmodule I18NAPI.Translations do
   end
 
   @doc """
+  Safely Deletes a TranslationKey.
+
+  ## Examples
+
+      iex> delete_translation_key(translation_key)
+      {:ok, %TranslationKey{}}
+
+      iex> delete_translation_key(translation_key)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def safely_delete_translation_key(%TranslationKey{} = translation_key) do
+    chaneset = %{
+      is_removed: true,
+      removed_at: DateTime.utc_now()
+    }
+
+    translation_key
+    |> TranslationKey.remove_changeset(chaneset)
+    |> Repo.update()
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking translation_key changes.
 
   ## Examples

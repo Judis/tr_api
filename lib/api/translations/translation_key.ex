@@ -21,4 +21,11 @@ defmodule I18NAPI.Translations.TranslationKey do
     |> validate_required([:key])
     |> unique_constraint(:key, name: :translation_keys_project_id_key_is_removed_index)
   end
+
+  @doc false
+  def remove_changeset(translation_key, attrs) do
+    translation_key
+    |> cast(attrs, [:is_removed, :removed_at])
+    |> validate_required([:is_removed, :removed_at])
+  end
 end
