@@ -2,6 +2,7 @@ defmodule I18NAPI.Projects.Project do
   use Ecto.Schema
   import Ecto.Changeset
   alias I18NAPI.Projects.{UserRoles}
+  alias I18NAPI.Translations.{Locale, TranslationKey}
 
   schema "projects" do
     field(:is_removed, :boolean, default: false)
@@ -9,6 +10,8 @@ defmodule I18NAPI.Projects.Project do
     field(:removed_at, :naive_datetime)
 
     has_many(:user_roles, UserRoles)
+    has_many(:locales, Locale)
+    has_many(:translation_keys, TranslationKey)
 
     timestamps()
   end

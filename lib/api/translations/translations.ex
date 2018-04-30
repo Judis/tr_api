@@ -133,6 +133,7 @@ defmodule I18NAPI.Translations do
     locale
     |> Locale.remove_changeset(chaneset)
     |> Repo.update()
+    |> safely_delete_nested_entities(:translations)
   end
 
   @doc """
@@ -275,6 +276,7 @@ defmodule I18NAPI.Translations do
     translation_key
     |> TranslationKey.remove_changeset(chaneset)
     |> Repo.update()
+    |> safely_delete_nested_entities(:translations)
   end
 
   @doc """
@@ -431,4 +433,25 @@ defmodule I18NAPI.Translations do
   def change_translation(%Translation{} = translation) do
     Translation.changeset(translation, %{})
   end
+
+  @doc """
+  Safely Deletes nested Entities
+
+  ## Examples
+
+      iex> safely_delete_nested_entities({:ok, %TranslationKey{}})
+      {:ok, %TranslationKey{}}
+  """
+  def safely_delete_nested_entities({:ok, %{} = parent}, children_key) do
+    parent
+    |> Repo.preload(children_key)
+    |> Map.fetch!(children_key)
+    |> Enum.each(fn children ->
+      safely_delete_entity(children)
+    end)
+
+    {:ok, parent}
+  end
+
+  def safely_delete_entity(%Translation{} = child), do: safely_delete_translation(child)
 end

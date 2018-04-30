@@ -12,6 +12,7 @@ defmodule I18NAPI.Translations.Locale do
     field(:removed_at, :naive_datetime)
 
     belongs_to(:project, I18NAPI.Projects.Project)
+    has_many(:translations, I18NAPI.Translations.Translation)
 
     timestamps()
   end
