@@ -17,4 +17,16 @@ defmodule I18NAPIWeb.FallbackController do
     |> put_status(:not_found)
     |> render(I18NAPIWeb.ErrorView, :"404")
   end
+
+  def call(conn, {:error, :bad_request}) do
+    conn
+    |> put_status(:bad_request)
+    |> render(I18NAPIWeb.ErrorView, :"400")
+  end
+
+  def call(conn, {:error, :unauthorized}) do
+    conn
+    |> put_status(:unauthorized)
+    |> render(I18NAPIWeb.ErrorView, :"401")
+  end
 end

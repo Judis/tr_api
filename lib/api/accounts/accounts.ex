@@ -101,4 +101,30 @@ defmodule I18NAPI.Accounts do
   def change_user(%User{} = user) do
     User.changeset(user, %{})
   end
+
+  @doc """
+  Find user by email and cofirm by password.
+
+  ## Examples
+
+      iex> find_and_confirm_user(email, password)
+      {:ok, %User{}}
+
+      iex> find_and_confirm_user(email, password)
+      {:error, :unauthorized}
+
+  """
+  def find_and_confirm_user(email, password) do
+    case Repo.get_by(User, email: email) do
+      nil ->
+        {:error, :unauthorized}
+
+      user ->
+        if Comeonin.Bcrypt.checkpw(password, user.password_hash) do
+          {:ok, user}
+        else
+          {:error, :unauthorized}
+        end
+    end
+  end
 end
