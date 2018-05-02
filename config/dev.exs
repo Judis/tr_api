@@ -39,10 +39,10 @@ config :phoenix, :stacktrace_depth, 20
 # Configure your database
 config :api, I18NAPI.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "Judis",
-  password: "",
+  username: "postgres",
+  password: "postgres",
   database: "i18n_api_dev",
-  hostname: "localhost",
+  hostname: "db",
   pool_size: 10
 
 config :api, I18NAPI.Guardian,
