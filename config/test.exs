@@ -17,3 +17,14 @@ config :api, I18NAPI.Repo,
   database: "i18n_api_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
+
+config :api, I18NAPI.Guardian,
+  allowed_algos: ["HS512"],
+  verify_module: Guardian.JWT,
+  issuer: "api",
+  ttl: { 30, :days },
+  verify_issuer: true,
+  secret_key: "test",
+  serializer: I18NAPI.Guardian
+
+config :bcrypt_elixir, :log_rounds, 4

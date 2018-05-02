@@ -7,13 +7,13 @@ defmodule I18NAPIWeb.ProjectController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    projects = Projects.list_projects(conn.assigns[:user].id)
+    projects = Projects.list_projects(conn.private[:guardian_default_resource].id)
     render(conn, "index.json", projects: projects)
   end
 
   def create(conn, %{"project" => project_params}) do
     with {:ok, %Project{} = project} <-
-           Projects.create_project(project_params, conn.assigns[:user]) do
+           Projects.create_project(project_params, conn.private[:guardian_default_resource]) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", project_path(conn, :show, project))
