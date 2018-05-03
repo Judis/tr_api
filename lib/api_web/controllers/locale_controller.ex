@@ -44,4 +44,11 @@ defmodule I18NAPIWeb.LocaleController do
       render(conn, "show.json", locale: locale)
     end
   end
+
+  def keys_and_translations(conn, %{"locale_id" => id}) do
+    locale = Translations.get_locale!(id)
+    keys_and_translations = Translations.get_keys_and_translations(locale)
+
+    render(conn, "keys_and_translations.json", keys_and_translations: keys_and_translations)
+  end
 end
