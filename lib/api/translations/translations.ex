@@ -59,6 +59,25 @@ defmodule I18NAPI.Translations do
   def get_locale!(id), do: Repo.get!(Locale, id)
 
   @doc """
+  Returns the list of locales chained with specific project.
+
+  ## Examples
+
+      iex> list_locales(1)
+      %Locale{}
+
+  """
+  def get_default_locale!(project_id) do
+    query =
+      from(
+        p in Locale,
+        where: p.project_id == ^project_id and p.is_default == true
+      )
+
+    Repo.one!(query)
+  end
+
+  @doc """
   Creates a locale.
 
   ## Examples
@@ -454,4 +473,40 @@ defmodule I18NAPI.Translations do
   end
 
   def safely_delete_entity(%Translation{} = child), do: safely_delete_translation(child)
+
+  @doc """
+  Get all translation_keys and translations for locale
+
+  ## Example
+
+      iex> get_keys_and_translations(locale)
+      {:ok, %TranslationKey{}}
+  """
+  def get_keys_and_translations(locale) do
+    default_locale = get_default_locale!(locale.project_id)
+    translation_keys = list_translation_keys(default_locale.project_id)
+    default_transaltions = list_translations(default_locale.id)
+    current_transaltions = list_translations(locale.id)
+
+    Enum.map(translation_keys, fn(key) ->
+      %{
+        translation_key_id: key.id,
+        key: key.key,
+        context: key.context,
+        status: key.status,
+        default_value: get_translation_value(default_transaltions, key.id),
+        current_value: get_translation_value(current_transaltions, key.id),
+      }
+    end)
+  end
+
+  defp get_translation_value(translations, key_id) do
+    translation = List.first(Enum.filter(translations, fn(x) -> x.translation_key_id == key_id end))
+
+    if translation do
+      %{id: translation.id, value: translation.value}
+    else
+      nil
+    end
+  end
 end

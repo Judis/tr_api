@@ -18,6 +18,7 @@ defmodule I18NAPIWeb.Router do
   scope "/api", I18NAPIWeb do
     pipe_through(:api)
     post("/sign_in", SessionController, :sign_in)
+    options("/sign_in", SessionController, :options)
     post("/sign_up", UserController, :create)
 
     pipe_through(:authenticated)
@@ -27,6 +28,7 @@ defmodule I18NAPIWeb.Router do
       resources("/translation_keys", TranslationKeyController)
 
       resources("/locales", LocaleController) do
+        get("/keys_and_translations", LocaleController, :keys_and_translations)
         resources("/translations", TranslationController)
       end
     end
