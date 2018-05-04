@@ -95,6 +95,9 @@ defmodule I18NAPI.Projects do
 
     {:ok, project}
   end
+  def create_owner_for_project({:error, %{} = changeset}, %{}) do
+    {:error, changeset}
+  end
 
   @doc """
   Updates a project.
