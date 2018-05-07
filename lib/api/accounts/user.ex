@@ -34,7 +34,7 @@ defmodule I18NAPI.Accounts.User do
       :password_confirmation,
       :source
     ])
-    |> validate_required([:name, :email, :password, :password_confirmation])
+    |> validate_required([:email, :password, :password_confirmation])
     |> validate_changeset
   end
 

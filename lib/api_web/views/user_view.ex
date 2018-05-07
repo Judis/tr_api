@@ -2,6 +2,18 @@ defmodule I18NAPIWeb.UserView do
   use I18NAPIWeb, :view
   alias I18NAPIWeb.UserView
 
+  def render("sign_in.json", %{user: user, jwt: jwt}) do
+    %{
+      status: :ok,
+      data: %{
+        token: jwt,
+        email: user.email
+      },
+      message:
+        "You are successfully logged in! Add this token to authorization header to make authorized requests."
+    }
+  end
+
   def render("index.json", %{users: users}) do
     %{data: render_many(users, UserView, "user.json")}
   end
