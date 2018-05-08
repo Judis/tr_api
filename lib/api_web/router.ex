@@ -18,8 +18,7 @@ defmodule I18NAPIWeb.Router do
   scope "/api", I18NAPIWeb do
     pipe_through(:api)
     post("/sign_in", SessionController, :sign_in)
-    options("/sign_in", SessionController, :options)
-    post("/sign_up", UserController, :create)
+    post("/sign_up", RegistrationController, :sign_up)
 
     pipe_through(:authenticated)
     resources("/users", UserController)
