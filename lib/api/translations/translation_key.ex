@@ -19,7 +19,15 @@ defmodule I18NAPI.Translations.TranslationKey do
   @doc false
   def changeset(translation_key, attrs) do
     translation_key
-    |> cast(attrs, [:key, :default_value, :context, :status, :is_removed, :removed_at, :project_id])
+    |> cast(attrs, [
+      :key,
+      :default_value,
+      :context,
+      :status,
+      :is_removed,
+      :removed_at,
+      :project_id
+    ])
     |> validate_required([:key, :default_value])
     |> unique_constraint(:key, name: :translation_keys_project_id_key_is_removed_index)
   end

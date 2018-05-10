@@ -97,6 +97,7 @@ defmodule I18NAPI.Projects do
 
     {:ok, project}
   end
+
   def create_owner_for_project(_ = response, %{} = user) do
     response
   end
@@ -111,17 +112,20 @@ defmodule I18NAPI.Projects do
 
   """
   def create_default_locale_for_project({:ok, %Project{} = project}) do
-    I18NAPI.Translations.create_locale(%{
-      "locale" => project.default_locale,
-      "is_default" => true
-    }, project.id)
+    I18NAPI.Translations.create_locale(
+      %{
+        "locale" => project.default_locale,
+        "is_default" => true
+      },
+      project.id
+    )
 
     {:ok, project}
   end
+
   def create_default_locale_for_project(_ = response) do
     response
   end
-
 
   @doc """
   Updates a project.

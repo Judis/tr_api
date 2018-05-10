@@ -252,13 +252,18 @@ defmodule I18NAPI.Translations do
   """
   def create_default_translation({:ok, %TranslationKey{} = translation_key}) do
     default_locale = get_default_locale!(translation_key.project_id)
-    create_translation(%{
-      "translation_key_id" => translation_key.id,
-      "value" => translation_key.default_value
-    }, default_locale.id)
+
+    create_translation(
+      %{
+        "translation_key_id" => translation_key.id,
+        "value" => translation_key.default_value
+      },
+      default_locale.id
+    )
 
     {:ok, translation_key}
   end
+
   def create_default_translation(_ = response) do
     response
   end
@@ -511,20 +516,21 @@ defmodule I18NAPI.Translations do
     default_transaltions = list_translations(default_locale.id)
     current_transaltions = list_translations(locale.id)
 
-    Enum.map(translation_keys, fn(key) ->
+    Enum.map(translation_keys, fn key ->
       %{
         translation_key_id: key.id,
         key: key.key,
         context: key.context,
         status: key.status,
         default_value: get_translation_value(default_transaltions, key.id),
-        current_value: get_translation_value(current_transaltions, key.id),
+        current_value: get_translation_value(current_transaltions, key.id)
       }
     end)
   end
 
   defp get_translation_value(translations, key_id) do
-    translation = List.first(Enum.filter(translations, fn(x) -> x.translation_key_id == key_id end))
+    translation =
+      List.first(Enum.filter(translations, fn x -> x.translation_key_id == key_id end))
 
     if translation do
       %{id: translation.id, value: translation.value}
