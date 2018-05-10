@@ -30,7 +30,7 @@ defmodule I18NAPI.Translations.Locale do
       :is_default,
       :project_id
     ])
-    |> unique_constraint(:locale, name: :locales_project_id_locale_index)
+    |> unique_constraint(:locale, name: :locales_project_id_locale_is_removed_index)
   end
 
   @doc false
