@@ -8,6 +8,7 @@ defmodule I18NAPI.Translations.TranslationKey do
     field(:key, :string)
     field(:removed_at, :naive_datetime)
     field(:status, :integer)
+    field(:default_value, :string, virtual: true)
 
     belongs_to(:project, I18NAPI.Projects.Project)
     has_many(:translations, I18NAPI.Translations.Translation)
@@ -18,8 +19,8 @@ defmodule I18NAPI.Translations.TranslationKey do
   @doc false
   def changeset(translation_key, attrs) do
     translation_key
-    |> cast(attrs, [:key, :context, :status, :is_removed, :removed_at, :project_id])
-    |> validate_required([:key])
+    |> cast(attrs, [:key, :default_value, :context, :status, :is_removed, :removed_at, :project_id])
+    |> validate_required([:key, :default_value])
     |> unique_constraint(:key, name: :translation_keys_project_id_key_is_removed_index)
   end
 

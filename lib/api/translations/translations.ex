@@ -238,6 +238,29 @@ defmodule I18NAPI.Translations do
     %TranslationKey{}
     |> TranslationKey.changeset(changeset)
     |> Repo.insert()
+    |> create_default_translation()
+  end
+
+  @doc """
+  Creates a default translation for translation_key.
+
+  ## Examples
+
+      iex> create_default_translation({:ok, %TranslationKey{}})
+      {:ok, %TranslationKey{}}
+
+  """
+  def create_default_translation({:ok, %TranslationKey{} = translation_key}) do
+    default_locale = get_default_locale!(translation_key.project_id)
+    create_translation(%{
+      "translation_key_id" => translation_key.id,
+      "value" => translation_key.default_value
+    }, default_locale.id)
+
+    {:ok, translation_key}
+  end
+  def create_default_translation(_ = response) do
+    response
   end
 
   @doc """
