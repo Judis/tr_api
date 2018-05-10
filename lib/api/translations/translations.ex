@@ -36,7 +36,7 @@ defmodule I18NAPI.Translations do
         p in Locale,
         join: pr in I18NAPI.Projects.Project,
         on: p.project_id == pr.id,
-        where: pr.id == ^project_id
+        where: pr.id == ^project_id and p.is_removed == false
       )
 
     Repo.all(query)
