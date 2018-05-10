@@ -36,7 +36,8 @@ defmodule I18NAPI.Projects do
         p in Project,
         join: ur in "user_roles",
         on: p.id == ur.project_id,
-        where: ur.user_id == ^user_id
+        where: ur.user_id == ^user_id and p.is_removed == false,
+        order_by: p.name
       )
 
     Repo.all(query)
@@ -75,6 +76,7 @@ defmodule I18NAPI.Projects do
     |> Project.changeset(attrs)
     |> Repo.insert()
     |> create_owner_for_project(user)
+    |> create_default_locale_for_project()
   end
 
   @doc """
@@ -95,6 +97,31 @@ defmodule I18NAPI.Projects do
 
     {:ok, project}
   end
+  def create_owner_for_project(_ = response, %{} = user) do
+    response
+  end
+
+  @doc """
+  Creates a default locale for project.
+
+  ## Examples
+
+      iex> create_default_locale_for_project({:ok, %Project{}})
+      {:ok, %Project{}}
+
+  """
+  def create_default_locale_for_project({:ok, %Project{} = project}) do
+    I18NAPI.Translations.create_locale(%{
+      "locale" => project.default_locale,
+      "is_default" => true
+    }, project.id)
+
+    {:ok, project}
+  end
+  def create_default_locale_for_project(_ = response) do
+    response
+  end
+
 
   @doc """
   Updates a project.
