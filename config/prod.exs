@@ -67,6 +67,17 @@ config :api, I18NAPI.Guardian,
   secret_key: System.get_env("GUARDIAN_SECRET_KEY"),
   serializer: I18NAPI.Guardian
 
+config :api, I18NAPIWeb.Endpoint,
+  secret_key_base: System.get_env("BASE_SECRET_KEY")
+
+# Configure your database
+config :api, I18NAPI.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  username: System.get_env("DATABASE_USERNAME"),
+  password: System.get_env("DATABASE_PASSWORD"),
+  database: System.get_env("DATABASE_DB_NAME"),
+  hostname: System.get_env("DATABASE_HOSTNAME"),
+  pool_size: 15
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
-import_config "prod.secret.exs"
+# import_config "prod.secret.exs"
