@@ -2,7 +2,7 @@ defmodule I18NAPI.Repo.Migrations.AddLocalesIndexByRemoved do
   use Ecto.Migration
 
   def up do
-    create unique_index(:locales, [:project_id, :locale, :is_removed])
+    create unique_index(:locales, [:project_id, :locale, :is_removed], where: "is_removed = false")
     drop_if_exists unique_index(:locales, [:project_id, :locale])
   end
 
