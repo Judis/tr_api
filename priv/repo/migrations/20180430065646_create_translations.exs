@@ -14,6 +14,6 @@ defmodule I18NAPI.Repo.Migrations.CreateTranslations do
 
     create index(:translations, [:locale_id])
     create index(:translations, [:translation_key_id])
-    create unique_index(:translations, [:locale_id, :translation_key_id, :is_removed])
+    create unique_index(:translations, [:locale_id, :translation_key_id, :is_removed], where: "is_removed = false")
   end
 end
