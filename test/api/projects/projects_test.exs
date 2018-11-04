@@ -1,28 +1,48 @@
 defmodule I18NAPI.ProjectsTest do
+  use ExUnit.Case, async: true
+  @moduletag :project_api
+
   use I18NAPI.DataCase
 
   alias I18NAPI.Projects
 
   describe "projects" do
     alias I18NAPI.Projects.Project
+    alias I18NAPI.Accounts
 
+
+    @user_attrs %{
+      name: "test name",
+      email: "test@email.test",
+      password: "Qw!23456",
+      password_confirmation: "Qw!23456",
+      source: "test source"
+    }
+
+    def user_fixture(attrs \\ %{}) do
+      {:ok, user} =
+        attrs
+        |> Enum.into(@user_attrs)
+        |> Accounts.create_user()
+
+      user
+    end
     @valid_attrs %{
-      is_removed: true,
       name: "some name",
-      removed_at: ~N[2010-04-17 14:00:00.000000]
+      default_locale: "en"
     }
     @update_attrs %{
-      is_removed: false,
-      name: "some updated name",
-      removed_at: ~N[2011-05-18 15:01:01.000000]
+      name: "some updated name"
+      #      is_removed: false,
+      #      removed_at: ~N[2011-05-18 15:01:01.000000]
     }
-    @invalid_attrs %{is_removed: nil, name: nil, removed_at: nil}
+    @invalid_attrs %{name: nil, default_locale: nil, is_removed: nil, removed_at: nil}
 
     def project_fixture(attrs \\ %{}) do
       {:ok, project} =
         attrs
         |> Enum.into(@valid_attrs)
-        |> Projects.create_project()
+        |> Projects.create_project(user_fixture())
 
       project
     end
@@ -38,10 +58,9 @@ defmodule I18NAPI.ProjectsTest do
     end
 
     test "create_project/1 with valid data creates a project" do
-      assert {:ok, %Project{} = project} = Projects.create_project(@valid_attrs)
-      assert project.is_removed == true
-      assert project.name == "some name"
-      assert project.removed_at == ~N[2010-04-17 14:00:00.000000]
+      assert {:ok, %Project{} = project} = Projects.create_project(@valid_attrs, user_fixture())
+      assert project.is_removed == false
+      assert project.default_locale == @valid_attrs.default_locale
     end
 
     test "create_project/1 with invalid data returns error changeset" do
@@ -138,8 +157,8 @@ defmodule I18NAPI.ProjectsTest do
   describe "user_locales" do
     alias I18NAPI.Projects.UserLocales
 
-    @valid_attrs %{role: 42}
-    @update_attrs %{role: 43}
+    @valid_attrs %{role: 0}
+    @update_attrs %{role: 1}
     @invalid_attrs %{role: nil}
 
     def user_locales_fixture(attrs \\ %{}) do
@@ -163,7 +182,7 @@ defmodule I18NAPI.ProjectsTest do
 
     test "create_user_locales/1 with valid data creates a user_locales" do
       assert {:ok, %UserLocales{} = user_locales} = Projects.create_user_locales(@valid_attrs)
-      assert user_locales.role == 42
+      assert user_locales.role == 0
     end
 
     test "create_user_locales/1 with invalid data returns error changeset" do
@@ -174,7 +193,7 @@ defmodule I18NAPI.ProjectsTest do
       user_locales = user_locales_fixture()
       assert {:ok, user_locales} = Projects.update_user_locales(user_locales, @update_attrs)
       assert %UserLocales{} = user_locales
-      assert user_locales.role == 43
+      assert user_locales.role == 1
     end
 
     test "update_user_locales/2 with invalid data returns error changeset" do
