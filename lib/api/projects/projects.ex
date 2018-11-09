@@ -7,7 +7,13 @@ defmodule I18NAPI.Projects do
   alias I18NAPI.Repo
 
   alias I18NAPI.Projects.Project
+  alias I18NAPI.Translations
+  alias I18NAPI.Translations.Locale
 
+  def default_locale_to_project(%Project{} = project) do
+    locale = Translations.get_default_locale!(project.id)
+    %{project | default_locale: locale.locale}
+  end
   @doc """
   Returns the list of projects.
 
@@ -19,6 +25,7 @@ defmodule I18NAPI.Projects do
   """
   def list_projects do
     Repo.all(Project)
+    |> Enum.map(fn p -> default_locale_to_project(p) end)
   end
 
   @doc """
@@ -41,6 +48,7 @@ defmodule I18NAPI.Projects do
       )
 
     Repo.all(query)
+    |> Enum.map(fn p -> default_locale_to_project(p) end)
   end
 
   @doc """
@@ -57,7 +65,7 @@ defmodule I18NAPI.Projects do
       ** (Ecto.NoResultsError)
 
   """
-  def get_project!(id), do: Repo.get!(Project, id)
+  def get_project!(id), do: Repo.get!(Project, id) |> default_locale_to_project()
 
   @doc """
   Creates a project.
