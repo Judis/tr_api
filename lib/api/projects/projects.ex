@@ -239,6 +239,30 @@ defmodule I18NAPI.Projects do
   def get_user_roles!(id), do: Repo.get!(UserRoles, id)
 
   @doc """
+  Gets a single user_roles.
+
+  Raises `Ecto.NoResultsError` if the User roles does not exist.
+
+  ## Examples
+
+      iex> get_user_roles!(123, 321)
+      %UserRoles{}
+
+      iex> get_user_roles!(456, 654)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_user_roles!(project_id, user_id) do
+    query =
+      from(
+        ur in UserRoles,
+        where: ur.project_id == ^project_id and ur.user_id == ^user_id
+      )
+
+    Repo.one(query)
+  end
+
+  @doc """
   Creates a user_roles.
 
   ## Examples
