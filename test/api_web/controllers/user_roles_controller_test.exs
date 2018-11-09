@@ -4,8 +4,8 @@ defmodule I18NAPIWeb.UserRolesControllerTest do
   alias I18NAPI.Projects
   alias I18NAPI.Projects.UserRoles
 
-  @create_attrs %{role: 42}
-  @update_attrs %{role: 43}
+  @create_attrs %{role: 0}
+  @update_attrs %{role: 1}
   @invalid_attrs %{role: nil}
 
   def fixture(:user_roles) do
@@ -26,11 +26,11 @@ defmodule I18NAPIWeb.UserRolesControllerTest do
 
   describe "create user_roles" do
     test "renders user_roles when data is valid", %{conn: conn} do
-      conn = post(conn, user_roles_path(conn, :create), user_roles: @create_attrs)
+      conn = post(conn, user_roles_path(conn, :create, fixture(:user_roles).project_id), user_roles: @create_attrs)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, user_roles_path(conn, :show, id))
-      assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 42}
+      assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 0}
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -50,7 +50,7 @@ defmodule I18NAPIWeb.UserRolesControllerTest do
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
       conn = get(conn, user_roles_path(conn, :show, id))
-      assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 43}
+      assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 1}
     end
 
     test "renders errors when data is invalid", %{conn: conn, user_roles: user_roles} do
