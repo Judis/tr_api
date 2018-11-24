@@ -443,7 +443,11 @@ defmodule I18NAPI.Translations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_translation(%Translation{} = translation, attrs) do
+  def update_translation(%Translation{} = translation, attrs \\%{}) do
+    pattern = ["status", "value", :status, :value]
+    attrs = Map.take(attrs, pattern)
+
+    attrs = Utilites.key_to_atom(attrs)
     translation
     |> Translation.changeset(attrs)
     |> Repo.update()

@@ -311,6 +311,17 @@ defmodule I18NAPI.TranslationsTest do
       assert translation == Translations.get_translation!(translation.id)
     end
 
+    test "update_translation/2 with valid with unused parameter data updates the translation" do
+      project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+      translation = translation_fixture(@valid_translation_attrs, project_id)
+      attrs = @update_translation_attrs |> Enum.into(%{locale_id: (translation.locale_id)-1})
+
+      assert {:ok, translation} = Translations.update_translation(translation, attrs)
+      assert %Translation{} = translation
+      assert translation.is_removed == false
+      assert translation.value == @update_translation_attrs.value
+    end
+
     test "delete_translation/1 deletes the translation" do
       user = user_fixture()
       project_id = project_fixture(@valid_project_attrs, user).id
