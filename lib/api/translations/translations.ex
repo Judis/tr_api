@@ -445,12 +445,38 @@ defmodule I18NAPI.Translations do
   """
   def update_translation(%Translation{} = translation, attrs \\%{}) do
     pattern = ["status", "value", :status, :value]
-    attrs = Map.take(attrs, pattern)
+    attrs = Map.take(attrs, pattern) |> Utilites.key_to_atom()
 
-    attrs = Utilites.key_to_atom(attrs)
-    translation
+    result = translation
     |> Translation.changeset(attrs)
     |> Repo.update()
+
+    if (is_default_locale?(translation.locale_id)
+        && Map.has_key?(attrs, :value)
+        && (translation.value != attrs.value)),
+       do: change_status_for_all_translation_key(translation.translation_key_id)
+
+    result
+  end
+
+  defp is_default_locale?(locale_id) do
+      from(
+        locl in Locale,
+        select: locl.is_default,
+        where: locl.id == ^locale_id
+      )
+      |> Repo.one!()
+  end
+
+  defp change_status_for_all_translation_key(translation_key_id) do
+    from(
+      tr in Translation,
+      join: lcl in Locale,
+      on: lcl.id == tr.locale_id,
+      where: (tr.translation_key_id == ^translation_key_id) and not (lcl.is_default),
+      update: [set: [status: "need_check"]]
+    )
+    |> Repo.update_all([])
   end
 
   @doc """

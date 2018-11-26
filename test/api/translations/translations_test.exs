@@ -290,14 +290,68 @@ defmodule I18NAPI.TranslationsTest do
       assert {:error, %Ecto.Changeset{}} = Translations.create_translation(@invalid_translation_attrs)
     end
 
-    test "update_translation/2 with valid data updates the translation" do
-      project_id = project_fixture(@valid_project_attrs, user_fixture()).id
-      translation = translation_fixture(@valid_translation_attrs, project_id)
+    @valid_not_default_locale_attrs %{
+      locale: "not default locale",
+      status: 0,
+      is_default: false
+    }
+    @valid_alternative_not_default_locale_attrs %{
+      locale: "alternative not default locale",
+      status: 0,
+      is_default: false
+    }
+    @valid_alternative_translation_attrs %{
+      value: "alternative translation value",
+      status: :verified
+    }
 
-      assert {:ok, translation} = Translations.update_translation(translation, @update_translation_attrs)
-      assert %Translation{} = translation
-      assert translation.is_removed == false
-      assert translation.value == @update_translation_attrs.value
+    test "update_translation/2 with valid data updates the translation in not default locale" do
+      project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+      # ^^^ created default locale for project
+      translation_key = translation_key_fixture(@valid_translation_key_attrs, project_id)
+      # ^^^ created default translation for key
+      locale = locale_fixture(@valid_not_default_locale_attrs, project_id)
+      attrs = Map.put(@valid_translation_attrs, :translation_key_id, translation_key.id)
+      {:ok, %Translation{} = translation} = Translations.create_translation(attrs, locale.id)
+
+      alter_locale_id = locale_fixture(@valid_alternative_not_default_locale_attrs, project_id).id
+      alter_attrs = Map.put(@valid_alternative_translation_attrs, :translation_key_id, translation_key.id)
+      {:ok, %Translation{} = alternative_translation} = Translations.create_translation(alter_attrs, alter_locale_id)
+
+      assert alternative_translation.status == @valid_alternative_translation_attrs.status
+      assert {:ok, updated_translation} = Translations.update_translation(translation, @update_translation_attrs)
+      assert %Translation{} = updated_translation
+      assert updated_translation.is_removed == false
+      assert updated_translation.value == @update_translation_attrs.value
+      assert updated_translation.status == @update_translation_attrs.status
+      assert alternative_translation.status == @valid_alternative_translation_attrs.status
+    end
+
+    test "update_translation/2 with valid data updates the translation in default locale" do
+      project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+
+      {:ok, translation_key} = Translations.create_translation_key(@valid_translation_key_attrs, project_id)
+      translation = Translations.get_default_translation(translation_key.id)
+
+      assert Translations.get_locale!(translation.locale_id).is_default == true
+      {:ok, alter_locale} = Translations.create_locale(@valid_alternative_not_default_locale_attrs, project_id)
+
+      {:ok, %Translation{} = alternative_translation} =
+        Map.put(@valid_alternative_translation_attrs, :translation_key_id, translation_key.id)
+        |> Translations.create_translation(alter_locale.id)
+      assert Translations.get_locale!(alternative_translation.locale_id).is_default == false
+
+      assert alternative_translation.status == @valid_alternative_translation_attrs.status
+      assert {:ok, updated_translation} = Translations.update_translation(translation, @update_translation_attrs)
+
+      alternative_translation = Translations.get_translation!(alternative_translation.id)
+
+      assert %Translation{} = updated_translation
+      assert updated_translation.is_removed == false
+      assert updated_translation.value == @update_translation_attrs.value
+      assert updated_translation.status == @update_translation_attrs.status
+      #----------------------------------------------------
+      assert alternative_translation.status == :need_check
     end
 
     test "update_translation/2 with invalid data returns error changeset" do
