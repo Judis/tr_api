@@ -451,10 +451,10 @@ defmodule I18NAPI.Translations do
     |> Translation.changeset(attrs)
     |> Repo.update()
 
-    if (is_default_locale?(translation.locale_id)
-        && Map.has_key?(attrs, :value)
-        && (translation.value != attrs.value)),
-       do: change_status_for_all_translation_key(translation.translation_key_id)
+    with true <- is_default_locale?(translation.locale_id),
+         true <- Map.has_key?(attrs, :value),
+         true <- translation.value != attrs.value,
+         do: change_status_for_all_translation_key(translation.translation_key_id)
 
     result
   end
