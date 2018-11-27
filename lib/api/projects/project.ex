@@ -10,9 +10,9 @@ defmodule I18NAPI.Projects.Project do
     field(:removed_at, :naive_datetime)
     field(:default_locale, :string, virtual: true)
 
-    has_many(:user_roles, UserRoles)
-    has_many(:locales, Locale)
-    has_many(:translation_keys, TranslationKey)
+    has_many(:user_roles, UserRoles, on_delete: :delete_all)
+    has_many(:locales, Locale, on_delete: :delete_all)
+    has_many(:translation_keys, TranslationKey, on_delete: :delete_all)
 
     timestamps()
   end

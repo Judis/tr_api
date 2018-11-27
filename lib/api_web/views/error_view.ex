@@ -10,11 +10,11 @@ defmodule I18NAPIWeb.ErrorView do
   end
 
   def render("404.json", _assigns) do
-    %{errors: %{detail: "Page not found"}}
+    %{errors: %{detail: "Not Found"}}
   end
 
   def render("500.json", _assigns) do
-    %{errors: %{detail: "Internal server error"}}
+    %{errors: %{detail: "Internal Server Error"}}
   end
 
   # By default, Phoenix returns the status message from
