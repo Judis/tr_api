@@ -473,10 +473,9 @@ defmodule I18NAPI.Translations do
       tr in Translation,
       join: lcl in Locale,
       on: lcl.id == tr.locale_id,
-      where: (tr.translation_key_id == ^translation_key_id) and not (lcl.is_default),
-      update: [set: [status: "need_check"]]
+      where: (tr.translation_key_id == ^translation_key_id) and not (lcl.is_default)
     )
-    |> Repo.update_all([])
+    |> Repo.update_all(set: [status: "need_check"])
   end
 
   @doc """
