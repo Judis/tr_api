@@ -6,7 +6,6 @@ defmodule I18NAPI.Translations do
   import Ecto.Query, warn: false
   alias I18NAPI.Repo
   alias I18NAPI.Utilites
-  alias I18NAPI.Translations.StatisticsInterface
   alias I18NAPI.Translations.Locale
   alias I18NAPI.Translations.Translation
 
@@ -33,31 +32,15 @@ defmodule I18NAPI.Translations do
 
   """
   def list_locales(project_id) do
-    from(
-      l in Locale,
-      where: [project_id: ^project_id],
-      where: [is_removed: false]
-    )
-    |> Repo.all()
-  end
+    query =
+      from(
+        p in Locale,
+        join: pr in I18NAPI.Projects.Project,
+        on: p.project_id == pr.id,
+        where: pr.id == ^project_id and p.is_removed == false
+      )
 
-  @doc """
-  Returns the list of id of locales chained with specific project.
-
-  ## Examples
-
-      iex> list_locales(1)
-      [id, ...]
-
-  """
-  def list_locale_identities(project_id) do
-    from(
-      l in Locale,
-      where: [project_id: ^project_id],
-      where: [is_removed: false],
-      select: l.id
-    )
-    |> Repo.all()
+    Repo.all(query)
   end
 
   @doc """
@@ -77,20 +60,22 @@ defmodule I18NAPI.Translations do
   def get_locale!(id), do: Repo.get!(Locale, id)
 
   @doc """
-  Returns the default locale chained with specific project.
+  Returns the list of locales chained with specific project.
 
   ## Examples
 
-      iex> get_default_locale!(1)
+      iex> list_locales(1)
       %Locale{}
 
   """
   def get_default_locale!(project_id) do
-    from(
-      l in Locale,
-      where: l.project_id == ^project_id and l.is_default == true
-    )
-    |> Repo.one!()
+    query =
+      from(
+        p in Locale,
+        where: p.project_id == ^project_id and p.is_default == true
+      )
+
+    Repo.one!(query)
   end
 
   @doc """
@@ -106,14 +91,11 @@ defmodule I18NAPI.Translations do
 
   """
   def create_locale(attrs, project_id) do
-    attrs =
-      Map.put(attrs, :project_id, project_id)
-      |> Utilites.key_to_atom()
-
+    attrs = Utilites.key_to_string(attrs)
+    attrs = Map.put(attrs, "project_id", project_id)
     %Locale{}
     |> Locale.changeset(attrs)
     |> Repo.insert()
-    |> StatisticsInterface.update_statistics(:locale, :create)
   end
 
   @doc """
@@ -132,7 +114,6 @@ defmodule I18NAPI.Translations do
     locale
     |> Locale.changeset(attrs)
     |> Repo.update()
-    |> StatisticsInterface.update_statistics(:locale, :update)
   end
 
   @doc """
@@ -149,7 +130,6 @@ defmodule I18NAPI.Translations do
   """
   def delete_locale(%Locale{} = locale) do
     Repo.delete(locale)
-    |> StatisticsInterface.update_statistics(:locale, :delete, locale.id, locale.project_id)
   end
 
   @doc """
@@ -174,10 +154,8 @@ defmodule I18NAPI.Translations do
     |> Locale.remove_changeset(chaneset)
     |> Repo.update()
     |> safely_delete_nested_entities(:translations)
-    |> StatisticsInterface.update_statistics(:locale, :delete, locale.id, locale.project_id)
   end
 
-  # deprecated
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking locale changes.
 
@@ -269,15 +247,12 @@ defmodule I18NAPI.Translations do
 
   """
   def create_translation_key(attrs \\ %{}, project_id) do
-    changeset =
-      Map.put(attrs, :project_id, project_id)
-      |> Utilites.key_to_atom()
-
+    attrs = Utilites.key_to_string(attrs)
+    changeset = Map.put(attrs, "project_id", project_id) |> Utilites.key_to_atom()
     %TranslationKey{}
     |> TranslationKey.changeset(changeset)
     |> Repo.insert()
     |> create_default_translation()
-    |> StatisticsInterface.update_statistics(:translation_key, :create)
   end
 
   @doc """
@@ -322,9 +297,6 @@ defmodule I18NAPI.Translations do
     responce = translation_key
     |> TranslationKey.changeset(attrs)
     |> Repo.update()
-    |> StatisticsInterface.update_statistics(:translation_key, :update)
-    |> update_default_translation_if_translation_key_was_updated(attrs)
-  end
 
     with {:ok, translation_key} <- responce do
       get_default_translation(translation_key.id)
@@ -351,7 +323,6 @@ defmodule I18NAPI.Translations do
     translation_key
     |> TranslationKey.changeset(%{is_removed: true})
     |> Repo.update()
-    |> StatisticsInterface.update_statistics(:translation_key, :delete)
   end
 
   @doc """
@@ -376,10 +347,8 @@ defmodule I18NAPI.Translations do
     |> TranslationKey.remove_changeset(chaneset)
     |> Repo.update()
     |> safely_delete_nested_entities(:translations)
-    |> StatisticsInterface.update_statistics(:translation_key, :delete)
   end
 
-  # deprecated
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking translation_key changes.
 
@@ -456,14 +425,10 @@ defmodule I18NAPI.Translations do
 
   """
   def create_translation(attrs \\ %{status: :empty, is_removed: false}, locale_id) do
-    changeset =
-      Map.put(attrs, :locale_id, locale_id)
-      |> Utilites.key_to_atom()
-
+    changeset = Map.put(attrs, :locale_id, locale_id) |> Utilites.key_to_atom()
     %Translation{}
     |> Translation.changeset(changeset)
     |> Repo.insert()
-    |> StatisticsInterface.update_statistics(:translation, :create, :empty, changeset)
   end
 
   @doc """
@@ -485,27 +450,14 @@ defmodule I18NAPI.Translations do
     result = translation
     |> Translation.changeset(attrs)
     |> Repo.update()
-    |> if_default_translation_changed_successfully(old_value, attrs)
-    |> StatisticsInterface.update_statistics(:translation, :update, old_status, attrs)
-  end
 
-  defp if_default_translation_changed_successfully(
-         {:ok, translation},
-         old_value,
-         attrs
-       ) do
     with true <- is_default_locale?(translation.locale_id),
          true <- Map.has_key?(attrs, :value),
-         true <- old_value != attrs.value,
-         do:
-           set_all_nondefault_translations_for_this_key_as_unverified(
-             translation.translation_key_id
-           )
+         true <- translation.value != attrs.value,
+         do: change_status_for_all_translation_key(translation.translation_key_id)
 
     result
   end
-
-  defp if_default_translation_changed_successfully(response, _, _), do: response
 
   defp is_default_locale?(locale_id) do
       from(
@@ -516,19 +468,14 @@ defmodule I18NAPI.Translations do
       |> Repo.one!()
   end
 
-  defp set_all_nondefault_translations_for_this_key_as_unverified(translation_key_id) do
+  defp change_status_for_all_translation_key(translation_key_id) do
     from(
       tr in Translation,
       join: lcl in Locale,
       on: lcl.id == tr.locale_id,
       where: (tr.translation_key_id == ^translation_key_id) and not (lcl.is_default)
     )
-    |> Repo.update_all(
-      set: [
-        status: "unverified"
-      ]
-    )
-    |> StatisticsInterface.update_statistics(:translation_key, :update)
+    |> Repo.update_all(set: [status: "need_check"])
   end
 
   @doc """
@@ -545,7 +492,6 @@ defmodule I18NAPI.Translations do
   """
   def delete_translation(%Translation{} = translation) do
     Repo.delete(translation)
-    |> StatisticsInterface.update_statistics(:translation, :delete, translation.id)
   end
 
   @doc """
@@ -569,10 +515,8 @@ defmodule I18NAPI.Translations do
     translation
     |> Translation.remove_changeset(chaneset)
     |> Repo.update()
-    |> StatisticsInterface.update_statistics(:translation, :delete, translation.id)
   end
 
-  # deprecated
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking translation changes.
 
@@ -644,27 +588,25 @@ defmodule I18NAPI.Translations do
   end
 
   def get_default_translation(key_id) do
-    from(
-      tr in Translation,
-      join: locl in Locale,
-      on: [
-        id: tr.locale_id
-      ],
-      where: tr.translation_key_id == ^key_id and locl.is_default == true
-    )
-    |> Repo.one()
+    query =
+      from(
+        tr in Translation,
+        join: locl in Locale,
+        on: [id: tr.locale_id],
+        where: tr.translation_key_id == ^key_id and locl.is_default == true
+      )
+      Repo.one(query)
   end
 
   def get_default_translation_value(key_id) do
-    from(
-      tr in Translation,
-      join: locl in Locale,
-      on: [
-        id: tr.locale_id
-      ],
-      select: tr.value,
-      where: tr.translation_key_id == ^key_id and locl.is_default == true
-    )
-    |> Repo.one()
+    query =
+      from(
+        tr in Translation,
+        join: locl in Locale,
+        on: [id: tr.locale_id],
+        select: tr.value,
+        where: tr.translation_key_id == ^key_id and locl.is_default == true
+      )
+      Repo.one(query)
   end
 end
