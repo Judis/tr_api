@@ -67,6 +67,14 @@ defmodule I18NAPI.Projects do
   """
   def get_project!(id), do: Repo.get!(Project, id) |> default_locale_to_project()
 
+  def get_total_count_of_translation_keys(project_id) do
+    from(
+      p in Project,
+      where: [id: ^project_id],
+      select: [p.total_count_of_translation_keys]
+    )
+    |> Repo.one!()
+  end
   @doc """
   Creates a project.
 
@@ -151,6 +159,27 @@ defmodule I18NAPI.Projects do
     project
     |> Project.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Inc/decrement a project field :total_count_of_translation_keys.
+
+  ## Examples
+
+      iex> update_total_count_of_translation_keys(project_id)
+      {:ok, %Project{}}
+
+      iex> update_total_count_of_translation_keys(project_id, :dec)
+      {:ok, %Project{}}
+
+  """
+  def update_total_count_of_translation_keys(project_id, operation \\ :inc)
+  def update_total_count_of_translation_keys(project_id, operation) when ((:inc == operation) or (:dec == operation)) do
+    query = from(p in Project, where: [id: ^project_id])
+    case operation do
+      :inc -> Repo.update(query, inc: [total_count_of_translation_keys: 1])
+      :dec -> Repo.update(query, dec: [total_count_of_translation_keys: 1])
+    end
   end
 
   @doc """
