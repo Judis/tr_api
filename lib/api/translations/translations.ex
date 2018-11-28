@@ -6,6 +6,7 @@ defmodule I18NAPI.Translations do
   import Ecto.Query, warn: false
   alias I18NAPI.Repo
   alias I18NAPI.Utilites
+  alias I18NAPI.Projects
   alias I18NAPI.Translations.Locale
   alias I18NAPI.Translations.Translation
 
@@ -249,10 +250,23 @@ defmodule I18NAPI.Translations do
   def create_translation_key(attrs \\ %{}, project_id) do
     attrs = Utilites.key_to_string(attrs)
     changeset = Map.put(attrs, "project_id", project_id) |> Utilites.key_to_atom()
-    %TranslationKey{}
+    responce = %TranslationKey{}
     |> TranslationKey.changeset(changeset)
     |> Repo.insert()
     |> create_default_translation()
+
+    with {:ok, translation_key} <- responce do
+      Task.async(fn -> Projects.update_total_count_of_translation_keys(project_id) end)
+      Task.async(fn -> update_count_of_untranslated_keys_at_locales(project_id) end)
+    end
+    responce
+  end
+
+  def update_count_of_untranslated_keys_at_locales(project_id) do
+    total = Projects.get_total_count_of_translation_keys(project_id)
+
+    from(l in Locale, where: [project_id: ^project_id])
+    |> Repo.update_all(set: [count_of_untranslated_keys: (total - :count_of_untranslated_keys)])
   end
 
   @doc """
