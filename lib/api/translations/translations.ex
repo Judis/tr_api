@@ -8,6 +8,7 @@ defmodule I18NAPI.Translations do
   alias I18NAPI.Utilites
   alias I18NAPI.Translations.Locale
   alias I18NAPI.Translations.Translation
+  alias I18NAPI.Projects
 
   @doc """
   Returns the list of locales.
@@ -93,6 +94,7 @@ defmodule I18NAPI.Translations do
   def create_locale(attrs, project_id) do
     attrs = Utilites.key_to_string(attrs)
     attrs = Map.put(attrs, "project_id", project_id)
+    attrs = Map.put(attrs, "count_of_untranslated_keys", Projects.get_total_count_of_translation_keys(project_id))
     %Locale{}
     |> Locale.changeset(attrs)
     |> Repo.insert()
