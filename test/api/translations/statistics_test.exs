@@ -1,4 +1,4 @@
-defmodule I18NAPI.TranslationsTest do
+defmodule I18NAPI.StatisticsTest do
   use ExUnit.Case, async: true
   @moduletag :statistics_api
 
@@ -103,12 +103,109 @@ defmodule I18NAPI.TranslationsTest do
       Task.await(
         Statistics.update_count_of_keys_at_locales(locale.id, :inc, :translated, 3)
       )
+      assert locale.count_of_untranslated_keys == 0
 
       Task.await(
         Statistics.recalculate_count_of_untranslated_keys_at_locales(project.id)
       )
       locale = Translations.get_locale!(locale.id)
       assert locale.count_of_untranslated_keys == 2
+    end
+
+    test "update_count_of_keys_at_locales/3 increment and decrement for :count_of_translated_keys" do
+      project = project_fixture(%{}, user_fixture())
+      locale = locale_fixture(project.id)
+
+      assert locale.count_of_translated_keys == 0
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :inc, :translated)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_translated_keys == 1
+
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :dec, :translated)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_translated_keys == 0
+    end
+
+    test "update_count_of_keys_at_locales/4 increment and decrement for :count_of_translated_keys" do
+      project = project_fixture(%{}, user_fixture())
+      locale = locale_fixture(project.id)
+
+      assert locale.count_of_translated_keys == 0
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :inc, :translated, 4)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_translated_keys == 4
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :dec, :translated, 2)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_translated_keys == 2
+    end
+
+    test "update_count_of_keys_at_locales/4 increment and decrement for :count_of_verified_keys" do
+      project = project_fixture(%{}, user_fixture())
+      locale = locale_fixture(project.id)
+
+      assert locale.count_of_verified_keys == 0
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :inc, :verified, 4)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_verified_keys == 4
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :dec, :verified, 2)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_verified_keys == 2
+    end
+
+    test "update_count_of_keys_at_locales/4 increment and decrement for :count_of_not_verified_keys" do
+      project = project_fixture(%{}, user_fixture())
+      locale = locale_fixture(project.id)
+
+      assert locale.count_of_not_verified_keys == 0
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :inc, :not_verified, 4)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_not_verified_keys == 4
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :dec, :not_verified, 2)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_not_verified_keys == 2
+    end
+
+    test "update_count_of_keys_at_locales/4 increment and decrement for :count_of_keys_need_check" do
+      project = project_fixture(%{}, user_fixture())
+      locale = locale_fixture(project.id)
+
+      assert locale.count_of_keys_need_check == 0
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :inc, :need_check, 4)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_keys_need_check == 4
+      Task.await(
+        Statistics.update_count_of_keys_at_locales(locale.id, :dec, :need_check, 2)
+      )
+
+      locale = Translations.get_locale!(locale.id)
+      assert locale.count_of_keys_need_check == 2
     end
 
   end

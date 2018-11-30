@@ -55,10 +55,10 @@ defmodule I18NAPI.Translations.Statistics do
 
     Task.async(fn ->
       case key do
-        :translated   -> Repo.update_all(query, set: [count_of_translated_keys: value])
-        :verified     -> Repo.update_all(query, set: [count_of_verified_keys: value])
-        :not_verified -> Repo.update_all(query, set: [count_of_not_verified_keys: value])
-        :need_check   -> Repo.update_all(query, set: [count_of_keys_need_check: value])
+        :translated   -> Repo.update_all(query, inc: [count_of_translated_keys: value])
+        :verified     -> Repo.update_all(query, inc: [count_of_verified_keys: value])
+        :not_verified -> Repo.update_all(query, inc: [count_of_not_verified_keys: value])
+        :need_check   -> Repo.update_all(query, inc: [count_of_keys_need_check: value])
       end
     end)
   end
