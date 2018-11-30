@@ -62,5 +62,25 @@ defmodule I18NAPI.Translations.Statistics do
       end
     end)
   end
+#:empty, :unverified, :verified, :need_check
+  def update_key_choice(locale_id, prev_key, new_key) do
+    case {prev_key, next_key} do
+      {:empty, :unverified} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:empty, :verified} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:empty, :need_check} -> update_count_of_keys_at_locales(locale_id, operation, key)
+
+      {:unverified, :empty} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:unverified, :verified} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:unverified, :need_check} -> update_count_of_keys_at_locales(locale_id, operation, key)
+
+      {:verified, :empty} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:verified, :unverified} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:verified, :need_check} -> update_count_of_keys_at_locales(locale_id, operation, key)
+
+      {:need_check, :empty} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:need_check, :verified} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:need_check, :unverified} -> update_count_of_keys_at_locales(locale_id, operation, key)
+    end
+  end
 
 end
