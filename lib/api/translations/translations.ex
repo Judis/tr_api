@@ -329,9 +329,16 @@ defmodule I18NAPI.Translations do
 
   """
   def delete_translation_key(%TranslationKey{} = translation_key) do
-    translation_key
+    response = translation_key
     |> TranslationKey.changeset(%{is_removed: true})
     |> Repo.update()
+
+    with {:ok, translation_key} <- response do
+      Statistics.update_total_count_of_translation_keys(translation_key.project_id, :dec)
+      Statistics.recalculate_count_of_untranslated_keys_at_locales(translation_key.project_id)
+    end
+
+    response
   end
 
   @doc """
@@ -352,10 +359,17 @@ defmodule I18NAPI.Translations do
       removed_at: DateTime.utc_now()
     }
 
-    translation_key
+    response = translation_key
     |> TranslationKey.remove_changeset(chaneset)
     |> Repo.update()
     |> safely_delete_nested_entities(:translations)
+
+    with {:ok, translation_key} <- response do
+      Statistics.update_total_count_of_translation_keys(translation_key.project_id, :dec)
+      Statistics.recalculate_count_of_untranslated_keys_at_locales(translation_key.project_id)
+    end
+
+    response
   end
 
   @doc """
@@ -459,6 +473,10 @@ defmodule I18NAPI.Translations do
     result = translation
     |> Translation.changeset(attrs)
     |> Repo.update()
+
+    with {:ok, translation} <- result,
+         true <- Map.has_key?(attrs, :status),
+         do: Statistics.update_count_choice(translation.locale_id, translation.status, attrs.status)
 
     with true <- is_default_locale?(translation.locale_id),
          true <- Map.has_key?(attrs, :value),
