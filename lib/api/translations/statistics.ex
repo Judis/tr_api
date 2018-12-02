@@ -62,24 +62,62 @@ defmodule I18NAPI.Translations.Statistics do
       end
     end)
   end
-#:empty, :unverified, :verified, :need_check
+
   def update_key_choice(locale_id, prev_key, new_key) do
-    case {prev_key, next_key} do
-      {:empty, :unverified} -> update_count_of_keys_at_locales(locale_id, operation, key)
-      {:empty, :verified} -> update_count_of_keys_at_locales(locale_id, operation, key)
-      {:empty, :need_check} -> update_count_of_keys_at_locales(locale_id, operation, key)
+    case {prev_key, new_key} do
+      {:empty, :unverified} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :inc, :translated)
+        update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
+                               end
+      {:empty, :verified} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :inc, :translated)
+        update_count_of_keys_at_locales(locale_id, :inc, :verified)
+                             end
+      {:empty, :need_check} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :inc, :need_check)
+                               end
 
-      {:unverified, :empty} -> update_count_of_keys_at_locales(locale_id, operation, key)
-      {:unverified, :verified} -> update_count_of_keys_at_locales(locale_id, operation, key)
-      {:unverified, :need_check} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:unverified, :empty} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
+                               end
+      {:unverified, :verified} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
+        update_count_of_keys_at_locales(locale_id, :inc, :verified)
+                                  end
+      {:unverified, :need_check} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
+        update_count_of_keys_at_locales(locale_id, :inc, :need_check)
+                                    end
 
-      {:verified, :empty} -> update_count_of_keys_at_locales(locale_id, operation, key)
-      {:verified, :unverified} -> update_count_of_keys_at_locales(locale_id, operation, key)
-      {:verified, :need_check} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:verified, :empty} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :dec, :verified)
+                             end
+      {:verified, :unverified} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
+        update_count_of_keys_at_locales(locale_id, :inc, :verified)
+                                  end
+      {:verified, :need_check} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :dec, :verified)
+        update_count_of_keys_at_locales(locale_id, :inc, :need_check)
+                                  end
 
-      {:need_check, :empty} -> update_count_of_keys_at_locales(locale_id, operation, key)
-      {:need_check, :verified} -> update_count_of_keys_at_locales(locale_id, operation, key)
-      {:need_check, :unverified} -> update_count_of_keys_at_locales(locale_id, operation, key)
+      {:need_check, :empty} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :need_check)
+                               end
+      {:need_check, :verified} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :need_check)
+        update_count_of_keys_at_locales(locale_id, :inc, :verified)
+        update_count_of_keys_at_locales(locale_id, :inc, :translated)
+                                  end
+      {:need_check, :unverified} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :need_check)
+        update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
+        update_count_of_keys_at_locales(locale_id, :inc, :translated)
+                                    end
     end
   end
 
