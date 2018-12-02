@@ -252,16 +252,16 @@ defmodule I18NAPI.Translations do
   def create_translation_key(attrs \\ %{}, project_id) do
     attrs = Utilites.key_to_string(attrs)
     changeset = Map.put(attrs, "project_id", project_id) |> Utilites.key_to_atom()
-    responce = %TranslationKey{}
+    response = %TranslationKey{}
     |> TranslationKey.changeset(changeset)
     |> Repo.insert()
     |> create_default_translation()
 
-    with {:ok, translation_key} <- responce do
+    with {:ok, translation_key} <- response do
       Statistics.update_total_count_of_translation_keys(project_id, :inc)
       Statistics.recalculate_count_of_untranslated_keys_at_locales(project_id)
     end
-    responce
+    response
   end
 
   @doc """
@@ -303,11 +303,11 @@ defmodule I18NAPI.Translations do
 
   """
   def update_translation_key(%TranslationKey{} = translation_key, attrs) do
-    responce = translation_key
+    response = translation_key
     |> TranslationKey.changeset(attrs)
     |> Repo.update()
 
-    with {:ok, translation_key} <- responce do
+    with {:ok, translation_key} <- response do
       get_default_translation(translation_key.id)
       |> Translation.changeset(%{value: attrs.default_value})
       |> Repo.update()
