@@ -56,6 +56,7 @@ defmodule I18NAPI.Translations.Statistics do
     Task.async(fn ->
       case key do
         :translated   -> Repo.update_all(query, inc: [count_of_translated_keys: value])
+        :untranslated -> Repo.update_all(query, inc: [count_of_untranslated_keys: value])
         :verified     -> Repo.update_all(query, inc: [count_of_verified_keys: value])
         :not_verified -> Repo.update_all(query, inc: [count_of_not_verified_keys: value])
         :need_check   -> Repo.update_all(query, inc: [count_of_keys_need_check: value])
@@ -63,22 +64,26 @@ defmodule I18NAPI.Translations.Statistics do
     end)
   end
 
-  def update_key_choice(locale_id, prev_key, new_key) do
-    case {prev_key, new_key} do
+  def update_count_choice(locale_id, prev_status, new_status) do
+    case {prev_status, new_status} do
       {:empty, :unverified} -> fn ->
         update_count_of_keys_at_locales(locale_id, :inc, :translated)
+        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
         update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
                                end
       {:empty, :verified} -> fn ->
         update_count_of_keys_at_locales(locale_id, :inc, :translated)
+        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
         update_count_of_keys_at_locales(locale_id, :inc, :verified)
                              end
       {:empty, :need_check} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
         update_count_of_keys_at_locales(locale_id, :inc, :need_check)
                                end
 
       {:unverified, :empty} -> fn ->
         update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
                                end
       {:unverified, :verified} -> fn ->
@@ -87,12 +92,14 @@ defmodule I18NAPI.Translations.Statistics do
                                   end
       {:unverified, :need_check} -> fn ->
         update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
         update_count_of_keys_at_locales(locale_id, :inc, :need_check)
                                     end
 
       {:verified, :empty} -> fn ->
         update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :verified)
                              end
       {:verified, :unverified} -> fn ->
@@ -101,22 +108,26 @@ defmodule I18NAPI.Translations.Statistics do
                                   end
       {:verified, :need_check} -> fn ->
         update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :verified)
         update_count_of_keys_at_locales(locale_id, :inc, :need_check)
                                   end
 
       {:need_check, :empty} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :need_check)
                                end
       {:need_check, :verified} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :inc, :translated)
+        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :need_check)
         update_count_of_keys_at_locales(locale_id, :inc, :verified)
-        update_count_of_keys_at_locales(locale_id, :inc, :translated)
                                   end
       {:need_check, :unverified} -> fn ->
+        update_count_of_keys_at_locales(locale_id, :inc, :translated)
+        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :need_check)
         update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
-        update_count_of_keys_at_locales(locale_id, :inc, :translated)
                                     end
     end
   end
