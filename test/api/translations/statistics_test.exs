@@ -208,6 +208,66 @@ defmodule I18NAPI.StatisticsTest do
       assert locale.count_of_keys_need_check == 2
     end
 
+    @default_translation_key_attrs %{
+      context: "default",
+      is_removed: false,
+      key: "default",
+      default_value: "default"
+    }
+
+    @verified_translation_key_attrs %{
+      context: "verified",
+      is_removed: false,
+      key: "verified",
+      default_value: "verified"
+    }
+
+    @verified_translation_attrs %{
+      value: "verified",
+      status: :verified
+    }
+
+    @need_check_translation_attrs %{
+      value: "need_check",
+      status: :need_check
+    }
+
+    test "update_count_choice/3 integration" do
+      project = project_fixture(%{}, user_fixture())
+      locale = Translations.get_default_locale!(project.id)
+      assert project.total_count_of_translation_keys == 0
+      assert locale.count_of_not_verified_keys == 0
+      assert locale.count_of_verified_keys == 0
+      assert locale.count_of_translated_keys == 0
+      assert locale.count_of_untranslated_keys == 0
+      assert locale.count_of_keys_need_check == 0
+
+      {:ok, translation_key} = @default_translation_key_attrs |> Translations.create_translation_key(project.id)
+
+      project = Projects.get_project!(project.id)
+      locale = Translations.get_locale!(locale.id)
+
+      assert project.total_count_of_translation_keys == 1
+      assert locale.count_of_not_verified_keys == 1
+      assert locale.count_of_verified_keys == 0
+      assert locale.count_of_translated_keys == 1
+      assert locale.count_of_untranslated_keys == 0
+      assert locale.count_of_keys_need_check == 0
+
+      {:ok, translation_key} = @verified_translation_key_attrs |> Translations.create_translation_key(project.id)
+#      Translations.get_default_translation(translation_key.id)
+#      |> Translations.update_translation(@verified_translation_attrs)
+
+      locale = Translations.get_locale!(locale.id)
+
+      assert project.total_count_of_translation_keys == 2
+      assert locale.count_of_not_verified_keys == 1
+      assert locale.count_of_verified_keys == 1
+      assert locale.count_of_translated_keys == 2
+      assert locale.count_of_untranslated_keys == 0
+      assert locale.count_of_keys_need_check == 0
+    end
+
   end
 
 end
