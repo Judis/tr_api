@@ -442,9 +442,15 @@ defmodule I18NAPI.Translations do
   """
   def create_translation(attrs \\ %{status: :empty, is_removed: false}, locale_id) do
     changeset = Map.put(attrs, :locale_id, locale_id) |> Utilites.key_to_atom()
-    %Translation{}
+    response = %Translation{}
     |> Translation.changeset(changeset)
     |> Repo.insert()
+
+    with {:ok, translation} <- response,
+         true <- Map.has_key?(changeset, :status),
+         do: Statistics.update_count_choice(translation.locale_id, :empty, changeset.status)
+
+    response
   end
 
   @doc """
