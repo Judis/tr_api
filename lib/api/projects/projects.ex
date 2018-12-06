@@ -96,6 +96,7 @@ defmodule I18NAPI.Projects do
     |> Repo.insert()
     |> create_owner_for_project(user)
     |> create_default_locale_for_project()
+    |> create_default_locale_relation_for_owner(user)
   end
 
   @doc """
@@ -143,6 +144,21 @@ defmodule I18NAPI.Projects do
   end
 
   def create_default_locale_for_project(_ = response) do
+    response
+  end
+
+  defp create_default_locale_relation_for_owner({:ok, %Project{} = project}, %{} = user) do
+    default_locale = Translations.get_default_locale!(project.id)
+    result = create_user_locales(%{
+      user_id: user.id,
+      locale_id: default_locale.id,
+      role: 1
+    })
+
+    {:ok, project}
+  end
+
+  defp create_default_locale_relation_for_owner(_ = response, %{} = user) do
     response
   end
 
@@ -370,6 +386,30 @@ defmodule I18NAPI.Projects do
   def get_user_locales!(id), do: Repo.get!(UserLocales, id)
 
   @doc """
+  Gets a single user_locales.
+
+  Raises `Ecto.NoResultsError` if the User locales does not exist.
+
+  ## Examples
+
+      iex> get_user_locales!(123, 321)
+      %UserLocales{}
+
+      iex> get_user_locales!(456, 654)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_user_locales!(locale_id, user_id) do
+    query =
+      from(
+        ul in UserLocales,
+        where: ul.locale_id == ^locale_id and ul.user_id == ^user_id
+      )
+
+    Repo.one(query)
+  end
+
+  @doc """
   Creates a user_locales.
 
   ## Examples
@@ -383,7 +423,7 @@ defmodule I18NAPI.Projects do
   """
   def create_user_locales(attrs \\ %{}) do
     %UserLocales{}
-    |> UserLocales.changeset(attrs)
+    |> UserLocales.create_changeset(attrs)
     |> Repo.insert()
   end
 
@@ -401,7 +441,7 @@ defmodule I18NAPI.Projects do
   """
   def update_user_locales(%UserLocales{} = user_locales, attrs) do
     user_locales
-    |> UserLocales.changeset(attrs)
+    |> UserLocales.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -431,7 +471,7 @@ defmodule I18NAPI.Projects do
 
   """
   def change_user_locales(%UserLocales{} = user_locales) do
-    UserLocales.changeset(user_locales, %{})
+    UserLocales.update_changeset(user_locales, %{})
   end
 
   @doc """
