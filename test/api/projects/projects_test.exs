@@ -57,11 +57,18 @@ defmodule I18NAPI.ProjectsTest do
       assert Projects.get_project!(project.id) == project
     end
 
+    alias I18NAPI.Translations
+    alias I18NAPI.Projects.UserLocales
     test "create_project/1 with valid data creates a project" do
-      assert {:ok, %Project{} = project} = Projects.create_project(@valid_project_attrs, user_fixture())
+      user = user_fixture()
+      {:ok, project} = Projects.create_project(@valid_project_attrs, user)
+      assert %Project{} = project
       assert project.is_removed == false
       assert project.default_locale == @valid_project_attrs.default_locale
       assert project.total_count_of_translation_keys == 0
+      locale = Translations.get_default_locale!(project.id)
+      user_locale = Projects.get_user_locales!(locale.id, user.id)
+      assert %UserLocales{} = user_locale
     end
 
     test "create_project/1 with invalid data returns error changeset" do

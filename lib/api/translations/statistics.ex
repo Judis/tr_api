@@ -80,7 +80,7 @@ defmodule I18NAPI.Translations.Statistics do
         update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
         update_count_of_keys_at_locales(locale_id, :inc, :need_check)
 
-      {:unverified, :empty} -> fn ->
+      {:unverified, :empty} ->
         update_count_of_keys_at_locales(locale_id, :dec, :translated)
         update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
@@ -95,7 +95,7 @@ defmodule I18NAPI.Translations.Statistics do
         update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
         update_count_of_keys_at_locales(locale_id, :inc, :need_check)
 
-      {:verified, :empty} -> fn ->
+      {:verified, :empty} ->
         update_count_of_keys_at_locales(locale_id, :dec, :translated)
         update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :verified)
@@ -110,7 +110,7 @@ defmodule I18NAPI.Translations.Statistics do
         update_count_of_keys_at_locales(locale_id, :dec, :verified)
         update_count_of_keys_at_locales(locale_id, :inc, :need_check)
 
-      {:need_check, :empty} -> fn ->
+      {:need_check, :empty} ->
         update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
         update_count_of_keys_at_locales(locale_id, :dec, :need_check)
 

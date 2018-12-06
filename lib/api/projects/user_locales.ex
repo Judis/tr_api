@@ -11,7 +11,14 @@ defmodule I18NAPI.Projects.UserLocales do
   end
 
   @doc false
-  def changeset(user_locales, attrs) do
+  def create_changeset(user_locales, attrs) do
+    user_locales
+    |> cast(attrs, [:user_id, :locale_id, :role])
+    |> validate_required([:role])
+  end
+
+  @doc false
+  def update_changeset(user_locales, attrs) do
     user_locales
     |> cast(attrs, [:role])
     |> validate_required([:role])
