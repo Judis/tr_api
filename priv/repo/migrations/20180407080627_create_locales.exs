@@ -7,7 +7,7 @@ defmodule I18NAPI.Repo.Migrations.CreateLocales do
       add :is_default, :boolean, default: false, null: false
       add :is_removed, :boolean, default: false, null: false
       add :removed_at, :naive_datetime
-      add :project_id, references(:projects, on_delete: :nothing)
+      add :project_id, references(:projects, on_delete: :delete_all)
 
       add :total_count_of_translation_keys, :integer, default: 0
       add :count_of_not_verified_keys, :integer, default: 0
