@@ -28,8 +28,12 @@ defmodule I18NAPIWeb.ProjectController do
 
   def update(conn, %{"id" => id, "project" => project_params}) do
     project = Projects.get_project!(id)
-
     with {:ok, %Project{} = project} <- Projects.update_project(project, project_params) do
+      IO.puts "----------------------"
+      IO.inspect id
+      IO.inspect project_params
+      IO.inspect project
+      IO.puts "----------------------"
       render(conn, "show.json", project: project)
     end
   end
