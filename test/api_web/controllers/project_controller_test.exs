@@ -20,8 +20,8 @@ defmodule I18NAPIWeb.ProjectControllerTest do
     {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
     user
     user = with :error <- result,
-         do: with {:ok, user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
-             do: user
+                do: with {:ok, user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
+                    do: user
   end
 
   @create_attrs %{
@@ -30,7 +30,7 @@ defmodule I18NAPIWeb.ProjectControllerTest do
   }
   @update_attrs %{
     name: "some updated name",
-    default_locale: "fr"
+    default_locale: "en" # not changed
   }
   @invalid_attrs %{is_removed: nil, name: nil, removed_at: nil}
 
@@ -58,6 +58,20 @@ defmodule I18NAPIWeb.ProjectControllerTest do
     end
   end
 
+  describe "show project" do
+    test "render project when data is valid", %{conn: conn} do
+      project = create_project(conn)
+      conn = get(conn, project_path(conn, :show, project.id))
+      assert %{"id" => id} = json_response(conn, 200)["data"]
+
+      project = Projects.get_project!(id)
+      assert %Project{} = project
+      assert project.name == @create_attrs.name
+      assert project.default_locale == @create_attrs.default_locale
+    end
+
+  end
+
   describe "create project" do
     test "renders project when data is valid", %{conn: conn} do
       conn = post(conn, project_path(conn, :create), project: @create_attrs)
@@ -67,7 +81,6 @@ defmodule I18NAPIWeb.ProjectControllerTest do
       assert %Project{} = project
       assert project.name == @create_attrs.name
       assert project.default_locale == @create_attrs.default_locale
-
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -79,17 +92,11 @@ defmodule I18NAPIWeb.ProjectControllerTest do
   describe "update project" do
     test "renders project when data is valid", %{conn: conn} do
       project = create_project(conn)
-      IO.puts "======================"
-      IO.inspect project
-      IO.puts "++++++++++++++++++++++"
       conn = put(conn, project_path(conn, :update, project), project: @update_attrs)
       assert %{"id" => id} = json_response(conn, 200)["data"]
 
       project = Projects.get_project!(project.id)
       assert %Project{} = project
-      IO.puts "++++++++++++++++++++++"
-      IO.inspect project
-      IO.puts "++++++++++++++++++++++"
       assert project.name == @update_attrs.name
       assert project.default_locale == @update_attrs.default_locale
     end
@@ -102,14 +109,13 @@ defmodule I18NAPIWeb.ProjectControllerTest do
   end
 
   describe "delete project" do
-   test "deletes chosen project", %{conn: conn} do
+    test "deletes chosen project", %{conn: conn} do
       project = create_project(conn)
-      conn = delete(conn, project_path(conn, :delete, project))
-      assert response(conn, 204)
+      no_content_response = delete(conn, project_path(conn, :delete, project))
+      assert response(no_content_response, 204)
 
-      assert_error_sent(404, fn ->
-        get(conn, project_path(conn, :show, project))
-      end)
+      no_content_response= get(conn, project_path(conn, :show, project.id))
+      assert response(no_content_response, 204)
     end
   end
 
