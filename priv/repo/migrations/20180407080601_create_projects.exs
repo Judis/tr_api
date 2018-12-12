@@ -8,6 +8,11 @@ defmodule I18NAPI.Repo.Migrations.CreateProjects do
       add :removed_at, :naive_datetime
 
       add :total_count_of_translation_keys, :integer, default: 0
+      add :count_of_not_verified_keys, :integer, default: 0
+      add :count_of_verified_keys, :integer, default: 0
+      add :count_of_translated_keys, :integer, default: 0
+      add :count_of_untranslated_keys, :integer, default: 0
+      add :count_of_keys_need_check, :integer, default: 0
 
       timestamps()
     end

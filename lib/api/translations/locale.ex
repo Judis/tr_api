@@ -8,6 +8,7 @@ defmodule I18NAPI.Translations.Locale do
     field(:locale, :string)
     field(:removed_at, :naive_datetime)
 
+    field(:total_count_of_translation_keys, :integer, default: 0)
     field(:count_of_not_verified_keys, :integer, default: 0)
     field(:count_of_verified_keys, :integer, default: 0)
     field(:count_of_translated_keys, :integer, default: 0)
