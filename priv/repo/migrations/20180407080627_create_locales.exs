@@ -15,6 +15,7 @@ defmodule I18NAPI.Repo.Migrations.CreateLocales do
       add :count_of_translated_keys, :integer, default: 0
       add :count_of_untranslated_keys, :integer, default: 0
 
+      add :total_count_of_translation_keys, :integer, default: 0
       add :count_of_not_verified_keys, :integer, default: 0
       add :count_of_verified_keys, :integer, default: 0
       add :count_of_translated_keys, :integer, default: 0
