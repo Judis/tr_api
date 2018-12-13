@@ -238,37 +238,37 @@ defmodule I18NAPI.Translations.Statistics do
     spawn(I18NAPI.Translations.Statistics, :update_all_locale_counts, [locale_id, project_id])
   end
 
-  def calculate_count_of_keys_at_all_locales_for_project_by_status(project_id, status, is_removed \\ false) do
-    from(
-      p in Project,
-      where: [project_id: ^project_id],
-      where: [status: ^status],
-      where: [is_removed: ^is_removed],
-      select: count(t.id)
-    )
-    |> Repo.one!()
-  end
-
   def update_all_project_counts(project_id) do
     Repo.transaction(fn ->
       total = calculate_total_count_of_translation_keys_at_project(project_id, false)
-      # verified = calculate_count_of_keys_at_ ALL LOCALES(project_id, :verified)
-      # unverified = calculate_count_of_keys_at ALL LOCALES(project_id, :unverified)
-      # translated = verified + unverified
-      # untranslated = total - translated
+
+      locales_summary = from(
+        l in Locale,
+        where: [project_id: ^project_id],
+        select: %{
+          verified: sum(l.count_of_verified_keys),
+          unverified: sum(l.count_of_not_verified_keys),
+          translated: sum(l.count_of_translated_keys),
+          untranslated: sum(l.count_of_untranslated_keys)
+        }
+      )
 
       from(p in Project,
+        join: locale in subquery(locales_summary),
         where: [id: ^project_id],
         update: [set: [
-          total_count_of_translation_keys: ^total
-          #count_of_verified_keys: ^verified,
-          #count_of_not_verified_keys: ^unverified,
-          #count_of_translated_keys: ^translated,
-          #count_of_untranslated_keys: ^untranslated
+          total_count_of_translation_keys: ^total,
+          count_of_verified_keys: locale.verified,
+          count_of_not_verified_keys: locale.unverified,
+          count_of_translated_keys: locale.translated,
+          count_of_untranslated_keys: locale.untranslated
         ]])
       |> Repo.update_all([])
     end)
   end
 
+  def update_all_project_counts_async(project_id) do
+    spawn(I18NAPI.Translations.Statistics, :update_all_project_counts, [project_id])
+  end
 
 end
