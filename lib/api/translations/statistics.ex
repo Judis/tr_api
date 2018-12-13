@@ -31,8 +31,8 @@ defmodule I18NAPI.Translations.Statistics do
       :dec -> -value
     end
 
-      query = from(p in Project, where: [id: ^project_id])
-      Repo.update_all(query, inc: [total_count_of_translation_keys: value])
+    query = from(p in Project, where: [id: ^project_id])
+    Repo.update_all(query, inc: [total_count_of_translation_keys: value])
   end
 
   def update_total_count_of_translation_keys_async(project_id, operation, value \\ 1)

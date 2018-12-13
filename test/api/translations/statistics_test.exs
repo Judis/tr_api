@@ -3,7 +3,6 @@ defmodule I18NAPI.StatisticsTest do
   @moduletag :statistics_api
 
   use I18NAPI.DataCase
-  import Mox
   alias I18NAPI.Translations
   alias I18NAPI.Translations.Statistics
   alias I18NAPI.Accounts
@@ -130,7 +129,7 @@ defmodule I18NAPI.StatisticsTest do
       translation
     end
 
-    test "++++++++++++++++++++++++++calculate count of verified and unverified keys at locale" do
+    test "calculate count of verified and unverified keys at locale" do
       project = project_fixture(%{}, user_fixture())
       locale = Translations.get_default_locale!(project.id)
       translation_key = translation_key_fixture(@valid_translation_key_attrs, project.id)
@@ -143,7 +142,7 @@ defmodule I18NAPI.StatisticsTest do
       assert co_unverified_k == 2
     end
 
-    test "____________________update counts at locale" do
+    test "update counts at locale" do
       project = project_fixture(%{}, user_fixture())
       locale = Translations.get_default_locale!(project.id)
       translation_key = translation_key_fixture(@valid_translation_key_attrs, project.id)
