@@ -25,7 +25,11 @@ defmodule I18NAPI.Translations.Statistics do
   def update_total_count_of_translation_keys(project_id, operation, value \\ 1)
   def update_total_count_of_translation_keys(project_id, operation, value)
       when ((:inc == operation) or (:dec == operation)) and is_integer(value) do
-    if (:dec == operation), do: value = -value
+
+    value = case operation do
+      :inc ->  value
+      :dec -> -value
+    end
 
       query = from(p in Project, where: [id: ^project_id])
       Repo.update_all(query, inc: [total_count_of_translation_keys: value])
@@ -67,7 +71,11 @@ defmodule I18NAPI.Translations.Statistics do
       when ((:inc == operation) or (:dec == operation))
            and is_integer(value) do
 
-    if (:dec == operation), do: value = -value
+    value = case operation do
+      :inc ->  value
+      :dec -> -value
+    end
+
     query = from(l in Locale, where: [id: ^locale_id])
 
       case key do
