@@ -52,42 +52,23 @@ defmodule I18NAPIWeb.LocaleControllerTest do
   end
 
   @create_attrs %{
-    count_of_keys: 42,
-    count_of_translated_keys: 42,
-    count_of_words: 42,
     is_default: true,
-    is_removed: true,
     locale: "some locale",
-    removed_at: ~N[2010-04-17 14:00:00.000000]
   }
 
   @valid_attrs %{
-    count_of_keys: 42,
-    count_of_translated_keys: 42,
-    count_of_words: 42,
     is_default: true,
-    is_removed: true,
     locale: "another locale",
-    removed_at: ~N[2010-04-17 14:00:00.000000]
   }
 
   @update_attrs %{
-    count_of_keys: 43,
-    count_of_translated_keys: 43,
-    count_of_words: 43,
     is_default: false,
-    is_removed: false,
     locale: "some updated locale",
-    removed_at: ~N[2011-05-18 15:01:01.000000]
   }
   @invalid_attrs %{
-    count_of_keys: nil,
-    count_of_translated_keys: nil,
-    count_of_words: nil,
     is_default: nil,
     is_removed: nil,
     locale: nil,
-    removed_at: nil
   }
 
   def locale_fixture(project) do
@@ -114,13 +95,11 @@ defmodule I18NAPIWeb.LocaleControllerTest do
       project_id = project_fixture(conn).id
       conn = post(conn, project_locale_path(conn, :create, project_id), locale: @valid_attrs)
       assert %{"id" => id} = json_response(conn, 201)["data"]
-      query = from(
-        p in Locale,
-        select: p,
-        where: p.project_id == ^project_id and p.locale == ^@valid_attrs.locale
-      )
-      result_locale = Repo.one(query)
+
+      result_locale = Translations.get_locale!(id)
+      assert %Locale{} = result_locale
       assert result_locale.locale == @valid_attrs.locale
+      assert result_locale.is_default == @valid_attrs.is_default
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -137,19 +116,15 @@ defmodule I18NAPIWeb.LocaleControllerTest do
       locale = locale_fixture(project)
       project_id = project.id
       conn = put(conn, project_locale_path(conn, :update, project_id, locale), locale: @update_attrs)
-      assert 1 = 2
-      #assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 200)["data"]
 
-      query = from(
-        p in Locale,
-        select: p,
-        where: p.project_id == ^project_id and p.locale == ^@update_attrs.locale
-      )
-      result_locale = Repo.one(query)
+      result_locale = Translations.get_locale!(locale.id)
       assert result_locale.locale == @update_attrs.locale
     end
 
-    test "renders errors when data is invalid", %{conn: conn, locale: locale} do
+    test "renders errors when data is invalid", %{conn: conn} do
+      project = project_fixture(conn)
+      locale = locale_fixture(project)
       conn = put(conn, project_locale_path(conn, :update, locale.project_id, locale), locale: @invalid_attrs)
       assert json_response(conn, 422)["errors"] != %{}
     end
