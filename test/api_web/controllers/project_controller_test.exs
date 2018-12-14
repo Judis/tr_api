@@ -46,7 +46,7 @@ defmodule I18NAPIWeb.ProjectControllerTest do
     {:ok, conn: conn}
   end
 
-  def create_project(conn) do
+  def project_fixture(conn) do
     {:ok, project} = @create_attrs |> Projects.create_project(conn.user)
     project
   end
@@ -60,7 +60,7 @@ defmodule I18NAPIWeb.ProjectControllerTest do
 
   describe "show project" do
     test "render project when data is valid", %{conn: conn} do
-      project = create_project(conn)
+      project = project_fixture(conn)
       conn = get(conn, project_path(conn, :show, project.id))
       assert %{"id" => id} = json_response(conn, 200)["data"]
 
@@ -91,7 +91,7 @@ defmodule I18NAPIWeb.ProjectControllerTest do
 
   describe "update project" do
     test "renders project when data is valid", %{conn: conn} do
-      project = create_project(conn)
+      project = project_fixture(conn)
       conn = put(conn, project_path(conn, :update, project), project: @update_attrs)
       assert %{"id" => id} = json_response(conn, 200)["data"]
 
@@ -102,7 +102,7 @@ defmodule I18NAPIWeb.ProjectControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      project = create_project(conn)
+      project = project_fixture(conn)
       conn = put(conn, project_path(conn, :update, project), project: @invalid_attrs)
       assert json_response(conn, 422)["errors"] != %{}
     end
@@ -110,7 +110,7 @@ defmodule I18NAPIWeb.ProjectControllerTest do
 
   describe "delete project" do
     test "deletes chosen project", %{conn: conn} do
-      project = create_project(conn)
+      project = project_fixture(conn)
       no_content_response = delete(conn, project_path(conn, :delete, project))
       assert response(no_content_response, 204)
 
