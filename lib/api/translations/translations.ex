@@ -6,6 +6,7 @@ defmodule I18NAPI.Translations do
   import Ecto.Query, warn: false
   alias I18NAPI.Repo
   alias I18NAPI.Utilites
+  alias I18NAPI.Translations.Statistics
   alias I18NAPI.Translations.Locale
   alias I18NAPI.Translations.Translation
   alias I18NAPI.Projects
@@ -251,10 +252,16 @@ defmodule I18NAPI.Translations do
   def create_translation_key(attrs \\ %{}, project_id) do
     attrs = Utilites.key_to_string(attrs)
     changeset = Map.put(attrs, "project_id", project_id) |> Utilites.key_to_atom()
-    %TranslationKey{}
+    response = %TranslationKey{}
     |> TranslationKey.changeset(changeset)
     |> Repo.insert()
     |> create_default_translation()
+
+    with {:ok, translation_key} <- response do
+      Statistics.update_total_count_of_translation_keys_async(project_id, :inc)
+      Statistics.recalculate_count_of_untranslated_keys_at_locales_async(project_id)
+    end
+    response
   end
 
   @doc """
@@ -296,11 +303,11 @@ defmodule I18NAPI.Translations do
 
   """
   def update_translation_key(%TranslationKey{} = translation_key, attrs) do
-    responce = translation_key
+    response = translation_key
     |> TranslationKey.changeset(attrs)
     |> Repo.update()
 
-    with {:ok, translation_key} <- responce do
+    with {:ok, translation_key} <- response do
       get_default_translation(translation_key.id)
       |> Translation.changeset(%{value: attrs.default_value})
       |> Repo.update()
@@ -327,8 +334,8 @@ defmodule I18NAPI.Translations do
     |> Repo.update()
 
     with {:ok, translation_key} <- response do
-      Statistics.update_total_count_of_translation_keys(translation_key.project_id, :dec)
-      Statistics.recalculate_count_of_untranslated_keys_at_locales(translation_key.project_id)
+      Statistics.update_total_count_of_translation_keys_async(translation_key.project_id, :dec)
+      Statistics.recalculate_count_of_untranslated_keys_at_locales_async(translation_key.project_id)
     end
 
     response
@@ -358,8 +365,8 @@ defmodule I18NAPI.Translations do
     |> safely_delete_nested_entities(:translations)
 
     with {:ok, translation_key} <- response do
-      Statistics.update_total_count_of_translation_keys(translation_key.project_id, :dec)
-      Statistics.recalculate_count_of_untranslated_keys_at_locales(translation_key.project_id)
+      Statistics.update_total_count_of_translation_keys_async(translation_key.project_id, :dec)
+      Statistics.recalculate_count_of_untranslated_keys_at_locales_async(translation_key.project_id)
     end
 
     response
@@ -448,7 +455,7 @@ defmodule I18NAPI.Translations do
 
     with {:ok, translation} <- response,
          true <- Map.has_key?(changeset, :status),
-         do: Statistics.update_count_choice(translation.locale_id, :empty, changeset.status)
+         do: Statistics.update_count_choice_async(translation.locale_id, :empty, changeset.status)
 
     response
   end
@@ -475,7 +482,7 @@ defmodule I18NAPI.Translations do
 
     with {:ok, translation} <- result,
          true <- Map.has_key?(attrs, :status),
-         do: Statistics.update_count_choice(translation.locale_id, translation.status, attrs.status)
+         do: Statistics.update_count_choice_async(translation.locale_id, translation.status, attrs.status)
 
     with true <- is_default_locale?(translation.locale_id),
          true <- Map.has_key?(attrs, :value),
