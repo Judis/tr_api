@@ -153,6 +153,9 @@ defmodule I18NAPI.StatisticsTest do
       assert locale.count_of_verified_keys == 0
       assert locale.count_of_translated_keys == 0
       assert locale.count_of_untranslated_keys == 0
+
+      project = Projects.get_project!(project.id)
+
       Statistics.update_all_project_counts(project.id)
       Statistics.update_all_locale_counts(locale.id, project.id)
       locale = Translations.get_locale!(locale.id)
