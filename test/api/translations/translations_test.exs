@@ -61,9 +61,10 @@ defmodule I18NAPI.TranslationsTest do
     }
 
     def locale_fixture(attrs \\ %{}, project_id \\ nil) do
-      unless is_integer(project_id) do
-        user = user_fixture()
-        project_id = project_fixture(@valid_project_attrs, user).id
+      project_id = unless is_integer(project_id) do
+        project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+      else
+        project_id
       end
 
       {:ok, locale} =
@@ -147,10 +148,12 @@ defmodule I18NAPI.TranslationsTest do
     }
 
     def translation_key_fixture(attrs \\ %{}, project_id \\ nil) do
-      unless is_integer(project_id) do
-        user = user_fixture()
-        project_id = project_fixture(@valid_project_attrs, user).id
+      project_id = unless is_integer(project_id) do
+        project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+      else
+        project_id
       end
+
       attrs = Enum.into(attrs, @valid_translation_key_attrs)
 
       {:ok, translation_key} =
@@ -235,8 +238,10 @@ defmodule I18NAPI.TranslationsTest do
     @invalid_translation_attrs %{value: nil, status: nil}
 
     def translation_fixture(attrs, project_id) do
-      unless is_integer(project_id) do
+      project_id = unless is_integer(project_id) do
         project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+      else
+        project_id
       end
 
       translation_key_id = translation_key_fixture(%{
