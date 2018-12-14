@@ -7,7 +7,7 @@ defmodule I18NAPIWeb.LocaleController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    locales = Translations.list_locales(conn.params["project_id"])
+    locales = Translations.list_locales(conn.private[:guardian_default_resource].id)
     render(conn, "index.json", locales: locales)
   end
 
