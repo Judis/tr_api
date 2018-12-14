@@ -113,16 +113,15 @@ defmodule I18NAPIWeb.UserControllerTest do
   end
 
   describe "delete user" do
-    setup [:create_user]
-
     test "deletes chosen user", %{conn: conn} do
       user = fixture(:alter_user)
-      conn = delete(conn, user_path(conn, :delete, user))
-      assert response(conn, 204)
+      no_content_response = delete(conn, user_path(conn, :delete, user))
 
-      assert_error_sent(404, fn ->
-        get(conn, user_path(conn, :show, user))
-      end)
+      assert response(no_content_response, 204)
+
+      no_content_response = delete(conn, user_path(conn, :show, user))
+
+      assert response(no_content_response, 204)
     end
   end
 
