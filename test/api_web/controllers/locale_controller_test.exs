@@ -161,22 +161,11 @@ defmodule I18NAPIWeb.LocaleControllerTest do
       locale = locale_fixture(project)
       no_content_response = delete(conn, project_locale_path(conn, :delete, locale.project_id, locale))
 
-    test "deletes chosen locale", %{conn: conn, locale: locale} do
-      result = delete(conn, project_locale_path(conn, :delete, locale.project_id, locale))
-      assert response(result, 200)
+      assert response(no_content_response, 204)
 
-      project_id = locale.project_id
-      query = from(
-        p in Locale,
-        select: p,
-        where: p.project_id == ^project_id and p.locale == ^@create_attrs.locale
-      )
-      result_locale = Repo.one(query)
-      assert result_locale.locale == @create_attrs.locale
+      no_content_response = delete(conn, project_locale_path(conn, :show, locale.project_id, locale))
 
-      assert_error_sent(404, fn ->
-        get(conn, project_locale_path(conn, :show, locale.project_id, locale))
-      end)
+      assert response(no_content_response, 204)
     end
   end
 end

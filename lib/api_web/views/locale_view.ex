@@ -12,13 +12,16 @@ defmodule I18NAPIWeb.LocaleView do
 
   def render("locale.json", %{locale: locale}) do
     %{
-      id: locale.id,
+    id: locale.id,
       project_id: locale.project_id,
       locale: locale.locale,
       is_default: locale.is_default,
-      count_of_keys: locale.count_of_keys,
-      count_of_words: locale.count_of_words,
+      total_count_of_translation_keys: locale.total_count_of_translation_keys,
+      count_of_not_verified_keys: locale.count_of_not_verified_keys,
+      count_of_verified_keys: locale.count_of_verified_keys,
       count_of_translated_keys: locale.count_of_translated_keys,
+      count_of_untranslated_keys: locale.count_of_untranslated_keys,
+      count_of_keys_need_check: locale.count_of_keys_need_check,
       is_removed: locale.is_removed,
       removed_at: locale.removed_at
     }
@@ -37,5 +40,9 @@ defmodule I18NAPIWeb.LocaleView do
 
   def render("keys_and_translations.json", %{keys_and_translations: keys_and_translations}) do
     %{data: render_many(keys_and_translations, LocaleView, "key_with_translations.json")}
+  end
+
+  def render("204.json", _) do
+    %{errors: %{detail: "No Content"}}
   end
 end
