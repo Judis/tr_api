@@ -92,13 +92,19 @@ defmodule I18NAPI.Translations do
       {:error, %Ecto.Changeset{}}
 
   """
+
   def create_locale(attrs, project_id) do
     attrs = Utilites.key_to_string(attrs)
     attrs = Map.put(attrs, "project_id", project_id)
-    attrs = Map.put(attrs, "count_of_untranslated_keys", Projects.get_total_count_of_translation_keys(project_id))
-    %Locale{}
-    |> Locale.changeset(attrs)
-    |> Repo.insert()
+    result = %Locale{}
+             |> Locale.changeset(attrs)
+             |> Repo.insert()
+
+    with {:ok, locale} <- result do
+      Statistics.update_all_locale_counts(locale.id, locale.project_id)
+    end
+
+      result
   end
 
   @doc """
