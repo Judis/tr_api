@@ -1,6 +1,3 @@
 defmodule I18NAPI.Mailer do
-  @moduledoc false
-
-
-
-  end
+  use Swoosh.Mailer, otp_app: :api
+end
