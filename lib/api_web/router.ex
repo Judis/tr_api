@@ -19,7 +19,7 @@ defmodule I18NAPIWeb.Router do
     pipe_through(:api)
     post("/sign_in", SessionController, :sign_in)
     post("/sign_up", RegistrationController, :sign_up)
-
+    post("/confirm", ConfirmationController, :confirm)
     pipe_through(:authenticated)
     resources("/users", UserController)
 
