@@ -55,6 +55,17 @@ defmodule I18NAPI.Accounts.User do
   end
 
   @doc false
+  def confirmation_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :confirmation_token,
+      :confirmation_sent_at,
+      :confirmed_at,
+      :is_confirmed,
+    ])
+  end
+
+  @doc false
   defp generate_password_hash(changeset) do
     case changeset do
       %Ecto.Changeset{valid?: true, changes: %{password: password}} ->

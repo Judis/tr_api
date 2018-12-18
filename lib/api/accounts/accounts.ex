@@ -5,8 +5,10 @@ defmodule I18NAPI.Accounts do
 
   import Ecto.Query, warn: false
   alias I18NAPI.Repo
-
+  alias I18NAPI.Utilites
+  alias I18NAPI.UserEmail
   alias I18NAPI.Accounts.User
+  alias I18NAPI.Accounts.Confirmation
 
   @doc """
   Returns the list of users.
@@ -53,6 +55,7 @@ defmodule I18NAPI.Accounts do
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()
+    |> Confirmation.send_confirmation_email_async
   end
 
   @doc """
@@ -126,5 +129,46 @@ defmodule I18NAPI.Accounts do
           {:error, :unauthorized}
         end
     end
+  end
+
+  @doc """
+  Find user by confirmation token.
+
+  ## Examples
+
+      iex> find_user_by_confirmation_token(confirmation_token)
+      {:ok, %User{}}
+
+      iex> find_user_by_confirmation_token(confirmation_token)
+      {:error, :unauthorized}
+
+  """
+  def find_user_by_confirmation_token(confirmation_token) do
+    case Repo.get_by(User, confirmation_token: confirmation_token) do
+      nil  -> {:error, :unauthorized}
+      user -> {:ok, user}
+    end
+  end
+
+  def add_confirmation_token_to_user(%User{} = user, confirmation_token) do
+    attrs = %{
+      confirmation_token: confirmation_token,
+      confirmation_sent_at: NaiveDateTime.utc_now
+    }
+    user
+    |> User.confirmation_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def confirm_user(%User{} = user) do
+    attrs = %{
+      confirmation_token: nil,
+      confirmation_sent_at: nil,
+      confirmed_at: NaiveDateTime.utc_now,
+      is_confirmed: true
+    }
+    user
+    |> User.confirmation_changeset(attrs)
+    |> Repo.update()
   end
 end

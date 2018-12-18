@@ -23,17 +23,17 @@ defmodule I18NAPI.Accounts.Confirmation do
 
   def send_confirmation_email({:ok, %User{} = user}) do
     confirmation_token = Utilites.random_string(32)
-
-    email = UserEmail.deliver_confirmation_email(user |> Map.put(:confirmation_token, confirmation_token))
-
-    user |> Accounts.update_user(%{
-      confirmation_token: confirmation_token,
-      confirmation_send_at: NaiveDateTime.utc_now
-    })
+    UserEmail.create_confirmation_email(user |> Map.put(:confirmation_token, confirmation_token))
+    Accounts.add_confirmation_token_to_user(user, confirmation_token)
   end
 
+  def confirm_user_by_token(nil), do: {:error, :not_found}
   def confirm_user_by_token(confirmation_token) do
     with {:ok, user} <- Accounts.find_user_by_confirmation_token(confirmation_token),
          {:ok, user} <- Accounts.confirm_user(user), do: {:ok}
+  end
+
+  def create_confirmation_link(confirmation_token) do
+    I18NAPIWeb.Router.Helpers.confirmation_url(I18NAPIWeb.Endpoint, :confirm, token: confirmation_token)
   end
 end
