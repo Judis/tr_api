@@ -4,6 +4,12 @@ defmodule I18NAPIWeb.TranslationKeyControllerTest do
   alias I18NAPI.Translations
   alias I18NAPI.Translations.TranslationKey
 
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+    :ok
+  end
+
   @create_attrs %{
     context: "some context",
     is_removed: true,

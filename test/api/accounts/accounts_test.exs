@@ -42,8 +42,7 @@ defmodule I18NAPI.AccountsTest do
     end
 
     test "list_users/0 returns all users" do
-      user_prepared = user_fixture()
-      #      assert Accounts.list_users() == [user_prepared]
+      user_fixture()
       assert [%User{} | _] = Accounts.list_users()
     end
 

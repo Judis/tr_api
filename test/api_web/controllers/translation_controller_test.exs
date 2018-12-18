@@ -1,8 +1,11 @@
 defmodule I18NAPIWeb.TranslationControllerTest do
+  use ExUnit.Case, async: true
+  @moduletag :translation_controller
+
   use I18NAPIWeb.ConnCase
 
   alias I18NAPI.Translations
-  alias I18NAPI.Translations.Translation
+  alias I18NAPI.Translations.{Translation, Translations}
 
   @create_attrs %{
     is_removed: true,
@@ -16,14 +19,25 @@ defmodule I18NAPIWeb.TranslationControllerTest do
   }
   @invalid_attrs %{is_removed: nil, removed_at: nil, value: nil}
 
-  def fixture(:translation) do
-    {:ok, translation} = Translations.create_translation(@create_attrs)
-    translation
+  def fixture(param) do
+    case param do
+      :translation ->
+        {:ok, translation} = Translations.create_translation(@create_attrs)
+        translation
+
+      :project ->
+        {:ok, project} = Projects.create_project(@create_attrs)
+        project
+    end
   end
 
-  def fixture(:project) do
-    {:ok, project} = Projects.create_project(@create_attrs)
-    project
+  def translation_fixture(attrs, locale_id, translation_key_id) do
+    attrs = %{translation_key_id: translation_key_id}
+            |> Enum.into(attrs)
+
+    {:ok, translation} = Translations.create_translation(attrs, locale_id)
+
+    translation
   end
 
   setup %{conn: conn} do

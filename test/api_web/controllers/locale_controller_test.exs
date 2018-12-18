@@ -7,11 +7,8 @@ defmodule I18NAPIWeb.LocaleControllerTest do
   alias I18NAPI.Translations
   alias I18NAPI.Translations.Locale
   alias I18NAPI.Projects
-  alias I18NAPI.Projects.Project
   alias I18NAPI.Accounts
-  alias I18NAPI.Accounts.User
   import Ecto.Query, warn: false
-  alias I18NAPI.Repo
 
   @user_attrs %{
     name: "test name",
@@ -23,10 +20,12 @@ defmodule I18NAPIWeb.LocaleControllerTest do
 
   def user_fixture(attrs \\ %{}) do
     {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
-    user
-    user = with :error <- result,
-                do: with {:ok, user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
-                    do: user
+    if (:error == result) do
+      with {:ok, new_user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
+           do: new_user
+    else
+      user
+    end
   end
 
   @valid_project_attrs %{

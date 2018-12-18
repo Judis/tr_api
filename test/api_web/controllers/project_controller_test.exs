@@ -18,10 +18,12 @@ defmodule I18NAPIWeb.ProjectControllerTest do
 
   def user_fixture(attrs \\ %{}) do
     {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
-    user
-    user = with :error <- result,
-                do: with {:ok, user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
-                    do: user
+    if (:error == result) do
+      with {:ok, new_user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
+           do: new_user
+    else
+      user
+    end
   end
 
   @create_attrs %{

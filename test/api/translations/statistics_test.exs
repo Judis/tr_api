@@ -8,7 +8,6 @@ defmodule I18NAPI.StatisticsTest do
   alias I18NAPI.Accounts
   alias I18NAPI.Accounts.User
   alias I18NAPI.Projects
-  alias I18NAPI.Projects.Project
 
   setup do
     Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
@@ -109,16 +108,6 @@ defmodule I18NAPI.StatisticsTest do
       translation_key
     end
 
-    @valid_translation_attrs %{
-      value: "some translation value",
-      status: :verified
-    }
-    @alter_translation_attrs %{
-      value: "some alter value",
-      status: :unverified
-    }
-    @invalid_translation_attrs %{value: nil, status: nil}
-
     def translation_fixture(attrs, locale_id, translation_key_id) do
 
       attrs = %{translation_key_id: translation_key_id}
@@ -132,8 +121,8 @@ defmodule I18NAPI.StatisticsTest do
     test "calculate count of verified and unverified keys at locale" do
       project = project_fixture(%{}, user_fixture())
       locale = Translations.get_default_locale!(project.id)
-      translation_key = translation_key_fixture(@valid_translation_key_attrs, project.id)
-      alter_translation_key = translation_key_fixture(@alter_translation_key_attrs, project.id)
+      translation_key_fixture(@valid_translation_key_attrs, project.id)
+      translation_key_fixture(@alter_translation_key_attrs, project.id)
 
       co_verified_k = Statistics.calculate_count_of_keys_at_locale_by_status(locale.id, :verified)
       co_unverified_k = Statistics.calculate_count_of_keys_at_locale_by_status(locale.id, :unverified)
@@ -145,8 +134,8 @@ defmodule I18NAPI.StatisticsTest do
     test "update counts at locale" do
       project = project_fixture(%{}, user_fixture())
       locale = Translations.get_default_locale!(project.id)
-      translation_key = translation_key_fixture(@valid_translation_key_attrs, project.id)
-      alter_translation_key = translation_key_fixture(@alter_translation_key_attrs, project.id)
+      translation_key_fixture(@valid_translation_key_attrs, project.id)
+      translation_key_fixture(@alter_translation_key_attrs, project.id)
 
       assert locale.total_count_of_translation_keys == 0
       assert locale.count_of_not_verified_keys == 0

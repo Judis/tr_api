@@ -118,18 +118,18 @@ defmodule I18NAPI.ProjectsTest do
     }
 
     def user_roles_fixture(attrs \\ %{}, %User{} = user) do
-      project_id = project_fixture(@valid_project_attrs, user).id
+      project_id = project_fixture(attrs, user).id
 
       Projects.get_user_roles!(project_id, user.id)
     end
 
     test "list_user_roles/0 returns all user_roles" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert Projects.list_user_roles() == [user_roles]
     end
 
     test "get_user_roles!/1 returns the user_roles with given id" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert Projects.get_user_roles!(user_roles.id) == user_roles
     end
 
@@ -161,26 +161,26 @@ defmodule I18NAPI.ProjectsTest do
     end
 
     test "update_user_roles/2 with valid data updates the user_roles" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert {:ok, user_roles} = Projects.update_user_roles(user_roles, @update_attrs)
       assert %UserRoles{} = user_roles
       assert user_roles.role == :translator
     end
 
     test "update_user_roles/2 with invalid data returns error changeset" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert {:error, %Ecto.Changeset{}} = Projects.update_user_roles(user_roles, @invalid_attrs)
       assert user_roles == Projects.get_user_roles!(user_roles.id)
     end
 
     test "delete_user_roles/1 deletes the user_roles" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert {:ok, %UserRoles{}} = Projects.delete_user_roles(user_roles)
       assert_raise Ecto.NoResultsError, fn -> Projects.get_user_roles!(user_roles.id) end
     end
 
     test "change_user_roles/1 returns a user_roles changeset" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert %Ecto.Changeset{} = Projects.change_user_roles(user_roles)
     end
   end

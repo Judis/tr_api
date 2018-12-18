@@ -5,7 +5,6 @@ defmodule I18NAPI.TranslationsTest do
   use I18NAPI.DataCase
   alias I18NAPI.Translations
   alias I18NAPI.Projects
-  alias I18NAPI.Projects.Project
   alias I18NAPI.Accounts
   alias I18NAPI.Accounts.User
 
@@ -68,7 +67,7 @@ defmodule I18NAPI.TranslationsTest do
 
     def locale_fixture(attrs \\ %{}, project_id \\ nil) do
       project_id = unless is_integer(project_id) do
-        project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+        project_fixture(@valid_project_attrs, user_fixture()).id
       else
         project_id
       end
@@ -155,7 +154,7 @@ defmodule I18NAPI.TranslationsTest do
 
     def translation_key_fixture(attrs \\ %{}, project_id \\ nil) do
       project_id = unless is_integer(project_id) do
-        project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+        project_fixture(@valid_project_attrs, user_fixture()).id
       else
         project_id
       end
@@ -245,7 +244,7 @@ defmodule I18NAPI.TranslationsTest do
 
     def translation_fixture(attrs, project_id) do
       project_id = unless is_integer(project_id) do
-        project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+        project_fixture(@valid_project_attrs, user_fixture()).id
       else
         project_id
       end

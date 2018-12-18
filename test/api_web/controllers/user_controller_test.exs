@@ -71,7 +71,7 @@ defmodule I18NAPIWeb.UserControllerTest do
   describe "index" do
     test "lists all users", %{conn: conn} do
       conn = get(conn, user_path(conn, :index))
-      [result|a] = json_response(conn, 200)["data"]
+      [result|_] = json_response(conn, 200)["data"]
       assert result["name"] == @fixture_user_attrs.name
       assert result["email"] == @fixture_user_attrs.email
     end
@@ -123,10 +123,5 @@ defmodule I18NAPIWeb.UserControllerTest do
 
       assert response(no_content_response, 204)
     end
-  end
-
-  defp create_user(_) do
-    user = fixture(:user)
-    {:ok, user: user}
   end
 end
