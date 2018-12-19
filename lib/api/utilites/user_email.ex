@@ -1,7 +1,6 @@
 defmodule I18NAPI.UserEmail do
   use Phoenix.Swoosh, view: I18NAPIWeb.EmailView, layout: {I18NAPIWeb.LayoutView, :email}
 
-  alias I18NAPI.User
   alias I18NAPI.Accounts.Confirmation
 
   def create_confirmation_email(user) do

@@ -17,25 +17,11 @@ defmodule I18NAPI.ConfirmationTest do
     source: "test source",
   }
 
-  def user_fixture(attrs \\ %{}) do
+  def user_fixture() do
     {:ok, user} = %User{}
-                  |> User.changeset(attrs |> Enum.into(@user_attrs))
-                  |> Repo.insert()
-
-    {:ok, user |> Map.put(:confirmation_token, Utilites.random_string(32))}
-  end
-
-  def unconfirmed_user_fixture(token) do
-    {:ok, user} = user_fixture()
-    attrs = %{
-      confirmation_token: token,
-      confirmed_at: nil,
-      is_confirmed: false
-    }
+    |> User.changeset(Map.put(@user_attrs, :confirmation_token, Utilites.random_string(32)))
+    |> Repo.insert()
     user
-    |> User.confirmation_changeset(attrs)
-    |> Repo.update()
-
   end
 
   describe "confirmation" do
@@ -44,12 +30,10 @@ defmodule I18NAPI.ConfirmationTest do
     end
 
     test"confirm_user_by_token" do
-      token =  Utilites.random_string(32)
-
-      {:ok, user} = unconfirmed_user_fixture(token)
+      user = user_fixture()
       refute user.is_confirmed
 
-      user = with {:ok} <- Confirmation.confirm_user_by_token(token), do:
+      user = with {:ok} <- Confirmation.confirm_user_by_token(user.confirmation_token), do:
         Accounts.get_user!(user.id)
 
       assert user.is_confirmed

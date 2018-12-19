@@ -4,9 +4,11 @@ defmodule I18NAPIWeb.ConfirmationControllerTest do
 
   use I18NAPIWeb.ConnCase
 
-  alias I18NAPI.Repo
   alias I18NAPI.Accounts
+  alias I18NAPI.Accounts.Confirmation
   alias I18NAPI.Accounts.User
+  alias I18NAPI.Repo
+  alias I18NAPI.Utilites
 
   @fixture_user_attrs %{
     name: "fixture name",
@@ -17,13 +19,14 @@ defmodule I18NAPIWeb.ConfirmationControllerTest do
   }
 
   def fixture(:user) do
-    {:ok, user} =     %User{}
-                      |> User.changeset(@fixture_user_attrs)
-                      |> Repo.insert()
-    I18NAPI.Accounts.Confirmation.send_confirmation_email({:ok, user})
+    {:ok, user} =
+      %User{}
+      |> User.changeset(Map.put(@fixture_user_attrs, :confirmation_token, Utilites.random_string(32)))
+      |> Repo.insert()
+
+    Confirmation.send_confirmation_email(user)
     Accounts.get_user!(user.id)
   end
-
 
   describe "confirmate user email" do
     test "if token is valid", %{conn: conn} do
