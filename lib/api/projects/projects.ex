@@ -14,6 +14,7 @@ defmodule I18NAPI.Projects do
     locale = Translations.get_default_locale!(project.id)
     %{project | default_locale: locale.locale}
   end
+
   @doc """
   Returns the list of projects.
 
@@ -38,16 +39,14 @@ defmodule I18NAPI.Projects do
 
   """
   def list_projects(user_id) do
-    query =
-      from(
-        p in Project,
-        join: ur in "user_roles",
-        on: p.id == ur.project_id,
-        where: ur.user_id == ^user_id and p.is_removed == false,
-        order_by: p.name
-      )
-
-    Repo.all(query)
+    from(
+      p in Project,
+      join: ur in "user_roles",
+      on: p.id == ur.project_id,
+      where: ur.user_id == ^user_id and p.is_removed == false,
+      order_by: p.name
+    )
+    |> Repo.all()
     |> Enum.map(fn p -> default_locale_to_project(p) end)
   end
 
@@ -68,16 +67,14 @@ defmodule I18NAPI.Projects do
   def get_project!(id), do: Repo.get!(Project, id) |> default_locale_to_project()
 
   def get_total_count_of_translation_keys(project_id) do
-    [head|_] =
-      from(
-        p in Project,
-        where: [id: ^project_id],
-        select: [p.total_count_of_translation_keys]
-      )
-      |> Repo.one!()
-
-    head
+    from(
+      p in Project,
+      where: [id: ^project_id],
+      select: p.total_count_of_translation_keys
+    )
+    |> Repo.one!()
   end
+
   @doc """
   Creates a project.
 
@@ -95,8 +92,7 @@ defmodule I18NAPI.Projects do
     |> Project.changeset(attrs)
     |> Repo.insert()
     |> create_owner_for_project(user)
-    |> create_default_locale_for_project()
-    |> create_default_locale_relation_for_owner(user)
+    |> create_default_locale_for_project(user)
   end
 
   @doc """
@@ -131,7 +127,7 @@ defmodule I18NAPI.Projects do
       {:ok, %Project{}}
 
   """
-  def create_default_locale_for_project({:ok, %Project{} = project}) do
+  def create_default_locale_for_project({:ok, %Project{} = project}, owner) do
     I18NAPI.Translations.create_locale(
       %{
         "locale" => project.default_locale,
@@ -139,23 +135,21 @@ defmodule I18NAPI.Projects do
       },
       project.id
     )
+    |> create_default_locale_relation_for_owner(owner)
 
     {:ok, project}
   end
 
-  def create_default_locale_for_project(_ = response) do
+  def create_default_locale_for_project(response, _) do
     response
   end
 
-  defp create_default_locale_relation_for_owner({:ok, %Project{} = project}, %{} = user) do
-    default_locale = Translations.get_default_locale!(project.id)
-    result = create_user_locales(%{
+  defp create_default_locale_relation_for_owner({:ok, %Locale{} = locale}, %{} = user) do
+    create_user_locales(%{
       user_id: user.id,
-      locale_id: default_locale.id,
+      locale_id: locale.id,
       role: 1
     })
-
-    {:ok, project}
   end
 
   defp create_default_locale_relation_for_owner(_ = response, %{} = user) do
@@ -209,13 +203,13 @@ defmodule I18NAPI.Projects do
 
   """
   def safely_delete_project(%Project{} = project) do
-    chaneset = %{
+    changeset = %{
       is_removed: true,
       removed_at: DateTime.utc_now()
     }
 
     project
-    |> Project.remove_changeset(chaneset)
+    |> Project.remove_changeset(changeset)
     |> Repo.update()
     |> safely_delete_nested_entities(:locales)
     |> safely_delete_nested_entities(:translation_keys)
@@ -280,13 +274,11 @@ defmodule I18NAPI.Projects do
 
   """
   def get_user_roles!(project_id, user_id) do
-    query =
-      from(
-        ur in UserRoles,
-        where: ur.project_id == ^project_id and ur.user_id == ^user_id
-      )
-
-    Repo.one(query)
+    from(
+      ur in UserRoles,
+      where: ur.project_id == ^project_id and ur.user_id == ^user_id
+    )
+    |> Repo.one()
   end
 
   @doc """
@@ -400,13 +392,11 @@ defmodule I18NAPI.Projects do
 
   """
   def get_user_locales!(locale_id, user_id) do
-    query =
-      from(
-        ul in UserLocales,
-        where: ul.locale_id == ^locale_id and ul.user_id == ^user_id
-      )
-
-    Repo.one(query)
+    from(
+      ul in UserLocales,
+      where: ul.locale_id == ^locale_id and ul.user_id == ^user_id
+    )
+    |> Repo.one()
   end
 
   @doc """
@@ -493,9 +483,11 @@ defmodule I18NAPI.Projects do
     {:ok, parent}
   end
 
-  def safely_delete_entity(%I18NAPI.Translations.TranslationKey{} = child),
-    do: I18NAPI.Translations.safely_delete_translation_key(child)
+  def safely_delete_entity(%I18NAPI.Translations.TranslationKey{} = child) do
+    I18NAPI.Translations.safely_delete_translation_key(child)
+  end
 
-  def safely_delete_entity(%I18NAPI.Translations.Locale{} = child),
-    do: I18NAPI.Translations.safely_delete_locale(child)
+  def safely_delete_entity(%I18NAPI.Translations.Locale{} = child) do
+    I18NAPI.Translations.safely_delete_locale(child)
+  end
 end
