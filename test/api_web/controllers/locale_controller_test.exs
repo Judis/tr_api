@@ -20,7 +20,8 @@ defmodule I18NAPIWeb.LocaleControllerTest do
 
   def user_fixture(attrs \\ %{}) do
     {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
-    if (:error == result) do
+
+    if :error == result do
       with {:ok, new_user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
            do: new_user
     else
@@ -32,7 +33,7 @@ defmodule I18NAPIWeb.LocaleControllerTest do
     name: "some name",
     default_locale: "en"
   }
-  
+
   def project_fixture(conn) do
     {:ok, project} = @valid_project_attrs |> Projects.create_project(conn.user)
     project
@@ -41,6 +42,7 @@ defmodule I18NAPIWeb.LocaleControllerTest do
   setup %{conn: conn} do
     user = user_fixture()
     {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
+
     conn =
       conn
       |> put_req_header("accept", "application/json")
@@ -52,22 +54,22 @@ defmodule I18NAPIWeb.LocaleControllerTest do
 
   @create_attrs %{
     is_default: true,
-    locale: "some locale",
+    locale: "some locale"
   }
 
   @valid_attrs %{
     is_default: true,
-    locale: "another locale",
+    locale: "another locale"
   }
 
   @update_attrs %{
     is_default: false,
-    locale: "some updated locale",
+    locale: "some updated locale"
   }
   @invalid_attrs %{
     is_default: nil,
     is_removed: nil,
-    locale: nil,
+    locale: nil
   }
 
   def locale_fixture(project) do
@@ -104,7 +106,10 @@ defmodule I18NAPIWeb.LocaleControllerTest do
     test "renders errors when data is invalid", %{conn: conn} do
       project = project_fixture(conn)
       locale = locale_fixture(project)
-      conn = post(conn, project_locale_path(conn, :create, locale.project_id), locale: @invalid_attrs)
+
+      conn =
+        post(conn, project_locale_path(conn, :create, locale.project_id), locale: @invalid_attrs)
+
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -114,7 +119,10 @@ defmodule I18NAPIWeb.LocaleControllerTest do
       project = project_fixture(conn)
       locale = locale_fixture(project)
       project_id = project.id
-      conn = put(conn, project_locale_path(conn, :update, project_id, locale), locale: @update_attrs)
+
+      conn =
+        put(conn, project_locale_path(conn, :update, project_id, locale), locale: @update_attrs)
+
       assert %{"id" => id} = json_response(conn, 200)["data"]
 
       result_locale = Translations.get_locale!(locale.id)
@@ -124,7 +132,12 @@ defmodule I18NAPIWeb.LocaleControllerTest do
     test "renders errors when data is invalid", %{conn: conn} do
       project = project_fixture(conn)
       locale = locale_fixture(project)
-      conn = put(conn, project_locale_path(conn, :update, locale.project_id, locale), locale: @invalid_attrs)
+
+      conn =
+        put(conn, project_locale_path(conn, :update, locale.project_id, locale),
+          locale: @invalid_attrs
+        )
+
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -133,11 +146,14 @@ defmodule I18NAPIWeb.LocaleControllerTest do
     test "deletes chosen locale", %{conn: conn} do
       project = project_fixture(conn)
       locale = locale_fixture(project)
-      no_content_response = delete(conn, project_locale_path(conn, :delete, locale.project_id, locale))
+
+      no_content_response =
+        delete(conn, project_locale_path(conn, :delete, locale.project_id, locale))
 
       assert response(no_content_response, 204)
 
-      no_content_response = delete(conn, project_locale_path(conn, :show, locale.project_id, locale))
+      no_content_response =
+        delete(conn, project_locale_path(conn, :show, locale.project_id, locale))
 
       assert response(no_content_response, 204)
     end

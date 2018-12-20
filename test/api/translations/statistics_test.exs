@@ -67,7 +67,6 @@ defmodule I18NAPI.StatisticsTest do
       project = Projects.get_project!(project.id)
       assert project.total_count_of_translation_keys == 0
     end
-
   end
 
   describe "count_of_keys_at_locales" do
@@ -109,9 +108,9 @@ defmodule I18NAPI.StatisticsTest do
     end
 
     def translation_fixture(attrs, locale_id, translation_key_id) do
-
-      attrs = %{translation_key_id: translation_key_id}
-              |> Enum.into(attrs)
+      attrs =
+        %{translation_key_id: translation_key_id}
+        |> Enum.into(attrs)
 
       {:ok, translation} = Translations.create_translation(attrs, locale_id)
 
@@ -125,7 +124,9 @@ defmodule I18NAPI.StatisticsTest do
       translation_key_fixture(@alter_translation_key_attrs, project.id)
 
       co_verified_k = Statistics.calculate_count_of_keys_at_locale_by_status(locale.id, :verified)
-      co_unverified_k = Statistics.calculate_count_of_keys_at_locale_by_status(locale.id, :unverified)
+
+      co_unverified_k =
+        Statistics.calculate_count_of_keys_at_locale_by_status(locale.id, :unverified)
 
       assert co_verified_k == 0
       assert co_unverified_k == 2
@@ -154,7 +155,6 @@ defmodule I18NAPI.StatisticsTest do
       assert locale.count_of_verified_keys == 0
       assert locale.count_of_translated_keys == 2
       assert locale.count_of_untranslated_keys == 0
-
     end
 
     test "recalculate_count_of_untranslated_keys_at_locales/1 when " do

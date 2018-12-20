@@ -23,6 +23,7 @@ defmodule I18NAPIWeb.ProjectController do
 
   def show(conn, %{"id" => id}) do
     project = Projects.get_project!(id)
+
     case project.is_removed do
       false -> render(conn, "show.json", project: project)
       _ -> conn |> put_status(204) |> render("204.json")
@@ -31,6 +32,7 @@ defmodule I18NAPIWeb.ProjectController do
 
   def update(conn, %{"id" => id, "project" => project_params}) do
     project = Projects.get_project!(id)
+
     with {:ok, %Project{} = project} <- Projects.update_project(project, project_params) do
       case project.is_removed do
         false -> render(conn, "show.json", project: project)

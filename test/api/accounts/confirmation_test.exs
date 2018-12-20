@@ -14,13 +14,15 @@ defmodule I18NAPI.ConfirmationTest do
     email: "test@email.test",
     password: "Qw!23456",
     password_confirmation: "Qw!23456",
-    source: "test source",
+    source: "test source"
   }
 
   def user_fixture() do
-    {:ok, user} = %User{}
-    |> User.changeset(Map.put(@user_attrs, :confirmation_token, Utilites.random_string(32)))
-    |> Repo.insert()
+    {:ok, user} =
+      %User{}
+      |> User.changeset(Map.put(@user_attrs, :confirmation_token, Utilites.random_string(32)))
+      |> Repo.insert()
+
     user
   end
 
@@ -29,12 +31,13 @@ defmodule I18NAPI.ConfirmationTest do
       assert {:ok, %User{}} = Confirmation.send_confirmation_email(user_fixture())
     end
 
-    test"confirm_user_by_token" do
+    test "confirm_user_by_token" do
       user = user_fixture()
       refute user.is_confirmed
 
-      user = with {:ok} <- Confirmation.confirm_user_by_token(user.confirmation_token), do:
-        Accounts.get_user!(user.id)
+      user =
+        with {:ok} <- Confirmation.confirm_user_by_token(user.confirmation_token),
+             do: Accounts.get_user!(user.id)
 
       assert user.is_confirmed
     end

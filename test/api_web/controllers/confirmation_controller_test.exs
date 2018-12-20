@@ -21,7 +21,9 @@ defmodule I18NAPIWeb.ConfirmationControllerTest do
   def fixture(:user) do
     {:ok, user} =
       %User{}
-      |> User.changeset(Map.put(@fixture_user_attrs, :confirmation_token, Utilites.random_string(32)))
+      |> User.changeset(
+        Map.put(@fixture_user_attrs, :confirmation_token, Utilites.random_string(32))
+      )
       |> Repo.insert()
 
     Confirmation.send_confirmation_email(user)

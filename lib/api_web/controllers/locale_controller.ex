@@ -26,8 +26,9 @@ defmodule I18NAPIWeb.LocaleController do
 
   def show(conn, %{"id" => id}) do
     locale = Translations.get_locale!(id)
+
     case locale.is_removed do
-      false ->render(conn, "show.json", locale: locale)
+      false -> render(conn, "show.json", locale: locale)
       _ -> conn |> put_status(204) |> render("204.json")
     end
   end
@@ -37,7 +38,7 @@ defmodule I18NAPIWeb.LocaleController do
 
     with {:ok, %Locale{} = locale} <- Translations.update_locale(locale, locale_params) do
       case locale.is_removed do
-        false ->render(conn, "show.json", locale: locale)
+        false -> render(conn, "show.json", locale: locale)
         _ -> conn |> put_status(204) |> render("204.json")
       end
     end
@@ -48,7 +49,7 @@ defmodule I18NAPIWeb.LocaleController do
 
     with {:ok, %Locale{} = locale} <- Translations.safely_delete_locale(locale) do
       case locale.is_removed do
-        false ->render(conn, "show.json", locale: locale)
+        false -> render(conn, "show.json", locale: locale)
         _ -> conn |> put_status(204) |> render("204.json")
       end
     end

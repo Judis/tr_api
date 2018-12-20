@@ -18,7 +18,8 @@ defmodule I18NAPIWeb.ProjectControllerTest do
 
   def user_fixture(attrs \\ %{}) do
     {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
-    if (:error == result) do
+
+    if :error == result do
       with {:ok, new_user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
            do: new_user
     else
@@ -32,13 +33,15 @@ defmodule I18NAPIWeb.ProjectControllerTest do
   }
   @update_attrs %{
     name: "some updated name",
-    default_locale: "en" # not changed
+    # not changed
+    default_locale: "en"
   }
   @invalid_attrs %{is_removed: nil, name: nil, removed_at: nil}
 
   setup %{conn: conn} do
     user = user_fixture()
     {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
+
     conn =
       conn
       |> put_req_header("accept", "application/json")
@@ -71,7 +74,6 @@ defmodule I18NAPIWeb.ProjectControllerTest do
       assert project.name == @create_attrs.name
       assert project.default_locale == @create_attrs.default_locale
     end
-
   end
 
   describe "create project" do
@@ -116,9 +118,8 @@ defmodule I18NAPIWeb.ProjectControllerTest do
       no_content_response = delete(conn, project_path(conn, :delete, project))
       assert response(no_content_response, 204)
 
-      no_content_response= get(conn, project_path(conn, :show, project.id))
+      no_content_response = get(conn, project_path(conn, :show, project.id))
       assert response(no_content_response, 204)
     end
   end
-
 end

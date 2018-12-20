@@ -40,7 +40,6 @@ defmodule I18NAPI.ProjectsTest do
   end
 
   describe "projects" do
-
     @update_project_attrs %{
       name: "some updated name"
     }
@@ -59,6 +58,7 @@ defmodule I18NAPI.ProjectsTest do
 
     alias I18NAPI.Translations
     alias I18NAPI.Projects.UserLocales
+
     test "create_project/1 with valid data creates a project" do
       user = user_fixture()
       {:ok, project} = Projects.create_project(@valid_project_attrs, user)
@@ -85,7 +85,10 @@ defmodule I18NAPI.ProjectsTest do
 
     test "update_project/2 with invalid data returns error changeset" do
       project = project_fixture(%{}, user_fixture())
-      assert {:error, %Ecto.Changeset{}} = Projects.update_project(project, @invalid_project_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Projects.update_project(project, @invalid_project_attrs)
+
       assert project == Projects.get_project!(project.id)
     end
 

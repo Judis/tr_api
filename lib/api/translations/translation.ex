@@ -18,7 +18,9 @@ defmodule I18NAPI.Translations.Translation do
     translation
     |> cast(attrs, [:value, :locale_id, :status, :translation_key_id, :is_removed, :removed_at])
     |> validate_required([:value, :status, :locale_id, :translation_key_id])
-    |> unique_constraint(:translation, name: :translations_locale_id_translation_key_id_is_removed_index)
+    |> unique_constraint(:translation,
+      name: :translations_locale_id_translation_key_id_is_removed_index
+    )
   end
 
   @doc false
