@@ -4,7 +4,6 @@ defmodule I18NAPI.Translations.Statistics do
   """
   import Ecto.Query, warn: false
   alias I18NAPI.Repo
-  alias I18NAPI.Utilites
   alias I18NAPI.Projects
   alias I18NAPI.Projects.Project
   alias I18NAPI.Translations
@@ -181,7 +180,7 @@ defmodule I18NAPI.Translations.Statistics do
   def update_all_locale_counts(locale_id, project_id \\ nil) do
     project_id =
       unless is_integer(project_id) do
-        project_id = Translations.get_locale!(locale_id).id
+        Translations.get_locale!(locale_id).id
       else
         project_id
       end
