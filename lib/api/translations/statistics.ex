@@ -23,73 +23,87 @@ defmodule I18NAPI.Translations.Statistics do
 
   """
   def update_total_count_of_translation_keys(project_id, operation, value \\ 1)
-  def update_total_count_of_translation_keys(project_id, operation, value)
-      when ((:inc == operation) or (:dec == operation)) and is_integer(value) do
 
-    value = case operation do
-      :inc ->  value
-      :dec -> -value
-    end
-
-    query = from(p in Project, where: [id: ^project_id])
-    Repo.update_all(query, inc: [total_count_of_translation_keys: value])
+  def update_total_count_of_translation_keys(project_id, :dec, value) when is_integer(value) do
+    update_total_count_of_translation_keys(project_id, :inc, value * -1)
   end
 
-  def update_total_count_of_translation_keys_async(project_id, operation, value \\ 1)
+  def update_total_count_of_translation_keys(project_id, :inc, value) when is_integer(value) do
+    from(p in Project, where: [id: ^project_id])
+    |> Repo.update_all(inc: [total_count_of_translation_keys: value])
+  end
+
   def update_total_count_of_translation_keys_async(project_id, operation, value) do
-    spawn(I18NAPI.Translations.Statistics, :update_total_count_of_translation_keys, [project_id, operation, value])
+    spawn(
+      I18NAPI.Translations.Statistics,
+      :update_total_count_of_translation_keys,
+      [project_id, operation, value]
+    )
   end
 
-  def update_basic_statistics(project_id, operation, value \\ 1)
-  def update_basic_statistics(project_id, operation, value) do
+  def update_basic_statistics(project_id, operation, value \\ 1) do
     update_total_count_of_translation_keys(project_id, operation, value)
     recalculate_count_of_untranslated_keys_at_locales(project_id)
   end
 
-  def update_basic_statistics_async(project_id, operation, value \\ 1)
-  def update_basic_statistics_async(project_id, operation, value) do
-    spawn(I18NAPI.Translations.Statistics, :update_basic_statistics, [project_id, operation, value])
+  def update_basic_statistics_async(project_id, operation, value \\ 1) do
+    spawn(I18NAPI.Translations.Statistics, :update_basic_statistics, [
+      project_id,
+      operation,
+      value
+    ])
   end
 
   def recalculate_count_of_untranslated_keys_at_locales(project_id) do
-      Repo.transaction(fn ->
-        total = Projects.get_total_count_of_translation_keys(project_id)
+    Repo.transaction(fn ->
+      total = Projects.get_total_count_of_translation_keys(project_id)
 
-        from(l in Locale, where: [project_id: ^project_id],
-        update: [set: [count_of_untranslated_keys: fragment("(? - ?)", ^total, l.count_of_translated_keys)]])
-        |> Repo.update_all([])
-
-      end)
+      from(l in Locale,
+        where: [project_id: ^project_id],
+        update: [
+          set: [
+            count_of_untranslated_keys: fragment("(? - ?)", ^total, l.count_of_translated_keys)
+          ]
+        ]
+      )
+      |> Repo.update_all([])
+    end)
   end
 
   def recalculate_count_of_untranslated_keys_at_locales_async(project_id) do
-    spawn(I18NAPI.Translations.Statistics, :recalculate_count_of_untranslated_keys_at_locales, [project_id])
+    spawn(I18NAPI.Translations.Statistics, :recalculate_count_of_untranslated_keys_at_locales, [
+      project_id
+    ])
   end
 
   def update_count_of_keys_at_locales(locale_id, operation, key, value \\ 1)
-  def update_count_of_keys_at_locales(locale_id, operation, key, value)
-      when ((:inc == operation) or (:dec == operation))
-           and is_integer(value) do
 
-    value = case operation do
-      :inc ->  value
-      :dec -> -value
-    end
+  def update_count_of_keys_at_locales(locale_id, operation, key, value)
+      when (:inc == operation or :dec == operation) and is_integer(value) do
+    value =
+      case operation do
+        :inc -> value
+        :dec -> -value
+      end
 
     query = from(l in Locale, where: [id: ^locale_id])
 
-      case key do
-        :translated   -> Repo.update_all(query, inc: [count_of_translated_keys: value])
-        :untranslated -> Repo.update_all(query, inc: [count_of_untranslated_keys: value])
-        :verified     -> Repo.update_all(query, inc: [count_of_verified_keys: value])
-        :not_verified -> Repo.update_all(query, inc: [count_of_not_verified_keys: value])
-        :need_check   -> Repo.update_all(query, inc: [count_of_keys_need_check: value])
-      end
+    case key do
+      :translated -> Repo.update_all(query, inc: [count_of_translated_keys: value])
+      :untranslated -> Repo.update_all(query, inc: [count_of_untranslated_keys: value])
+      :verified -> Repo.update_all(query, inc: [count_of_verified_keys: value])
+      :not_verified -> Repo.update_all(query, inc: [count_of_not_verified_keys: value])
+    end
   end
 
   def update_count_of_keys_at_locales_async(locale_id, operation, key, value \\ 1)
+
   def update_count_of_keys_at_locales_async(locale_id, operation, key, value) do
-    spawn(I18NAPI.Translations.Statistics, :update_count_of_keys_at_locales, [locale_id, operation, value])
+    spawn(
+      I18NAPI.Translations.Statistics,
+      :update_count_of_keys_at_locales,
+      [locale_id, operation, key, value]
+    )
   end
 
   def update_count_choice(locale_id, prev_status, new_status) do
@@ -104,10 +118,6 @@ defmodule I18NAPI.Translations.Statistics do
         update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
         update_count_of_keys_at_locales(locale_id, :inc, :verified)
 
-      {:empty, :need_check} ->
-        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
-        update_count_of_keys_at_locales(locale_id, :inc, :need_check)
-
       {:unverified, :empty} ->
         update_count_of_keys_at_locales(locale_id, :dec, :translated)
         update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
@@ -117,12 +127,6 @@ defmodule I18NAPI.Translations.Statistics do
         update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
         update_count_of_keys_at_locales(locale_id, :inc, :verified)
 
-      {:unverified, :need_check} ->
-        update_count_of_keys_at_locales(locale_id, :dec, :translated)
-        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
-        update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
-        update_count_of_keys_at_locales(locale_id, :inc, :need_check)
-
       {:verified, :empty} ->
         update_count_of_keys_at_locales(locale_id, :dec, :translated)
         update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
@@ -131,35 +135,17 @@ defmodule I18NAPI.Translations.Statistics do
       {:verified, :unverified} ->
         update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
         update_count_of_keys_at_locales(locale_id, :inc, :verified)
-
-      {:verified, :need_check} ->
-        update_count_of_keys_at_locales(locale_id, :dec, :translated)
-        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
-        update_count_of_keys_at_locales(locale_id, :dec, :verified)
-        update_count_of_keys_at_locales(locale_id, :inc, :need_check)
-
-      {:need_check, :empty} ->
-        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
-        update_count_of_keys_at_locales(locale_id, :dec, :need_check)
-
-      {:need_check, :verified} ->
-        update_count_of_keys_at_locales(locale_id, :inc, :translated)
-        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
-        update_count_of_keys_at_locales(locale_id, :dec, :need_check)
-        update_count_of_keys_at_locales(locale_id, :inc, :verified)
-
-      {:need_check, :unverified} ->
-        update_count_of_keys_at_locales(locale_id, :inc, :translated)
-        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
-        update_count_of_keys_at_locales(locale_id, :dec, :need_check)
-        update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
-
-        _ ->
+      _ ->
+        nil
     end
   end
 
   def update_count_choice_async(locale_id, prev_status, new_status) do
-    spawn(I18NAPI.Translations.Statistics, :update_count_choice, [locale_id, prev_status, new_status])
+    spawn(I18NAPI.Translations.Statistics, :update_count_choice, [
+      locale_id,
+      prev_status,
+      new_status
+    ])
   end
 
   def calculate_count_of_keys_at_locale_by_status(locale_id, status, is_removed \\ false) do
@@ -196,11 +182,12 @@ defmodule I18NAPI.Translations.Statistics do
 
   """
   def update_all_locale_counts(locale_id, project_id \\ nil) do
-    project_id = unless is_integer(project_id) do
-      project_id = Translations.get_locale!(locale_id).id
-    else
-      project_id
-    end
+    project_id =
+      unless is_integer(project_id) do
+        project_id = Translations.get_locale!(locale_id).id
+      else
+        project_id
+      end
 
     Repo.transaction(fn ->
       total = Projects.get_total_count_of_translation_keys(project_id)
@@ -211,13 +198,16 @@ defmodule I18NAPI.Translations.Statistics do
 
       from(l in Locale,
         where: [id: ^locale_id],
-        update: [set: [
-          total_count_of_translation_keys: ^total,
-          count_of_verified_keys: ^verified,
-          count_of_not_verified_keys: ^unverified,
-          count_of_translated_keys: ^translated,
-          count_of_untranslated_keys: ^untranslated
-        ]])
+        update: [
+          set: [
+            total_count_of_translation_keys: ^total,
+            count_of_verified_keys: ^verified,
+            count_of_not_verified_keys: ^unverified,
+            count_of_translated_keys: ^translated,
+            count_of_untranslated_keys: ^untranslated
+          ]
+        ]
+      )
       |> Repo.update_all([])
     end)
   end
@@ -242,27 +232,31 @@ defmodule I18NAPI.Translations.Statistics do
     Repo.transaction(fn ->
       total = calculate_total_count_of_translation_keys_at_project(project_id, false)
 
-      locales_summary = from(
-        l in Locale,
-        where: [project_id: ^project_id],
-        select: %{
-          verified: sum(l.count_of_verified_keys),
-          unverified: sum(l.count_of_not_verified_keys),
-          translated: sum(l.count_of_translated_keys),
-          untranslated: sum(l.count_of_untranslated_keys)
-        }
-      )
+      locales_summary =
+        from(
+          l in Locale,
+          where: [project_id: ^project_id],
+          select: %{
+            verified: sum(l.count_of_verified_keys),
+            unverified: sum(l.count_of_not_verified_keys),
+            translated: sum(l.count_of_translated_keys),
+            untranslated: sum(l.count_of_untranslated_keys)
+          }
+        )
 
       from(p in Project,
         join: locale in subquery(locales_summary),
         where: [id: ^project_id],
-        update: [set: [
-          total_count_of_translation_keys: ^total,
-          count_of_verified_keys: locale.verified,
-          count_of_not_verified_keys: locale.unverified,
-          count_of_translated_keys: locale.translated,
-          count_of_untranslated_keys: locale.untranslated
-        ]])
+        update: [
+          set: [
+            total_count_of_translation_keys: ^total,
+            count_of_verified_keys: locale.verified,
+            count_of_not_verified_keys: locale.unverified,
+            count_of_translated_keys: locale.translated,
+            count_of_untranslated_keys: locale.untranslated
+          ]
+        ]
+      )
       |> Repo.update_all([])
     end)
   end
@@ -270,5 +264,4 @@ defmodule I18NAPI.Translations.Statistics do
   def update_all_project_counts_async(project_id) do
     spawn(I18NAPI.Translations.Statistics, :update_all_project_counts, [project_id])
   end
-
 end

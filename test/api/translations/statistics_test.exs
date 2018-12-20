@@ -236,22 +236,5 @@ defmodule I18NAPI.StatisticsTest do
 
       assert locale.count_of_not_verified_keys == 2
     end
-
-    test "update_count_of_keys_at_locales/4 increment and decrement for :count_of_keys_need_check" do
-      project = project_fixture(%{}, user_fixture())
-      locale = locale_fixture(project.id)
-
-      assert locale.count_of_keys_need_check == 0
-
-      Statistics.update_count_of_keys_at_locales(locale.id, :inc, :need_check, 4)
-      locale = Translations.get_locale!(locale.id)
-
-      assert locale.count_of_keys_need_check == 4
-
-      Statistics.update_count_of_keys_at_locales(locale.id, :dec, :need_check, 2)
-      locale = Translations.get_locale!(locale.id)
-
-      assert locale.count_of_keys_need_check == 2
-    end
   end
 end

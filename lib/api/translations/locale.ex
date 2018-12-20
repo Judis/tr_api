@@ -14,7 +14,6 @@ defmodule I18NAPI.Translations.Locale do
     field(:count_of_verified_keys, :integer, default: 0)
     field(:count_of_translated_keys, :integer, default: 0)
     field(:count_of_untranslated_keys, :integer, default: 0)
-    field(:count_of_keys_need_check, :integer, default: 0)
 
     belongs_to(:project, I18NAPI.Projects.Project)
     has_many(:user_locales, UserLocales, on_delete: :delete_all)

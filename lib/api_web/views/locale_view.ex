@@ -21,7 +21,6 @@ defmodule I18NAPIWeb.LocaleView do
       count_of_verified_keys: locale.count_of_verified_keys,
       count_of_translated_keys: locale.count_of_translated_keys,
       count_of_untranslated_keys: locale.count_of_untranslated_keys,
-      count_of_keys_need_check: locale.count_of_keys_need_check,
       is_removed: locale.is_removed,
       removed_at: locale.removed_at
     }

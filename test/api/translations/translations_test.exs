@@ -398,7 +398,7 @@ defmodule I18NAPI.TranslationsTest do
       assert updated_translation.status == @update_translation_attrs.status
       # ----------------------------------------------------
       alternative_translation = Translations.get_translation!(alternative_translation.id)
-      assert alternative_translation.status == :need_check
+      assert alternative_translation.status == :unverified
     end
 
     test "update_translation/2 with invalid data returns error changeset" do
