@@ -78,22 +78,21 @@ defmodule I18NAPI.Translations.Statistics do
 
   def update_count_of_keys_at_locales(locale_id, operation, key, value \\ 1)
 
-  def update_count_of_keys_at_locales(locale_id, operation, key, value)
-      when (:inc == operation or :dec == operation) and is_integer(value) do
-    value =
-      case operation do
-        :inc -> value
-        :dec -> -value
+  def update_count_of_keys_at_locales(locale_id, :dec, key, value) when is_integer(value) do
+    update_count_of_keys_at_locales(locale_id, :inc, key, value * -1)
+  end
+
+  def update_count_of_keys_at_locales(locale_id, :inc, key, value) when is_integer(value) do
+    counter_key =
+      case key do
+        :translated -> :count_of_translated_keys
+        :untranslated -> :count_of_untranslated_keys
+        :verified -> :count_of_verified_keys
+        :not_verified -> :count_of_not_verified_keys
       end
 
-    query = from(l in Locale, where: [id: ^locale_id])
-
-    case key do
-      :translated -> Repo.update_all(query, inc: [count_of_translated_keys: value])
-      :untranslated -> Repo.update_all(query, inc: [count_of_untranslated_keys: value])
-      :verified -> Repo.update_all(query, inc: [count_of_verified_keys: value])
-      :not_verified -> Repo.update_all(query, inc: [count_of_not_verified_keys: value])
-    end
+    from(l in Locale, where: [id: ^locale_id])
+    |> Repo.update_all(inc: Keyword.new([{counter_key, value}]))
   end
 
   def update_count_of_keys_at_locales_async(locale_id, operation, key, value \\ 1)
@@ -107,45 +106,43 @@ defmodule I18NAPI.Translations.Statistics do
   end
 
   def update_count_choice(locale_id, prev_status, new_status) do
-    case {prev_status, new_status} do
-      {:empty, :unverified} ->
+    case prev_status do
+      :empty ->
         update_count_of_keys_at_locales(locale_id, :inc, :translated)
         update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
-        update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
 
-      {:empty, :verified} ->
-        update_count_of_keys_at_locales(locale_id, :inc, :translated)
-        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
-        update_count_of_keys_at_locales(locale_id, :inc, :verified)
-
-      {:unverified, :empty} ->
-        update_count_of_keys_at_locales(locale_id, :dec, :translated)
-        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
+      :unverified ->
         update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
 
-      {:unverified, :verified} ->
-        update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
-        update_count_of_keys_at_locales(locale_id, :inc, :verified)
-
-      {:verified, :empty} ->
-        update_count_of_keys_at_locales(locale_id, :dec, :translated)
-        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
+      :verified ->
         update_count_of_keys_at_locales(locale_id, :dec, :verified)
 
-      {:verified, :unverified} ->
-        update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
+      _ ->
+        nil
+    end
+
+    case new_status do
+      :empty ->
+        update_count_of_keys_at_locales(locale_id, :dec, :translated)
+        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
+
+      :unverified ->
+        update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
+
+      :verified ->
         update_count_of_keys_at_locales(locale_id, :inc, :verified)
+
       _ ->
         nil
     end
   end
 
   def update_count_choice_async(locale_id, prev_status, new_status) do
-    spawn(I18NAPI.Translations.Statistics, :update_count_choice, [
-      locale_id,
-      prev_status,
-      new_status
-    ])
+    spawn(
+      I18NAPI.Translations.Statistics,
+      :update_count_choice,
+      [locale_id, prev_status, new_status]
+    )
   end
 
   def calculate_count_of_keys_at_locale_by_status(locale_id, status, is_removed \\ false) do
