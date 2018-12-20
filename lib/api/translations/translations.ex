@@ -519,7 +519,7 @@ defmodule I18NAPI.Translations do
       on: lcl.id == tr.locale_id,
       where: tr.translation_key_id == ^translation_key_id and not lcl.is_default
     )
-    |> Repo.update_all(set: [status: "need_check"])
+    |> Repo.update_all(set: [status: "unverified"])
   end
 
   @doc """
