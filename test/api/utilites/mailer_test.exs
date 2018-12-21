@@ -37,4 +37,9 @@ defmodule I18NAPI.MailerTest do
     UserEmail.create_restoration_email(user_fixture()) |> I18NAPI.Mailer.deliver
     assert_email_sent()
   end
+
+  test "deliver restoration email" do
+    UserEmail.create_restoration_email(user_fixture()) |> I18NAPI.Mailer.deliver
+    assert_email_sent()
+  end
 end
