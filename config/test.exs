@@ -32,3 +32,7 @@ config :bcrypt_elixir, :log_rounds, 4
 
 config :api, I18NAPI.Mailer,
        adapter: Swoosh.Adapters.Test
+
+config :api,
+       sender: "Dr B Banner",
+       sender_email: "hulk.smash@example.com"

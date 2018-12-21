@@ -6,7 +6,7 @@ defmodule I18NAPI.UserEmail do
   def create_confirmation_email(user) do
     new()
     |> to({user.name, user.email})
-    |> from({"Dr B Banner", "hulk.smash@example.com"})
+    |> from({Application.fetch_env!(:api, :sender), Application.fetch_env!(:api, :sender_email)})
     |> subject("i18n confirmation email")
     |> render_body("confirmation_email.html", %{
       username: user.name,
