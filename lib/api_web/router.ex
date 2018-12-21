@@ -20,6 +20,8 @@ defmodule I18NAPIWeb.Router do
     post("/sign_in", SessionController, :sign_in)
     post("/sign_up", RegistrationController, :sign_up)
     post("/confirm", ConfirmationController, :confirm)
+    post("/request_reset_password", RestorationController, :request)
+    post("/reset_password", RestorationController, :reset)
     pipe_through(:authenticated)
     resources("/users", UserController)
 
