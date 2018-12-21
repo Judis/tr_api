@@ -1,0 +1,7 @@
+<div>
+  <h1>Dear, <%= @username %>!</h1>
+ <body>
+   <p> Please, use this token for restore you password <%= @restore_token %>
+  <p>or follow this link<a href=<%= @restoration_link %>><%= @restoration_link %></a></p>
+ </body>
+</div>
