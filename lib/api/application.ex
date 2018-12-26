@@ -4,6 +4,7 @@ defmodule I18NAPI.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
+    # Deprecated in Elixir 1.5
     import Supervisor.Spec
 
     # Define workers and child supervisors to be supervised
@@ -11,7 +12,9 @@ defmodule I18NAPI.Application do
       # Start the Ecto repository
       supervisor(I18NAPI.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(I18NAPIWeb.Endpoint, [])
+      supervisor(I18NAPIWeb.Endpoint, []),
+      # Start the Statistics worker
+      supervisor(I18NAPI.Translations.StatisticsSupervisor, [])
       # Start your own worker by calling: I18NAPI.Worker.start_link(arg1, arg2, arg3)
       # worker(I18NAPI.Worker, [arg1, arg2, arg3]),
     ]
