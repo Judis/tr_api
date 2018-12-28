@@ -350,6 +350,51 @@ defmodule I18NAPI.Translations.Statistics do
   end
 
   @doc """
+  Updated all statistics fields on all child locales for this project
+
+  ## Examples
+
+      iex> update_all_child_locales(project_id)
+
+  """
+  def update_all_child_locales(project_id) do
+    total = Projects.get_total_count_of_translation_keys(project_id)
+
+    Translations.list_locale_identities(project_id)
+    |> process_update_locales_by_id_list(total)
+  end
+
+  defp process_update_locales_by_id_list([], _), do: []
+
+  defp process_update_locales_by_id_list([locale_id | tail], total_counts) do
+    Repo.transaction(fn ->
+      verified = calculate_count_of_keys_at_locale_by_status(locale_id, :verified, false)
+      unverified = calculate_count_of_keys_at_locale_by_status(locale_id, :unverified, false)
+      translated = verified + unverified
+      untranslated = total_counts - translated
+
+      from(
+        l in Locale,
+        where: [
+          id: ^locale_id
+        ],
+        update: [
+          set: [
+            total_count_of_translation_keys: ^total_counts,
+            count_of_verified_keys: ^verified,
+            count_of_not_verified_keys: ^unverified,
+            count_of_translated_keys: ^translated,
+            count_of_untranslated_keys: ^untranslated
+          ]
+        ]
+      )
+      |> Repo.update_all([])
+    end)
+
+    process_update_locales_by_id_list(tail, total_counts)
+  end
+
+  @doc """
   Async updated all statistics fields on locale
 
   If not transmit project_id field, function will get additional query to Locale
