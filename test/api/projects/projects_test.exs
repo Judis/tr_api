@@ -40,7 +40,6 @@ defmodule I18NAPI.ProjectsTest do
   end
 
   describe "projects" do
-
     @update_project_attrs %{
       name: "some updated name"
     }
@@ -57,10 +56,19 @@ defmodule I18NAPI.ProjectsTest do
       assert Projects.get_project!(project.id) == project
     end
 
+    alias I18NAPI.Translations
+    alias I18NAPI.Projects.UserLocales
+
     test "create_project/1 with valid data creates a project" do
-      assert {:ok, %Project{} = project} = Projects.create_project(@valid_project_attrs, user_fixture())
+      user = user_fixture()
+      {:ok, project} = Projects.create_project(@valid_project_attrs, user)
+      assert %Project{} = project
       assert project.is_removed == false
       assert project.default_locale == @valid_project_attrs.default_locale
+      assert project.total_count_of_translation_keys == 0
+      locale = Translations.get_default_locale!(project.id)
+      user_locale = Projects.get_user_locales!(locale.id, user.id)
+      assert %UserLocales{} = user_locale
     end
 
     test "create_project/1 with invalid data returns error changeset" do
@@ -77,7 +85,10 @@ defmodule I18NAPI.ProjectsTest do
 
     test "update_project/2 with invalid data returns error changeset" do
       project = project_fixture(%{}, user_fixture())
-      assert {:error, %Ecto.Changeset{}} = Projects.update_project(project, @invalid_project_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Projects.update_project(project, @invalid_project_attrs)
+
       assert project == Projects.get_project!(project.id)
     end
 
@@ -110,18 +121,18 @@ defmodule I18NAPI.ProjectsTest do
     }
 
     def user_roles_fixture(attrs \\ %{}, %User{} = user) do
-      project_id = project_fixture(@valid_project_attrs, user).id
+      project_id = project_fixture(attrs, user).id
 
       Projects.get_user_roles!(project_id, user.id)
     end
 
     test "list_user_roles/0 returns all user_roles" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert Projects.list_user_roles() == [user_roles]
     end
 
     test "get_user_roles!/1 returns the user_roles with given id" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert Projects.get_user_roles!(user_roles.id) == user_roles
     end
 
@@ -153,26 +164,26 @@ defmodule I18NAPI.ProjectsTest do
     end
 
     test "update_user_roles/2 with valid data updates the user_roles" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert {:ok, user_roles} = Projects.update_user_roles(user_roles, @update_attrs)
       assert %UserRoles{} = user_roles
       assert user_roles.role == :translator
     end
 
     test "update_user_roles/2 with invalid data returns error changeset" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert {:error, %Ecto.Changeset{}} = Projects.update_user_roles(user_roles, @invalid_attrs)
       assert user_roles == Projects.get_user_roles!(user_roles.id)
     end
 
     test "delete_user_roles/1 deletes the user_roles" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert {:ok, %UserRoles{}} = Projects.delete_user_roles(user_roles)
       assert_raise Ecto.NoResultsError, fn -> Projects.get_user_roles!(user_roles.id) end
     end
 
     test "change_user_roles/1 returns a user_roles changeset" do
-      user_roles = user_roles_fixture(%{}, user_fixture())
+      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
       assert %Ecto.Changeset{} = Projects.change_user_roles(user_roles)
     end
   end

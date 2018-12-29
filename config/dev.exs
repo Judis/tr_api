@@ -53,3 +53,6 @@ config :api, I18NAPI.Guardian,
   verify_issuer: true,
   secret_key: "dev",
   serializer: I18NAPI.Guardian
+
+config :api, I18NAPI.Mailer,
+       adapter: Swoosh.Adapters.Local

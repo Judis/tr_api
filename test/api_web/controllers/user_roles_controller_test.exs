@@ -26,7 +26,11 @@ defmodule I18NAPIWeb.UserRolesControllerTest do
 
   describe "create user_roles" do
     test "renders user_roles when data is valid", %{conn: conn} do
-      conn = post(conn, user_roles_path(conn, :create, fixture(:user_roles).project_id), user_roles: @create_attrs)
+      conn =
+        post(conn, user_roles_path(conn, :create, fixture(:user_roles).project_id),
+          user_roles: @create_attrs
+        )
+
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, user_roles_path(conn, :show, id))

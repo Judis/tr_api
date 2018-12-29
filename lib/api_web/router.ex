@@ -22,7 +22,6 @@ defmodule I18NAPIWeb.Router do
     post("/confirm", ConfirmationController, :confirm)
     post("/request_reset_password", RestorationController, :request)
     post("/reset_password", RestorationController, :reset)
-
     pipe_through(:authenticated)
     resources("/users", UserController)
 

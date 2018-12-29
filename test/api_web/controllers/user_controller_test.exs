@@ -60,6 +60,7 @@ defmodule I18NAPIWeb.UserControllerTest do
   setup %{conn: conn} do
     user = fixture(:user)
     {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
+
     conn =
       conn
       |> put_req_header("accept", "application/json")
@@ -71,7 +72,7 @@ defmodule I18NAPIWeb.UserControllerTest do
   describe "index" do
     test "lists all users", %{conn: conn} do
       conn = get(conn, user_path(conn, :index))
-      [result|a] = json_response(conn, 200)["data"]
+      [result | _] = json_response(conn, 200)["data"]
       assert result["name"] == @fixture_user_attrs.name
       assert result["email"] == @fixture_user_attrs.email
     end
@@ -94,7 +95,6 @@ defmodule I18NAPIWeb.UserControllerTest do
   end
 
   describe "update user" do
-
     test "renders user when data is valid", %{conn: conn} do
       user = fixture(:alter_user)
       conn = put(conn, user_path(conn, :update, user), user: @update_attrs)
@@ -113,21 +113,15 @@ defmodule I18NAPIWeb.UserControllerTest do
   end
 
   describe "delete user" do
-    setup [:create_user]
-
     test "deletes chosen user", %{conn: conn} do
       user = fixture(:alter_user)
-      conn = delete(conn, user_path(conn, :delete, user))
-      assert response(conn, 204)
+      no_content_response = delete(conn, user_path(conn, :delete, user))
 
-      assert_error_sent(404, fn ->
-        get(conn, user_path(conn, :show, user))
-      end)
+      assert response(no_content_response, 204)
+
+      no_content_response = delete(conn, user_path(conn, :show, user))
+
+      assert response(no_content_response, 204)
     end
-  end
-
-  defp create_user(_) do
-    user = fixture(:user)
-    {:ok, user: user}
   end
 end
