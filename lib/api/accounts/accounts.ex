@@ -127,4 +127,116 @@ defmodule I18NAPI.Accounts do
         end
     end
   end
+
+  @doc """
+  Find user by confirmation token.
+
+  ## Examples
+
+      iex> find_user_by_confirmation_token(confirmation_token)
+      {:ok, %User{}}
+
+      iex> find_user_by_confirmation_token(confirmation_token)
+      {:error, :unauthorized}
+
+  """
+  def find_user_by_confirmation_token(confirmation_token) do
+    case Repo.get_by(User, confirmation_token: confirmation_token) do
+      nil -> {:error, :unauthorized}
+      user -> {:ok, user}
+    end
+  end
+
+  def update_field_confirmation_sent_at(%User{} = user) do
+    attrs = %{
+      confirmation_sent_at: NaiveDateTime.utc_now()
+    }
+
+    user
+    |> User.confirmation_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Find user by restore token.
+
+  ## Examples
+
+      iex> find_user_by_restore_token(restore_token)
+      {:ok, %User{}}
+
+      iex> find_user_by_restore_token(restore_token)
+      {:error, :unauthorized}
+
+  """
+  def find_user_by_restore_token(restore_token) do
+    case Repo.get_by(User, restore_token: restore_token) do
+      nil -> {:error, :unauthorized}
+      user -> {:ok, user}
+    end
+  end
+
+  @doc """
+  Find user by email.
+
+  ## Examples
+
+      iex> find_user_by_email(email)
+      {:ok, %User{}}
+
+      iex> find_user_by_email(email)
+      {:error, :not_founded}
+
+  """
+  def find_user_by_email(email) do
+    case Repo.get_by(User, email: email) do
+      nil -> {:error, :not_founded}
+      user -> {:ok, user}
+    end
+  end
+
+  def update_field_restore_token(%User{} = user, restore_token) do
+    attrs = %{
+      restore_token: restore_token
+    }
+
+    user
+    |> User.restore_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_field_password_restore_requested_at(%User{} = user) do
+    attrs = %{
+      restore_requested_at: NaiveDateTime.utc_now()
+    }
+
+    user
+    |> User.restore_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def accept_restoration(%User{} = user, password, password_confirmation) do
+    attrs = %{
+      restore_accepted_at: NaiveDateTime.utc_now(),
+      password: password,
+      password_confirmation: password_confirmation
+    }
+
+    user
+    |> User.restore_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def confirm_user(%User{} = user) do
+    attrs = %{
+      confirmation_token: nil,
+      confirmation_sent_at: nil,
+      confirmed_at: NaiveDateTime.utc_now(),
+      is_confirmed: true
+    }
+
+    user
+    |> User.confirmation_changeset(attrs)
+    |> Repo.update()
+  end
 end
