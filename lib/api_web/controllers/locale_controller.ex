@@ -7,7 +7,7 @@ defmodule I18NAPIWeb.LocaleController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    locales = Translations.list_locales(conn.private[:guardian_default_resource].id)
+    locales = Translations.list_locales(conn.params["project_id"])
     render(conn, "index.json", locales: locales)
   end
 
@@ -26,21 +26,14 @@ defmodule I18NAPIWeb.LocaleController do
 
   def show(conn, %{"id" => id}) do
     locale = Translations.get_locale!(id)
-
-    case locale.is_removed do
-      false -> render(conn, "show.json", locale: locale)
-      _ -> conn |> put_status(204) |> render("204.json")
-    end
+    render(conn, "show.json", locale: locale)
   end
 
   def update(conn, %{"id" => id, "locale" => locale_params}) do
     locale = Translations.get_locale!(id)
 
     with {:ok, %Locale{} = locale} <- Translations.update_locale(locale, locale_params) do
-      case locale.is_removed do
-        false -> render(conn, "show.json", locale: locale)
-        _ -> conn |> put_status(204) |> render("204.json")
-      end
+      render(conn, "show.json", locale: locale)
     end
   end
 
@@ -48,10 +41,7 @@ defmodule I18NAPIWeb.LocaleController do
     locale = Translations.get_locale!(id)
 
     with {:ok, %Locale{} = locale} <- Translations.safely_delete_locale(locale) do
-      case locale.is_removed do
-        false -> render(conn, "show.json", locale: locale)
-        _ -> conn |> put_status(204) |> render("204.json")
-      end
+      render(conn, "show.json", locale: locale)
     end
   end
 

@@ -4,8 +4,8 @@ defmodule I18NAPI.Repo.Migrations.CreateUserLocales do
   def change do
     create table(:user_locales) do
       add :role, :integer
-      add :user_id, references(:users, on_delete: :delete_all)
-      add :locale_id, references(:locales, on_delete: :delete_all)
+      add :user_id, references(:users, on_delete: :nothing)
+      add :locale_id, references(:locales, on_delete: :nothing)
 
       timestamps()
     end

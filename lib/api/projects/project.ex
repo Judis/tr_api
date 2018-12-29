@@ -10,12 +10,6 @@ defmodule I18NAPI.Projects.Project do
     field(:removed_at, :naive_datetime)
     field(:default_locale, :string, virtual: true)
 
-    field(:total_count_of_translation_keys, :integer, default: 0)
-    field(:count_of_not_verified_keys, :integer, default: 0)
-    field(:count_of_verified_keys, :integer, default: 0)
-    field(:count_of_translated_keys, :integer, default: 0)
-    field(:count_of_untranslated_keys, :integer, default: 0)
-
     has_many(:user_roles, UserRoles, on_delete: :delete_all)
     has_many(:locales, Locale, on_delete: :delete_all)
     has_many(:translation_keys, TranslationKey, on_delete: :delete_all)

@@ -12,12 +12,11 @@ config :logger, level: :warn
 # Configure your database
 config :api, I18NAPI.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
+  username: "Judis",
+  password: "",
   database: "i18n_api_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
-
 
 config :api, I18NAPI.Guardian,
   allowed_algos: ["HS512"],
@@ -29,6 +28,3 @@ config :api, I18NAPI.Guardian,
   serializer: I18NAPI.Guardian
 
 config :bcrypt_elixir, :log_rounds, 4
-
-config :api, I18NAPI.Mailer,
-       adapter: Swoosh.Adapters.Test
