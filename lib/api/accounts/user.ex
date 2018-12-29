@@ -11,11 +11,13 @@ defmodule I18NAPI.Accounts.User do
     field(:failed_sign_in_attempts, :integer)
     field(:invited_at, :naive_datetime)
     field(:is_confirmed, :boolean, default: false)
+    field(:is_removed, :boolean, default: false)
     field(:last_visited_at, :naive_datetime)
     field(:name, :string)
     field(:password, :string, virtual: true)
     field(:password_confirmation, :string, virtual: true)
     field(:password_hash, :string)
+    field(:removed_at, :naive_datetime)
     field(:restore_accepted_at, :naive_datetime)
     field(:restore_requested_at, :naive_datetime)
     field(:restore_token, :string)
@@ -32,18 +34,31 @@ defmodule I18NAPI.Accounts.User do
       :email,
       :password,
       :password_confirmation,
-      :source
+      :source,
+      :confirmation_token
     ])
-    |> validate_required([:email, :password, :password_confirmation])
+    |> validate_required([:name, :email, :password, :password_confirmation])
     |> validate_changeset
   end
 
   @doc false
   defp validate_changeset(struct) do
     struct
+    |> validate_email
+    |> validate_password
+  end
+
+  @doc false
+  defp validate_email(struct) do
+    struct
     |> validate_length(:email, min: 5, max: 255)
     |> validate_format(:email, ~r/@/)
     |> unique_constraint(:email)
+  end
+
+  @doc false
+  defp validate_password(struct) do
+    struct
     |> validate_length(:password, min: 8)
     |> validate_format(
       :password,
@@ -52,6 +67,38 @@ defmodule I18NAPI.Accounts.User do
     )
     |> validate_confirmation(:password)
     |> generate_password_hash
+  end
+
+  @doc false
+  def confirmation_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :confirmation_token,
+      :confirmation_sent_at,
+
+      :confirmed_at,
+      :is_confirmed
+    ])
+  end
+
+  @doc false
+  def restore_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :restore_token,
+      :restore_accepted_at,
+      :password,
+      :password_confirmation
+    ])
+    |> validate_required([:restore_token, :password, :password_confirmation])
+    |> validate_password
+  end
+
+  @doc false
+  def remove_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:is_removed, :removed_at])
+    |> validate_required([:is_removed, :removed_at])
   end
 
   @doc false
