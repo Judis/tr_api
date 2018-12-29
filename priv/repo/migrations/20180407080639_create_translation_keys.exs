@@ -7,7 +7,7 @@ defmodule I18NAPI.Repo.Migrations.CreateTranslationKeys do
       add :context, :text
       add :is_removed, :boolean, default: false, null: false
       add :removed_at, :naive_datetime
-      add :project_id, references(:projects, on_delete: :nothing)
+      add :project_id, references(:projects, on_delete: :delete_all)
 
       timestamps()
     end

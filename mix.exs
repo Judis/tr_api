@@ -42,7 +42,9 @@ defmodule I18NAPI.Mixfile do
       {:comeonin, "~> 4.0"},
       {:bcrypt_elixir, github: "riverrun/bcrypt_elixir", override: true},
       {:ecto_enum, "~> 1.0"},
-      {:guardian, "~> 1.0"}
+      {:guardian, "~> 1.0"},
+      {:swoosh, "~> 0.20"},
+      {:phoenix_swoosh, "~> 0.2"}
     ]
   end
 

@@ -42,7 +42,7 @@ config :api, I18NAPI.Repo,
   username: "postgres",
   password: "postgres",
   database: "i18n_api_dev",
-  hostname: "db",
+  hostname: "localhost",
   pool_size: 10
 
 config :api, I18NAPI.Guardian,
@@ -53,3 +53,6 @@ config :api, I18NAPI.Guardian,
   verify_issuer: true,
   secret_key: "dev",
   serializer: I18NAPI.Guardian
+
+config :api, I18NAPI.Mailer,
+       adapter: Swoosh.Adapters.Local

@@ -1,0 +1,7 @@
+<div>
+  <h1>Dear, <%= @username %>!</h1>
+ <body>
+   <p> Please, use this token for confirm your email <%= @confirmation_token %>
+  <p>or follow this link<a href=<%= @confirmation_link %>><%= @confirmation_link %></a></p>
+ </body>
+</div>

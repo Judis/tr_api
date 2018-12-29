@@ -42,8 +42,7 @@ defmodule I18NAPI.AccountsTest do
     end
 
     test "list_users/0 returns all users" do
-      user_prepared = user_fixture()
-      #      assert Accounts.list_users() == [user_prepared]
+      user_fixture()
       assert [%User{} | _] = Accounts.list_users()
     end
 
@@ -79,6 +78,7 @@ defmodule I18NAPI.AccountsTest do
       assert user.is_confirmed == false
       assert user.password_hash =~ ~r/^\$2[ayb]\$.{56}$/
       assert user.source == @update_attrs.source
+
       assert DateTime.from_naive!(user.updated_at, "Etc/UTC") >
                DateTime.from_naive!(user_prepared.updated_at, "Etc/UTC")
     end

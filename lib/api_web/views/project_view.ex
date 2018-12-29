@@ -18,4 +18,8 @@ defmodule I18NAPIWeb.ProjectView do
       removed_at: project.removed_at
     }
   end
+
+  def render("204.json", _) do
+    %{errors: %{detail: "No Content"}}
+  end
 end
