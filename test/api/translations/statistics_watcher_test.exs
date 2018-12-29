@@ -7,7 +7,6 @@ defmodule I18NAPI.StatisticsWorkerTest do
   alias I18NAPI.Accounts.User
   alias I18NAPI.Projects
   alias I18NAPI.Translations
-  alias I18NAPI.Translations.Statistics
   alias I18NAPI.Translations.StatisticsWatcher
 
   @user_attrs %{

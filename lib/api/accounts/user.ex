@@ -75,7 +75,6 @@ defmodule I18NAPI.Accounts.User do
     |> cast(attrs, [
       :confirmation_token,
       :confirmation_sent_at,
-
       :confirmed_at,
       :is_confirmed
     ])
