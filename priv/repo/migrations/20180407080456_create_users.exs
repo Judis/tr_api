@@ -10,8 +10,6 @@ defmodule I18NAPI.Repo.Migrations.CreateUsers do
       add :source, :string
       add :confirmation_token, :string
       add :restore_token, :string
-      add :is_removed, :boolean, default: false, null: false
-      add :removed_at, :naive_datetime
       add :failed_sign_in_attempts, :integer
       add :failed_restore_attempts, :integer
       add :confirmed_at, :naive_datetime
