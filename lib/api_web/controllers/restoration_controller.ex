@@ -2,7 +2,6 @@ defmodule I18NAPIWeb.RestorationController do
   use I18NAPIWeb, :controller
 
   alias I18NAPI.Accounts.Restoration
-  alias I18NAPI.Accounts.User
 
   action_fallback(I18NAPIWeb.FallbackController)
 
