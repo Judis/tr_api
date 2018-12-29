@@ -18,6 +18,7 @@ config :api, I18NAPI.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
+
 config :api, I18NAPI.Guardian,
   allowed_algos: ["HS512"],
   verify_module: Guardian.JWT,

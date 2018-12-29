@@ -16,24 +16,20 @@ defmodule I18NAPI.MailerTest do
     email: "test@email.test",
     password: "Qw!23456",
     password_confirmation: "Qw!23456",
-    source: "test source",
+    source: "test source"
   }
 
   def user_fixture(attrs \\ %{}) do
-    {:ok, user} = %User{}
-                  |> User.changeset(attrs |> Enum.into(@user_attrs))
-                  |> Repo.insert()
+    {:ok, user} =
+      %User{}
+      |> User.changeset(attrs |> Enum.into(@user_attrs))
+      |> Repo.insert()
 
     user |> Map.put(:confirmation_token, Utilites.random_string(25))
   end
 
   test "deliver confirmation email" do
-    UserEmail.create_confirmation_email(user_fixture()) |> I18NAPI.Mailer.deliver
-    assert_email_sent()
-  end
-
-  test "deliver restoration email" do
-    UserEmail.create_restoration_email(user_fixture()) |> I18NAPI.Mailer.deliver
+    UserEmail.create_confirmation_email(user_fixture()) |> I18NAPI.Mailer.deliver()
     assert_email_sent()
   end
 

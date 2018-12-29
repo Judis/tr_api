@@ -4,6 +4,12 @@ defmodule I18NAPIWeb.TranslationKeyControllerTest do
   alias I18NAPI.Translations
   alias I18NAPI.Translations.TranslationKey
 
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+    :ok
+  end
+
   @create_attrs %{
     context: "some context",
     is_removed: true,
@@ -52,7 +58,11 @@ defmodule I18NAPIWeb.TranslationKeyControllerTest do
 
   describe "create translation_key" do
     test "renders translation_key when data is valid", %{conn: conn} do
-      conn = post(conn, project_translation_key_path(conn, :create, fixture(:project)), translation_key: @create_attrs)
+      conn =
+        post(conn, project_translation_key_path(conn, :create, fixture(:project)),
+          translation_key: @create_attrs
+        )
+
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, project_translation_key_path(conn, :show, fixture(:project), id))
@@ -69,7 +79,11 @@ defmodule I18NAPIWeb.TranslationKeyControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, project_translation_key_path(conn, :create, fixture(:project)), translation_key: @invalid_attrs)
+      conn =
+        post(conn, project_translation_key_path(conn, :create, fixture(:project)),
+          translation_key: @invalid_attrs
+        )
+
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -119,7 +133,12 @@ defmodule I18NAPIWeb.TranslationKeyControllerTest do
     setup [:create_translation_key]
 
     test "deletes chosen translation_key", %{conn: conn, translation_key: translation_key} do
-      conn = delete(conn, project_translation_key_path(conn, :delete, fixture(:project), translation_key))
+      conn =
+        delete(
+          conn,
+          project_translation_key_path(conn, :delete, fixture(:project), translation_key)
+        )
+
       assert response(conn, 204)
 
       assert_error_sent(404, fn ->

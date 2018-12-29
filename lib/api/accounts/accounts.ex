@@ -4,9 +4,11 @@ defmodule I18NAPI.Accounts do
   """
 
   import Ecto.Query, warn: false
-  alias I18NAPI.Repo
+  import I18NAPI.Accounts.Confirmation
 
   alias I18NAPI.Accounts.User
+  alias I18NAPI.Repo
+  alias I18NAPI.Utilites
 
   @doc """
   Returns the list of users.
@@ -51,8 +53,20 @@ defmodule I18NAPI.Accounts do
   """
   def create_user(attrs \\ %{}) do
     %User{}
-    |> User.changeset(attrs)
+    |> User.changeset(
+      attrs
+      |> Map.put(:confirmation_token, Utilites.random_string(32))
+      |> Utilites.key_to_atom()
+    )
     |> Repo.insert()
+    |> send_email_if_user_created()
+  end
+
+  defp send_email_if_user_created({:error, _} = result), do: result
+
+  defp send_email_if_user_created({:ok, user}) do
+    send_confirmation_email_async(user)
+    {:ok, user}
   end
 
   @doc """
