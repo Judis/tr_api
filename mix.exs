@@ -8,6 +8,15 @@ defmodule I18NAPI.Mixfile do
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      test_coverage: [
+        tool: ExCoveralls
+      ],
+      preferred_cli_env: [
+        "coveralls": :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -42,7 +51,10 @@ defmodule I18NAPI.Mixfile do
       {:comeonin, "~> 4.0"},
       {:bcrypt_elixir, github: "riverrun/bcrypt_elixir", override: true},
       {:ecto_enum, "~> 1.0"},
-      {:guardian, "~> 1.0"}
+      {:guardian, "~> 1.0"},
+      {:swoosh, "~> 0.20"},
+      {:phoenix_swoosh, "~> 0.2"},
+      {:excoveralls, "~> 0.10", only: :test}
     ]
   end
 
