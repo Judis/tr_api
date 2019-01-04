@@ -16,9 +16,12 @@ defmodule I18NAPIWeb.TranslationKeyView do
       project_id: translation_key.project_id,
       key: translation_key.key,
       context: translation_key.context,
-      status: translation_key.status,
       is_removed: translation_key.is_removed,
       removed_at: translation_key.removed_at
     }
+  end
+
+  def render("204.json", _) do
+    %{errors: %{detail: "No Content"}}
   end
 end

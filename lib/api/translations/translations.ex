@@ -386,6 +386,7 @@ defmodule I18NAPI.Translations do
   end
 
   defp update_default_translation_if_translation_key_was_updated({:ok, translation_key}, attrs) do
+    attrs = Utilites.key_to_atom(attrs)
     get_default_translation(translation_key.id)
     |> Translation.changeset(%{value: attrs.default_value})
     |> Repo.update()
