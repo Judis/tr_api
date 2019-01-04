@@ -4,10 +4,11 @@ defmodule I18NAPIWeb.LocaleControllerTest do
 
   use I18NAPIWeb.ConnCase
 
+  alias I18NAPI.Accounts
+  alias I18NAPI.Projects
   alias I18NAPI.Translations
   alias I18NAPI.Translations.Locale
-  alias I18NAPI.Projects
-  alias I18NAPI.Accounts
+
   import Ecto.Query, warn: false
 
   @user_attrs %{
