@@ -6,8 +6,8 @@ defmodule I18NAPI.Repo.Migrations.CreateTranslations do
     create table(:translations) do
       add :value, :text, default: nil
       add :status, TranslationStatusEnum.type()
-      add :locale_id, references(:locales, on_delete: :nothing)
-      add :translation_key_id, references(:translation_keys, on_delete: :nothing)
+      add :locale_id, references(:locales, on_delete: :delete_all)
+      add :translation_key_id, references(:translation_keys, on_delete: :delete_all)
 
       timestamps()
     end
