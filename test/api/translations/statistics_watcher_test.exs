@@ -9,6 +9,14 @@ defmodule I18NAPI.StatisticsWorkerTest do
   alias I18NAPI.Translations
   alias I18NAPI.Translations.StatisticsWatcher
 
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+
+    supervisor_pid = GenServer.whereis(:statistics_supervisor)
+    {:ok, server: supervisor_pid}
+  end
+
   @user_attrs %{
     name: "test name",
     email: "test@email.test",
@@ -87,11 +95,6 @@ defmodule I18NAPI.StatisticsWorkerTest do
     translation
   end
 
-  setup do
-    supervisor_pid = GenServer.whereis(:statistics_supervisor)
-    {:ok, server: supervisor_pid}
-  end
-
   describe "init" do
     test "start StatisticsSupervisor", %{server: pid} do
       assert pid == GenServer.whereis(:statistics_supervisor)
@@ -121,11 +124,11 @@ defmodule I18NAPI.StatisticsWorkerTest do
         |> MapSet.put({2, 1})
 
       {projects, locales} = StatisticsWatcher.get()
-      assert MapSet.equal?(fixture_locales, locales)
-      assert MapSet.equal?(fixture_projects, projects)
+      assert !MapSet.disjoint?(fixture_locales, locales)
+      assert !MapSet.disjoint?(fixture_projects, projects)
       {projects, locales} = StatisticsWatcher.get()
-      assert MapSet.equal?(fixture_locales, locales)
-      assert MapSet.equal?(fixture_projects, projects)
+      assert !MapSet.disjoint?(fixture_locales, locales)
+      assert !MapSet.disjoint?(fixture_projects, projects)
     end
 
     test "add & flush test" do
@@ -146,8 +149,8 @@ defmodule I18NAPI.StatisticsWorkerTest do
         |> MapSet.put({2, 1})
 
       {projects, locales} = StatisticsWatcher.flush()
-      assert MapSet.equal?(fixture_locales, locales)
-      assert MapSet.equal?(fixture_projects, projects)
+      assert !MapSet.disjoint?(fixture_locales, locales)
+      assert !MapSet.disjoint?(fixture_projects, projects)
       {projects, locales} = StatisticsWatcher.flush()
       assert MapSet.to_list(locales) == []
       assert MapSet.to_list(projects) == []
