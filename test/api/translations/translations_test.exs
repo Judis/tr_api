@@ -9,7 +9,7 @@ defmodule I18NAPI.TranslationsTest do
   alias I18NAPI.Accounts.User
 
   setup do
-    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo, [ownership_timeout: 30_000])
     Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
     :ok
   end
@@ -315,13 +315,12 @@ defmodule I18NAPI.TranslationsTest do
       assert {:ok, %Translation{} = translation} =
                Translations.create_translation(attrs, locale_id)
 
-      assert translation.is_removed == false
       assert translation.value == @valid_translation_attrs.value
     end
 
     test "create_translation/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} =
-               Translations.create_translation(@invalid_translation_attrs)
+               Translations.create_translation(@invalid_translation_attrs, locale_id = 1)
     end
 
     @valid_not_default_locale_attrs %{
@@ -362,7 +361,6 @@ defmodule I18NAPI.TranslationsTest do
                Translations.update_translation(translation, @update_translation_attrs)
 
       assert %Translation{} = updated_translation
-      assert updated_translation.is_removed == false
       assert updated_translation.value == @update_translation_attrs.value
       assert updated_translation.status == @update_translation_attrs.status
       assert alternative_translation.status == @valid_alternative_translation_attrs.status
@@ -393,7 +391,6 @@ defmodule I18NAPI.TranslationsTest do
                Translations.update_translation(translation, @update_translation_attrs)
 
       assert %Translation{} = updated_translation
-      assert updated_translation.is_removed == false
       assert updated_translation.value == @update_translation_attrs.value
       assert updated_translation.status == @update_translation_attrs.status
       # ----------------------------------------------------
@@ -419,7 +416,6 @@ defmodule I18NAPI.TranslationsTest do
 
       assert {:ok, translation} = Translations.update_translation(translation, attrs)
       assert %Translation{} = translation
-      assert translation.is_removed == false
       assert translation.value == @update_translation_attrs.value
     end
 

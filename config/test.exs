@@ -12,12 +12,11 @@ config :logger, level: :warn
 # Configure your database
 config :api, I18NAPI.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "Judis",
-  password: "",
+  username: "postgres",
+  password: "postgres",
   database: "i18n_api_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
-
 
 config :api, I18NAPI.Guardian,
   allowed_algos: ["HS512"],
@@ -36,3 +35,6 @@ config :api, I18NAPI.Mailer,
 config :api,
        sender: "Dr B Banner",
        sender_email: "hulk.smash@example.com"
+
+config :api, :statistics_watcher,
+       statistic_recalculating_period: 1

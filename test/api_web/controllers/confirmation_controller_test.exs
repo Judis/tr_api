@@ -10,6 +10,12 @@ defmodule I18NAPIWeb.ConfirmationControllerTest do
   alias I18NAPI.Repo
   alias I18NAPI.Utilites
 
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+    :ok
+  end
+
   @fixture_user_attrs %{
     name: "fixture name",
     email: "fixture@email.test",
