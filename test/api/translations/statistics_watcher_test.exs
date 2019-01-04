@@ -63,20 +63,6 @@ defmodule I18NAPI.StatisticsWorkerTest do
     locale
   end
 
-  @valid_translation_key_attrs %{
-    context: "some context",
-    is_removed: false,
-    key: "some key",
-    default_value: "some value"
-  }
-
-  @alter_translation_key_attrs %{
-    context: "alter context",
-    is_removed: false,
-    key: "alter key",
-    default_value: "alter value"
-  }
-
   def translation_key_fixture(attrs \\ %{}, project_id \\ nil) do
     {:ok, translation_key} =
       attrs
@@ -154,12 +140,6 @@ defmodule I18NAPI.StatisticsWorkerTest do
       {projects, locales} = StatisticsWatcher.flush()
       assert MapSet.to_list(locales) == []
       assert MapSet.to_list(projects) == []
-    end
-  end
-
-  describe "recalculate" do
-    test "a" do
-      project = project_fixture(@valid_project_attrs, user_fixture())
     end
   end
 end
