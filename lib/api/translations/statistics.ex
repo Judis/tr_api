@@ -35,10 +35,10 @@ defmodule I18NAPI.Translations.Statistics do
       ]
     )
     |> Repo.update_all(
-      inc: [
-        total_count_of_translation_keys: value
-      ]
-    )
+         inc: [
+           total_count_of_translation_keys: value
+         ]
+       )
   end
 
   def update_total_count_of_translation_keys_async(project_id, operation, value) do
