@@ -1,154 +1,103 @@
 defmodule I18NAPIWeb.TranslationKeyControllerTest do
   use I18NAPIWeb.ConnCase
 
+  alias I18NAPI.Accounts
+  alias I18NAPI.Projects
   alias I18NAPI.Translations
-  alias I18NAPI.Translations.TranslationKey
+  alias I18NAPI.Translations.{Locale, TranslationKey}
 
-  setup do
-    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
-    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
-    :ok
+  import Ecto.Query, warn: false
+
+  @user_attrs %{
+    name: "test name",
+    email: "test@email.test",
+    password: "Qw!23456",
+    password_confirmation: "Qw!23456",
+    source: "test source"
+  }
+
+  def user_fixture(attrs \\ %{}) do
+    {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
+
+    if :error == result do
+      with {:ok, new_user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
+           do: new_user
+    else
+      user
+    end
   end
 
-  @create_attrs %{
-    context: "some context",
-    is_removed: true,
-    key: "some key",
-    removed_at: ~N[2010-04-17 14:00:00.000000],
-    status: 42,
-    value: "some value"
-  }
-  @update_attrs %{
-    context: "some updated context",
-    is_removed: false,
-    key: "some updated key",
-    removed_at: ~N[2011-05-18 15:01:01.000000],
-    status: 43,
-    value: "some updated value"
-  }
-  @invalid_attrs %{
-    context: nil,
-    is_removed: nil,
-    key: nil,
-    removed_at: nil,
-    status: nil,
-    value: nil
+  @project_attrs %{
+    name: "some name",
+    default_locale: "en"
   }
 
-  def fixture(:translation_key) do
-    {:ok, translation_key} = Translations.create_translation_key(@create_attrs)
-    translation_key
-  end
-
-  def fixture(:project) do
-    {:ok, project} = Projects.create_project(@create_attrs)
+  def project_fixture(conn) do
+    {:ok, project} = @project_attrs |> Projects.create_project(conn.user)
     project
   end
 
+  @locale_attrs %{
+    is_default: true,
+    locale: "some locale"
+  }
+
+  def locale_fixture(project) do
+    default_locale = Translations.get_default_locale!(project.id)
+
+    if nil == default_locale do
+      {:ok, new_locale} = Translations.create_locale(@locale_attrs, project.id)
+      new_locale
+    else
+      default_locale
+    end
+  end
+
   setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+
+    user = user_fixture()
+    {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> put_req_header("authorization", "Bearer #{jwt}")
+      |> Map.put(:user, user)
+
+    {:ok, conn: conn}
   end
 
   describe "index" do
     test "lists all translation_keys", %{conn: conn} do
-      conn = get(conn, project_translation_key_path(conn, :index, fixture(:project)))
-      assert json_response(conn, 200)["data"] == []
+      assert false
     end
   end
 
   describe "create translation_key" do
     test "renders translation_key when data is valid", %{conn: conn} do
-      conn =
-        post(conn, project_translation_key_path(conn, :create, fixture(:project)),
-          translation_key: @create_attrs
-        )
-
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      conn = get(conn, project_translation_key_path(conn, :show, fixture(:project), id))
-
-      assert json_response(conn, 200)["data"] == %{
-               "id" => id,
-               "context" => "some context",
-               "is_removed" => true,
-               "key" => "some key",
-               "removed_at" => ~N[2010-04-17 14:00:00.000000],
-               "status" => 42,
-               "value" => "some value"
-             }
+      assert false
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn =
-        post(conn, project_translation_key_path(conn, :create, fixture(:project)),
-          translation_key: @invalid_attrs
-        )
-
-      assert json_response(conn, 422)["errors"] != %{}
+      assert false
     end
   end
 
   describe "update translation_key" do
-    setup [:create_translation_key]
-
-    test "renders translation_key when data is valid", %{
-      conn: conn,
-      translation_key: %TranslationKey{id: id} = translation_key
-    } do
-      conn =
-        put(
-          conn,
-          project_translation_key_path(conn, :update, fixture(:project), translation_key),
-          translation_key: @update_attrs
-        )
-
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
-
-      conn = get(conn, project_translation_key_path(conn, :show, fixture(:project), id))
-
-      assert json_response(conn, 200)["data"] == %{
-               "id" => id,
-               "context" => "some updated context",
-               "is_removed" => false,
-               "key" => "some updated key",
-               "removed_at" => ~N[2011-05-18 15:01:01.000000],
-               "status" => 43,
-               "value" => "some updated value"
-             }
+    test "renders translation_key when data is valid", %{conn: conn} do
+      assert false
     end
 
-    test "renders errors when data is invalid", %{conn: conn, translation_key: translation_key} do
-      conn =
-        put(
-          conn,
-          project_translation_key_path(conn, :update, fixture(:project), translation_key),
-          translation_key: @invalid_attrs
-        )
-
-      assert json_response(conn, 422)["errors"] != %{}
+    test "renders errors when data is invalid", %{conn: conn} do
+      assert false
     end
   end
 
   describe "delete translation_key" do
-    setup [:create_translation_key]
-
-    test "deletes chosen translation_key", %{conn: conn, translation_key: translation_key} do
-      conn =
-        delete(
-          conn,
-          project_translation_key_path(conn, :delete, fixture(:project), translation_key)
-        )
-
-      assert response(conn, 204)
-
-      assert_error_sent(404, fn ->
-        get(conn, project_translation_key_path(conn, :show, fixture(:project), translation_key))
-      end)
+    test "deletes chosen translation_key", %{conn: conn} do
+      assert false
     end
-  end
-
-  defp create_translation_key(_) do
-    translation_key = fixture(:translation_key)
-    {:ok, translation_key: translation_key}
   end
 end
