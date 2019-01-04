@@ -16,8 +16,6 @@ defmodule I18NAPIWeb.TranslationView do
       locale_id: translation.locale_id,
       translation_key_id: translation.translation_key_id,
       value: translation.value,
-      is_removed: translation.is_removed,
-      removed_at: translation.removed_at
     }
   end
 end

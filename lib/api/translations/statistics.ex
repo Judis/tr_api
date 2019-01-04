@@ -35,10 +35,10 @@ defmodule I18NAPI.Translations.Statistics do
       ]
     )
     |> Repo.update_all(
-      inc: [
-        total_count_of_translation_keys: value
-      ]
-    )
+         inc: [
+           total_count_of_translation_keys: value
+         ]
+       )
   end
 
   def update_total_count_of_translation_keys_async(project_id, operation, value) do
@@ -169,7 +169,7 @@ defmodule I18NAPI.Translations.Statistics do
     )
   end
 
-  def calculate_count_of_keys_at_locale_by_status(locale_id, status, is_removed \\ false) do
+  def calculate_count_of_keys_at_locale_by_status(locale_id, status) do
     from(
       t in Translation,
       where: [
@@ -178,9 +178,7 @@ defmodule I18NAPI.Translations.Statistics do
       where: [
         status: ^status
       ],
-      where: [
-        is_removed: ^is_removed
-      ],
+      where: not is_nil(t.value),
       select: count(t.id)
     )
     |> Repo.one!()
@@ -222,8 +220,8 @@ defmodule I18NAPI.Translations.Statistics do
 
     Repo.transaction(fn ->
       total = Projects.get_total_count_of_translation_keys(project_id)
-      verified = calculate_count_of_keys_at_locale_by_status(locale_id, :verified, false)
-      unverified = calculate_count_of_keys_at_locale_by_status(locale_id, :unverified, false)
+      verified = calculate_count_of_keys_at_locale_by_status(locale_id, :verified)
+      unverified = calculate_count_of_keys_at_locale_by_status(locale_id, :unverified)
       translated = verified + unverified
       untranslated = total - translated
 
@@ -323,8 +321,8 @@ defmodule I18NAPI.Translations.Statistics do
 
   defp process_update_locales_by_id_list([locale_id | tail], total_counts) do
     Repo.transaction(fn ->
-      verified = calculate_count_of_keys_at_locale_by_status(locale_id, :verified, false)
-      unverified = calculate_count_of_keys_at_locale_by_status(locale_id, :unverified, false)
+      verified = calculate_count_of_keys_at_locale_by_status(locale_id, :verified)
+      unverified = calculate_count_of_keys_at_locale_by_status(locale_id, :unverified)
       translated = verified + unverified
       untranslated = total_counts - translated
 
@@ -368,8 +366,8 @@ defmodule I18NAPI.Translations.Statistics do
 
   defp process_update_locales_by_id_list([locale_id | tail], total_counts) do
     Repo.transaction(fn ->
-      verified = calculate_count_of_keys_at_locale_by_status(locale_id, :verified, false)
-      unverified = calculate_count_of_keys_at_locale_by_status(locale_id, :unverified, false)
+      verified = calculate_count_of_keys_at_locale_by_status(locale_id, :verified)
+      unverified = calculate_count_of_keys_at_locale_by_status(locale_id, :unverified)
       translated = verified + unverified
       untranslated = total_counts - translated
 
