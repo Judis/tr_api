@@ -1,6 +1,6 @@
 defmodule I18NAPI.TranslationsTest do
   use ExUnit.Case, async: false
-  @moduletag :translation_api
+  @moduletag :translations_api
 
   use I18NAPI.DataCase
   alias I18NAPI.Translations
@@ -9,7 +9,7 @@ defmodule I18NAPI.TranslationsTest do
   alias I18NAPI.Accounts.User
 
   setup do
-    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo, [ownership_timeout: 30_000])
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo, ownership_timeout: 30_000)
     Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
     :ok
   end
@@ -426,7 +426,10 @@ defmodule I18NAPI.TranslationsTest do
     test "update_translation/2 with valid with unused parameter data updates the translation" do
       project_id = project_fixture(@valid_project_attrs, user_fixture()).id
       translation = translation_fixture(@valid_translation_attrs, project_id)
-      attrs = @update_translation_attrs |> Enum.into(%{locale_id: translation.locale_id - 1})
+
+      attrs =
+        @update_translation_attrs
+        |> Enum.into(%{locale_id: translation.locale_id - 1})
 
       assert {:ok, translation} = Translations.update_translation(translation, attrs)
       assert %Translation{} = translation
