@@ -120,27 +120,17 @@ defmodule I18NAPI.Translations do
 
   def create_translation_for_each_associated_key({:ok, %Locale{} = locale}) do
     list_translation_keys_id(locale.project_id)
+    |> Enum.each(
+      &fn &1 ->
+        %{value: nil, status: :empty, translation_key_id: &1}
+        |> create_translation(locale.id)
+      end
+    )
+
     {:ok, locale}
   end
 
   def create_translation_for_each_associated_key(result), do: result
-
-  @doc """
-  Create nil translation for next key from list
-
-  ## Examples
-
-      iex> create_nil_translation_for_next_key_from_list(list_of_translation_key, locale_id)
-      :ok
-  """
-  def create_nil_translation_for_next_key_from_list([], _), do: :ok
-
-  def create_nil_translation_for_next_key_from_list([head | tail], locale_id) do
-    %{value: nil, status: :empty, translation_key_id: head}
-    |> create_translation(locale_id)
-
-    create_nil_translation_for_next_key_from_list(tail, locale_id)
-  end
 
   @doc """
   Updates a locale.
