@@ -107,9 +107,7 @@ defmodule I18NAPI.Translations do
   """
 
   def create_locale(attrs, project_id) do
-    attrs =
-      Map.put(attrs, :project_id, project_id)
-      |> Utilites.key_to_atom()
+    attrs = Map.put(attrs, :project_id, project_id) |> Utilites.key_to_atom()
 
     %Locale{}
     |> Locale.changeset(attrs)
@@ -145,16 +143,10 @@ defmodule I18NAPI.Translations do
 
   """
   def update_locale(%Locale{} = locale, attrs) do
-    attrs =
-      attrs
-      |> Utilites.key_to_atom()
-
-    old_default_status = locale.is_default
-
     locale
     |> Locale.changeset(attrs)
     |> Repo.update()
-    |> if_locale_set_to_default(old_default_status)
+    |> if_locale_set_to_default(locale.is_default)
     |> StatisticsInterface.update_statistics(:locale, :update)
   end
 
@@ -336,9 +328,7 @@ defmodule I18NAPI.Translations do
 
   """
   def create_translation_key(attrs \\ %{}, project_id) do
-    changeset =
-      Map.put(attrs, :project_id, project_id)
-      |> Utilites.key_to_atom()
+    changeset = Map.put(attrs, :project_id, project_id) |> Utilites.key_to_atom()
 
     %TranslationKey{}
     |> TranslationKey.changeset(changeset)
@@ -524,9 +514,7 @@ defmodule I18NAPI.Translations do
 
   """
   def create_translation(attrs, locale_id) do
-    changeset =
-      Map.put(attrs, :locale_id, locale_id)
-      |> Utilites.key_to_atom()
+    changeset = Map.put(attrs, :locale_id, locale_id) |> Utilites.key_to_atom()
 
     %Translation{}
     |> Translation.changeset(changeset)
@@ -552,14 +540,11 @@ defmodule I18NAPI.Translations do
       |> Map.take(["status", "value", :status, :value])
       |> Utilites.key_to_atom()
 
-    old_status = translation.status
-    old_value = translation.value
-
     translation
     |> Translation.changeset(attrs)
     |> Repo.update()
-    |> if_default_translation_changed_successfully(old_value, attrs)
-    |> StatisticsInterface.update_statistics(:translation, :update, old_status, attrs)
+    |> if_default_translation_changed_successfully(translation.value, attrs)
+    |> StatisticsInterface.update_statistics(:translation, :update, translation.status, attrs)
   end
 
   defp if_default_translation_changed_successfully(
@@ -597,10 +582,10 @@ defmodule I18NAPI.Translations do
       where: tr.translation_key_id == ^translation_key_id and not lcl.is_default
     )
     |> Repo.update_all(
-         set: [
-           status: "unverified"
-         ]
-       )
+      set: [
+        status: "unverified"
+      ]
+    )
     |> StatisticsInterface.update_statistics(:translation_key, :update)
   end
 
@@ -634,12 +619,8 @@ defmodule I18NAPI.Translations do
 
   """
   def safely_delete_translation(%Translation{} = translation) do
-    changeset = %{
-      value: nil
-    }
-
     translation
-    |> Translation.changeset(changeset)
+    |> Translation.changeset(%{value: nil})
     |> Repo.update()
     |> StatisticsInterface.update_statistics(:translation, :delete, translation.id)
   end
