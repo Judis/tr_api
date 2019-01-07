@@ -114,6 +114,20 @@ defmodule I18NAPI.TranslationsTest do
       assert locale.locale == "some updated locale"
     end
 
+    test "update_locale/2 with set non default locale to default" do
+      project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+      first_locale = locale_fixture(@valid_locale_attrs, project_id)
+      second_locale = locale_fixture(@update_locale_attrs, project_id)
+      assert first_locale.is_default
+      assert second_locale.is_default == false
+
+      assert {:ok, second_locale} = Translations.update_locale(second_locale, %{is_default: true})
+      assert first_locale = Translations.get_locale!(first_locale.id)
+
+      assert first_locale.is_default == false
+      assert second_locale.is_default
+    end
+
     test "update_locale/2 with invalid data returns error changeset" do
       locale = locale_fixture()
 

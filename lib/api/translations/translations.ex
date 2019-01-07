@@ -145,13 +145,42 @@ defmodule I18NAPI.Translations do
 
   """
   def update_locale(%Locale{} = locale, attrs) do
+    attrs =
+      attrs
+      |> Utilites.key_to_atom()
+
+    old_default_status = locale.is_default
+
     locale
     |> Locale.changeset(attrs)
     |> Repo.update()
+    |> if_locale_set_to_default(old_default_status)
     |> StatisticsInterface.update_statistics(:locale, :update)
   end
 
-  def if_set_as_default(attrs) do
+  def if_locale_set_to_default({:ok, %Locale{} = locale}, old_default_status)
+      when old_default_status == false do
+    with true <- locale.is_default do
+      set_all_default_locale_exclude_one_as_non_default(locale.project_id, locale.id)
+    end
+
+    {:ok, locale}
+  end
+
+  def if_locale_set_to_default(result, _), do: result
+
+  defp set_all_default_locale_exclude_one_as_non_default(project_id, exclude_locale_id) do
+    from(
+      l in Locale,
+      where: l.id != ^exclude_locale_id,
+      where: l.project_id == ^project_id,
+      where: l.is_default == true
+    )
+    |> Repo.update_all(
+      set: [
+        is_default: false
+      ]
+    )
   end
 
   @doc """
