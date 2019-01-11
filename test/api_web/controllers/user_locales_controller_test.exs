@@ -13,8 +13,39 @@ defmodule I18NAPIWeb.UserLocalesControllerTest do
     user_locales
   end
 
+  @user_attrs %{
+    name: "test name",
+    email: "test@email.test",
+    password: "Qw!23456",
+    password_confirmation: "Qw!23456",
+    source: "test source"
+  }
+
+  def user_fixture(attrs \\ %{}) do
+    {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
+
+    if :error == result do
+      with {:ok, new_user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
+           do: new_user
+    else
+      user
+    end
+  end
+
   setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+
+    user = user_fixture()
+    {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> put_req_header("authorization", "Bearer #{jwt}")
+      |> Map.put(:user, user)
+
+    {:ok, conn: conn}
   end
 
   describe "index" do

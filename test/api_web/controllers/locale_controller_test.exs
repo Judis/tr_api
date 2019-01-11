@@ -40,6 +40,9 @@ defmodule I18NAPIWeb.LocaleControllerTest do
   end
 
   setup %{conn: conn} do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+
     user = user_fixture()
     {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
 

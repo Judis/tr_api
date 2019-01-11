@@ -1,6 +1,6 @@
 defmodule I18NAPI.TranslationsTest do
   use ExUnit.Case, async: false
-  @moduletag :translation_api
+  @moduletag :translations_api
 
   use I18NAPI.DataCase
   alias I18NAPI.Translations
@@ -9,7 +9,7 @@ defmodule I18NAPI.TranslationsTest do
   alias I18NAPI.Accounts.User
 
   setup do
-    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo, ownership_timeout: 30_000)
     Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
     :ok
   end
@@ -112,6 +112,20 @@ defmodule I18NAPI.TranslationsTest do
       assert %Locale{} = locale
       assert locale.is_default == false
       assert locale.locale == "some updated locale"
+    end
+
+    test "update_locale/2 with set non default locale to default" do
+      project_id = project_fixture(@valid_project_attrs, user_fixture()).id
+      first_locale = locale_fixture(@valid_locale_attrs, project_id)
+      second_locale = locale_fixture(@update_locale_attrs, project_id)
+      assert first_locale.is_default
+      assert second_locale.is_default == false
+
+      assert {:ok, second_locale} = Translations.update_locale(second_locale, %{is_default: true})
+      assert first_locale = Translations.get_locale!(first_locale.id)
+
+      assert first_locale.is_default == false
+      assert second_locale.is_default
     end
 
     test "update_locale/2 with invalid data returns error changeset" do
@@ -315,13 +329,12 @@ defmodule I18NAPI.TranslationsTest do
       assert {:ok, %Translation{} = translation} =
                Translations.create_translation(attrs, locale_id)
 
-      assert translation.is_removed == false
       assert translation.value == @valid_translation_attrs.value
     end
 
     test "create_translation/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} =
-               Translations.create_translation(@invalid_translation_attrs)
+               Translations.create_translation(@invalid_translation_attrs, locale_id = 1)
     end
 
     @valid_not_default_locale_attrs %{
@@ -362,7 +375,6 @@ defmodule I18NAPI.TranslationsTest do
                Translations.update_translation(translation, @update_translation_attrs)
 
       assert %Translation{} = updated_translation
-      assert updated_translation.is_removed == false
       assert updated_translation.value == @update_translation_attrs.value
       assert updated_translation.status == @update_translation_attrs.status
       assert alternative_translation.status == @valid_alternative_translation_attrs.status
@@ -393,7 +405,6 @@ defmodule I18NAPI.TranslationsTest do
                Translations.update_translation(translation, @update_translation_attrs)
 
       assert %Translation{} = updated_translation
-      assert updated_translation.is_removed == false
       assert updated_translation.value == @update_translation_attrs.value
       assert updated_translation.status == @update_translation_attrs.status
       # ----------------------------------------------------
@@ -415,11 +426,13 @@ defmodule I18NAPI.TranslationsTest do
     test "update_translation/2 with valid with unused parameter data updates the translation" do
       project_id = project_fixture(@valid_project_attrs, user_fixture()).id
       translation = translation_fixture(@valid_translation_attrs, project_id)
-      attrs = @update_translation_attrs |> Enum.into(%{locale_id: translation.locale_id - 1})
+
+      attrs =
+        @update_translation_attrs
+        |> Enum.into(%{locale_id: translation.locale_id - 1})
 
       assert {:ok, translation} = Translations.update_translation(translation, attrs)
       assert %Translation{} = translation
-      assert translation.is_removed == false
       assert translation.value == @update_translation_attrs.value
     end
 
