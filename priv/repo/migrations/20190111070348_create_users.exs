@@ -7,6 +7,8 @@ defmodule I18NAPI.Repo.Migrations.CreateUsers do
       add :email, :string
       add :password_hash, :string
       add :is_confirmed, :boolean, default: false, null: false
+      add :is_removed, :boolean, default: false, null: false
+      add :removed_at, :naive_datetime
       add :source, :string
       add :confirmation_token, :string
       add :restore_token, :string
