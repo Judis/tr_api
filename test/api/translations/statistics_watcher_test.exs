@@ -9,6 +9,14 @@ defmodule I18NAPI.StatisticsWorkerTest do
   alias I18NAPI.Translations
   alias I18NAPI.Translations.StatisticsWatcher
 
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+
+    supervisor_pid = GenServer.whereis(:statistics_supervisor)
+    {:ok, server: supervisor_pid}
+  end
+
   @user_attrs %{
     name: "test name",
     email: "test@email.test",
@@ -55,20 +63,6 @@ defmodule I18NAPI.StatisticsWorkerTest do
     locale
   end
 
-  @valid_translation_key_attrs %{
-    context: "some context",
-    is_removed: false,
-    key: "some key",
-    default_value: "some value"
-  }
-
-  @alter_translation_key_attrs %{
-    context: "alter context",
-    is_removed: false,
-    key: "alter key",
-    default_value: "alter value"
-  }
-
   def translation_key_fixture(attrs \\ %{}, project_id \\ nil) do
     {:ok, translation_key} =
       attrs
@@ -85,11 +79,6 @@ defmodule I18NAPI.StatisticsWorkerTest do
     {:ok, translation} = Translations.create_translation(attrs, locale_id)
 
     translation
-  end
-
-  setup do
-    supervisor_pid = GenServer.whereis(:statistics_supervisor)
-    {:ok, server: supervisor_pid}
   end
 
   describe "init" do
@@ -121,11 +110,11 @@ defmodule I18NAPI.StatisticsWorkerTest do
         |> MapSet.put({2, 1})
 
       {projects, locales} = StatisticsWatcher.get()
-      assert MapSet.equal?(fixture_locales, locales)
-      assert MapSet.equal?(fixture_projects, projects)
+      refute MapSet.disjoint?(fixture_locales, locales)
+      refute MapSet.disjoint?(fixture_projects, projects)
       {projects, locales} = StatisticsWatcher.get()
-      assert MapSet.equal?(fixture_locales, locales)
-      assert MapSet.equal?(fixture_projects, projects)
+      refute MapSet.disjoint?(fixture_locales, locales)
+      refute MapSet.disjoint?(fixture_projects, projects)
     end
 
     test "add & flush test" do
@@ -146,17 +135,11 @@ defmodule I18NAPI.StatisticsWorkerTest do
         |> MapSet.put({2, 1})
 
       {projects, locales} = StatisticsWatcher.flush()
-      assert MapSet.equal?(fixture_locales, locales)
-      assert MapSet.equal?(fixture_projects, projects)
+      refute MapSet.disjoint?(fixture_locales, locales)
+      refute MapSet.disjoint?(fixture_projects, projects)
       {projects, locales} = StatisticsWatcher.flush()
       assert MapSet.to_list(locales) == []
       assert MapSet.to_list(projects) == []
-    end
-  end
-
-  describe "recalculate" do
-    test "a" do
-      project = project_fixture(@valid_project_attrs, user_fixture())
     end
   end
 end

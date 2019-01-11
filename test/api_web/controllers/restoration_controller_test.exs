@@ -8,7 +8,13 @@ defmodule I18NAPIWeb.RestorationControllerTest do
   alias I18NAPI.Accounts.Restoration
   alias I18NAPI.Accounts.User
   alias I18NAPI.Repo
-  alias I18NAPI.Utilites
+  alias I18NAPI.Utilities
+
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+    :ok
+  end
 
   setup do
     Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
@@ -27,7 +33,7 @@ defmodule I18NAPIWeb.RestorationControllerTest do
   def fixture(:user) do
     {:ok, user} =
       %User{}
-      |> User.changeset(Map.put(@fixture_user_attrs, :restore_token, Utilites.random_string(32)))
+      |> User.changeset(Map.put(@fixture_user_attrs, :restore_token, Utilities.random_string(32)))
       |> Repo.insert()
 
     Restoration.send_password_restore_email(user)

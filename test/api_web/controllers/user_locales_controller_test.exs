@@ -1,15 +1,24 @@
 defmodule I18NAPIWeb.UserLocalesControllerTest do
+  use ExUnit.Case, async: false
+  @moduletag :user_locales_controller
+
   use I18NAPIWeb.ConnCase
 
+  alias I18NAPI.Accounts
   alias I18NAPI.Projects
   alias I18NAPI.Projects.UserLocales
+  import Ecto.Query, warn: false
 
-  @create_attrs %{role: 42}
-  @update_attrs %{role: 43}
+  @valid_attrs %{role: 0}
+  @update_attrs %{role: 1}
   @invalid_attrs %{role: nil}
 
-  def fixture(:user_locales) do
-    {:ok, user_locales} = Projects.create_user_locales(@create_attrs)
+  def user_locales_fixture(attrs \\ %{}) do
+    {:ok, user_locales} =
+      attrs
+      |> Enum.into(@valid_attrs)
+      |> Projects.create_user_locales()
+
     user_locales
   end
 
@@ -25,7 +34,10 @@ defmodule I18NAPIWeb.UserLocalesControllerTest do
     {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
 
     if :error == result do
-      with {:ok, new_user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
+      with {:ok, new_user} <-
+             attrs
+             |> Enum.into(@user_attrs)
+             |> Accounts.create_user(),
            do: new_user
     else
       user
@@ -57,7 +69,7 @@ defmodule I18NAPIWeb.UserLocalesControllerTest do
 
   describe "create user_locales" do
     test "renders user_locales when data is valid", %{conn: conn} do
-      conn = post(conn, user_locales_path(conn, :create), user_locales: @create_attrs)
+      conn = post(conn, user_locales_path(conn, :create), user_locales: @valid_attrs)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, user_locales_path(conn, :show, id))
@@ -71,22 +83,21 @@ defmodule I18NAPIWeb.UserLocalesControllerTest do
   end
 
   describe "update user_locales" do
-    setup [:create_user_locales]
+    test "renders user_locales when data is valid", %{conn: conn} do
+      user_locales = user_locales_fixture()
 
-    test "renders user_locales when data is valid", %{
-      conn: conn,
-      user_locales: %UserLocales{id: id} = user_locales
-    } do
       conn =
         put(conn, user_locales_path(conn, :update, user_locales), user_locales: @update_attrs)
 
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 200)["data"]
 
       conn = get(conn, user_locales_path(conn, :show, id))
       assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 43}
     end
 
-    test "renders errors when data is invalid", %{conn: conn, user_locales: user_locales} do
+    test "renders errors when data is invalid", %{conn: conn} do
+      user_locales = user_locales_fixture()
+
       conn =
         put(conn, user_locales_path(conn, :update, user_locales), user_locales: @invalid_attrs)
 
@@ -95,9 +106,8 @@ defmodule I18NAPIWeb.UserLocalesControllerTest do
   end
 
   describe "delete user_locales" do
-    setup [:create_user_locales]
-
-    test "deletes chosen user_locales", %{conn: conn, user_locales: user_locales} do
+    test "deletes chosen user_locales", %{conn: conn} do
+      user_locales = user_locales_fixture()
       conn = delete(conn, user_locales_path(conn, :delete, user_locales))
       assert response(conn, 204)
 
@@ -105,10 +115,5 @@ defmodule I18NAPIWeb.UserLocalesControllerTest do
         get(conn, user_locales_path(conn, :show, user_locales))
       end)
     end
-  end
-
-  defp create_user_locales(_) do
-    user_locales = fixture(:user_locales)
-    {:ok, user_locales: user_locales}
   end
 end

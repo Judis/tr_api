@@ -334,7 +334,7 @@ defmodule I18NAPI.TranslationsTest do
 
     test "create_translation/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} =
-               Translations.create_translation(@invalid_translation_attrs, locale_id = 1)
+               Translations.create_translation(@invalid_translation_attrs, 1)
     end
 
     @valid_not_default_locale_attrs %{

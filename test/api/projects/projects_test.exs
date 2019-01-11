@@ -8,6 +8,12 @@ defmodule I18NAPI.ProjectsTest do
   alias I18NAPI.Accounts
   alias I18NAPI.Accounts.User
 
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+    :ok
+  end
+
   @user_attrs %{
     name: "test name",
     email: "test@email.test",

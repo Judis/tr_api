@@ -12,8 +12,8 @@ config :logger, level: :warn
 # Configure your database
 config :api, I18NAPI.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
+  username: "Judis",
+  password: "",
   database: "i18n_api_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox

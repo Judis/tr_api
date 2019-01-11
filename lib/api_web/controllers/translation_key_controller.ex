@@ -34,7 +34,11 @@ defmodule I18NAPIWeb.TranslationKeyController do
 
   def show(conn, %{"id" => id}) do
     translation_key = Translations.get_translation_key!(id)
-    render(conn, "show.json", translation_key: translation_key)
+
+    case translation_key.is_removed do
+      false -> render(conn, "show.json", translation_key: translation_key)
+      _ -> conn |> put_status(204) |> render("204.json")
+    end
   end
 
   def update(conn, %{"id" => id, "translation_key" => translation_key_params}) do
@@ -42,7 +46,10 @@ defmodule I18NAPIWeb.TranslationKeyController do
 
     with {:ok, %TranslationKey{} = translation_key} <-
            Translations.update_translation_key(translation_key, translation_key_params) do
-      render(conn, "show.json", translation_key: translation_key)
+      case translation_key.is_removed do
+        false -> render(conn, "show.json", translation_key: translation_key)
+        _ -> conn |> put_status(204) |> render("204.json")
+      end
     end
   end
 
@@ -51,7 +58,10 @@ defmodule I18NAPIWeb.TranslationKeyController do
 
     with {:ok, %TranslationKey{} = translation_key} <-
            Translations.safely_delete_translation_key(translation_key) do
-      render(conn, "show.json", translation_key: translation_key)
+      case translation_key.is_removed do
+        false -> render(conn, "show.json", translation_key: translation_key)
+        _ -> conn |> put_status(204) |> render("204.json")
+      end
     end
   end
 end

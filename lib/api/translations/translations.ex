@@ -5,7 +5,7 @@ defmodule I18NAPI.Translations do
 
   import Ecto.Query, warn: false
   alias I18NAPI.Repo
-  alias I18NAPI.Utilites
+  alias I18NAPI.Utilities
   alias I18NAPI.Translations.StatisticsInterface
   alias I18NAPI.Translations.Locale
   alias I18NAPI.Translations.Translation
@@ -107,7 +107,7 @@ defmodule I18NAPI.Translations do
   """
 
   def create_locale(attrs, project_id) do
-    attrs = Map.put(attrs, :project_id, project_id) |> Utilites.key_to_atom()
+    attrs = Map.put(attrs, :project_id, project_id) |> Utilities.key_to_atom()
 
     %Locale{}
     |> Locale.changeset(attrs)
@@ -271,7 +271,7 @@ defmodule I18NAPI.Translations do
       default_value = get_default_translation_value(translation_key.id)
 
       Map.put(translation_key, :default_value, default_value)
-      |> Utilites.key_to_atom()
+      |> Utilities.key_to_atom()
     end)
   end
 
@@ -328,7 +328,7 @@ defmodule I18NAPI.Translations do
 
   """
   def create_translation_key(attrs \\ %{}, project_id) do
-    changeset = Map.put(attrs, :project_id, project_id) |> Utilites.key_to_atom()
+    changeset = Map.put(attrs, :project_id, project_id) |> Utilities.key_to_atom()
 
     %TranslationKey{}
     |> TranslationKey.changeset(changeset)
@@ -386,6 +386,7 @@ defmodule I18NAPI.Translations do
   end
 
   defp update_default_translation_if_translation_key_was_updated({:ok, translation_key}, attrs) do
+    attrs = Utilities.key_to_atom(attrs)
     get_default_translation(translation_key.id)
     |> Translation.changeset(%{value: attrs.default_value})
     |> Repo.update()
@@ -514,7 +515,9 @@ defmodule I18NAPI.Translations do
 
   """
   def create_translation(attrs, locale_id) do
-    changeset = Map.put(attrs, :locale_id, locale_id) |> Utilites.key_to_atom()
+    changeset =
+      Map.put(attrs, :locale_id, locale_id)
+      |> Utilities.key_to_atom()
 
     %Translation{}
     |> Translation.changeset(changeset)
@@ -538,7 +541,7 @@ defmodule I18NAPI.Translations do
     attrs =
       attrs
       |> Map.take(["status", "value", :status, :value])
-      |> Utilites.key_to_atom()
+      |> Utilities.key_to_atom()
 
     translation
     |> Translation.changeset(attrs)

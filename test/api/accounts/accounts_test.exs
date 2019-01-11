@@ -6,6 +6,12 @@ defmodule I18NAPI.AccountsTest do
 
   alias I18NAPI.Accounts
 
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
+    :ok
+  end
+
   describe "users" do
     alias I18NAPI.Accounts.User
 
