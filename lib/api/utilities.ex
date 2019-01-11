@@ -1,4 +1,4 @@
-defmodule I18NAPI.Utilites do
+defmodule I18NAPI.Utilities do
   @moduledoc false
 
   @doc """

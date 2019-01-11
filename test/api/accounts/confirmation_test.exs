@@ -4,7 +4,7 @@ defmodule I18NAPI.ConfirmationTest do
 
   use I18NAPI.DataCase
 
-  alias I18NAPI.Utilites
+  alias I18NAPI.Utilities
   alias I18NAPI.Accounts
   alias I18NAPI.Accounts.User
   alias I18NAPI.Accounts.Confirmation
@@ -26,7 +26,7 @@ defmodule I18NAPI.ConfirmationTest do
   def user_fixture() do
     {:ok, user} =
       %User{}
-      |> User.changeset(Map.put(@user_attrs, :confirmation_token, Utilites.random_string(32)))
+      |> User.changeset(Map.put(@user_attrs, :confirmation_token, Utilities.random_string(32)))
       |> Repo.insert()
 
     user

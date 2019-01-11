@@ -8,7 +8,7 @@ defmodule I18NAPI.MailerTest do
   import Swoosh.TestAssertions
 
   alias I18NAPI.UserEmail
-  alias I18NAPI.Utilites
+  alias I18NAPI.Utilities
   alias I18NAPI.Accounts.User
 
   @user_attrs %{
@@ -25,7 +25,7 @@ defmodule I18NAPI.MailerTest do
       |> User.changeset(attrs |> Enum.into(@user_attrs))
       |> Repo.insert()
 
-    user |> Map.put(:confirmation_token, Utilites.random_string(25))
+    user |> Map.put(:confirmation_token, Utilities.random_string(25))
   end
 
   test "deliver confirmation email" do

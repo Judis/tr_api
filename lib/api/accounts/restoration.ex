@@ -8,7 +8,7 @@ defmodule I18NAPI.Accounts.Restoration do
   alias I18NAPI.Accounts.User
   alias I18NAPI.Mailer
   alias I18NAPI.UserEmail
-  alias I18NAPI.Utilites
+  alias I18NAPI.Utilities
 
   def send_password_restore_email_async(user) do
     spawn(I18NAPI.Accounts.Confirmation, :send_password_restore_email, [user])
@@ -16,7 +16,7 @@ defmodule I18NAPI.Accounts.Restoration do
 
   def send_password_restore_email(%User{} = user) do
     with {:ok, updated_user} =
-           Accounts.update_field_restore_token(user, Utilites.random_string(32)),
+           Accounts.update_field_restore_token(user, Utilities.random_string(32)),
          {:ok, _} <- Mailer.deliver(UserEmail.create_restoration_email(updated_user)) do
       Accounts.update_field_password_restore_requested_at(updated_user)
     end

@@ -8,7 +8,7 @@ defmodule I18NAPIWeb.ConfirmationControllerTest do
   alias I18NAPI.Accounts.Confirmation
   alias I18NAPI.Accounts.User
   alias I18NAPI.Repo
-  alias I18NAPI.Utilites
+  alias I18NAPI.Utilities
 
   setup do
     Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
@@ -28,7 +28,7 @@ defmodule I18NAPIWeb.ConfirmationControllerTest do
     {:ok, user} =
       %User{}
       |> User.changeset(
-        Map.put(@fixture_user_attrs, :confirmation_token, Utilites.random_string(32))
+        Map.put(@fixture_user_attrs, :confirmation_token, Utilities.random_string(32))
       )
       |> Repo.insert()
 

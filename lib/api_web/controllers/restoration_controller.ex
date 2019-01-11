@@ -16,7 +16,7 @@ defmodule I18NAPIWeb.RestorationController do
   end
 
   def reset(conn, %{"user" => user_params}) do
-    user_params = I18NAPI.Utilites.key_to_string(user_params)
+    user_params = I18NAPI.Utilities.key_to_string(user_params)
 
     result =
       Restoration.restore_user_by_token(

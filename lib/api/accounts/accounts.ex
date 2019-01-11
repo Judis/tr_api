@@ -8,7 +8,7 @@ defmodule I18NAPI.Accounts do
 
   alias I18NAPI.Accounts.User
   alias I18NAPI.Repo
-  alias I18NAPI.Utilites
+  alias I18NAPI.Utilities
 
   @doc """
   Returns the list of users.
@@ -55,8 +55,8 @@ defmodule I18NAPI.Accounts do
     %User{}
     |> User.changeset(
       attrs
-      |> Map.put(:confirmation_token, Utilites.random_string(32))
-      |> Utilites.key_to_atom()
+      |> Map.put(:confirmation_token, Utilities.random_string(32))
+      |> Utilities.key_to_atom()
     )
     |> Repo.insert()
     |> send_email_if_user_created()
