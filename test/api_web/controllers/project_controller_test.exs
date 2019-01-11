@@ -76,6 +76,47 @@ defmodule I18NAPIWeb.ProjectControllerTest do
       assert %Project{} = project
       assert project.name == @create_attrs.name
       assert project.default_locale == @create_attrs.default_locale
+      assert project.total_count_of_translation_keys == 0
+      assert project.count_of_not_verified_keys == 0
+      assert project.count_of_verified_keys == 0
+      assert project.count_of_translated_keys == 0
+      assert project.count_of_untranslated_keys == 0
+    end
+
+    alias I18NAPI.Translations.Statistics
+    alias I18NAPI.Translations
+
+    @valid_translation_key_attrs %{
+      context: "some context",
+      is_removed: false,
+      key: "some key",
+      default_value: "some value"
+    }
+    def translation_key_fixture(attrs \\ %{}, project_id \\ nil) do
+      {:ok, translation_key} =
+        attrs
+        |> Translations.create_translation_key(project_id)
+
+      translation_key
+    end
+
+    test "render project when data is valid with additional stats", %{conn: conn} do
+      project_fixture = project_fixture(conn)
+      translation_key_fixture(@valid_translation_key_attrs, project_fixture.id)
+      Statistics.update_all_project_counts(project_fixture.id)
+
+      conn = get(conn, project_path(conn, :show, project_fixture.id))
+      assert %{"id" => id} = json_response(conn, 200)["data"]
+
+      project = Projects.get_project!(id)
+      assert %Project{} = project
+      assert project.name == @create_attrs.name
+      assert project.default_locale == @create_attrs.default_locale
+      assert project.total_count_of_translation_keys == 1
+      assert project.count_of_not_verified_keys == 0
+      assert project.count_of_verified_keys == 0
+      assert project.count_of_translated_keys == 1 # because default translation is
+      assert project.count_of_untranslated_keys == 0
     end
   end
 

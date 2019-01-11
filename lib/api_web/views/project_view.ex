@@ -14,6 +14,11 @@ defmodule I18NAPIWeb.ProjectView do
     %{
       id: project.id,
       name: project.name,
+      total_count_of_translation_keys: project.total_count_of_translation_keys,
+      count_of_not_verified_keys: project.count_of_not_verified_keys,
+      count_of_verified_keys: project.count_of_verified_keys,
+      count_of_translated_keys: project.count_of_translated_keys,
+      count_of_untranslated_keys: project.count_of_untranslated_keys,
       is_removed: project.is_removed,
       removed_at: project.removed_at
     }
