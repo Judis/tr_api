@@ -110,11 +110,11 @@ defmodule I18NAPI.StatisticsWorkerTest do
         |> MapSet.put({2, 1})
 
       {projects, locales} = StatisticsWatcher.get()
-      assert !MapSet.disjoint?(fixture_locales, locales)
-      assert !MapSet.disjoint?(fixture_projects, projects)
+      refute MapSet.disjoint?(fixture_locales, locales)
+      refute MapSet.disjoint?(fixture_projects, projects)
       {projects, locales} = StatisticsWatcher.get()
-      assert !MapSet.disjoint?(fixture_locales, locales)
-      assert !MapSet.disjoint?(fixture_projects, projects)
+      refute MapSet.disjoint?(fixture_locales, locales)
+      refute MapSet.disjoint?(fixture_projects, projects)
     end
 
     test "add & flush test" do
@@ -135,8 +135,8 @@ defmodule I18NAPI.StatisticsWorkerTest do
         |> MapSet.put({2, 1})
 
       {projects, locales} = StatisticsWatcher.flush()
-      assert !MapSet.disjoint?(fixture_locales, locales)
-      assert !MapSet.disjoint?(fixture_projects, projects)
+      refute MapSet.disjoint?(fixture_locales, locales)
+      refute MapSet.disjoint?(fixture_projects, projects)
       {projects, locales} = StatisticsWatcher.flush()
       assert MapSet.to_list(locales) == []
       assert MapSet.to_list(projects) == []
