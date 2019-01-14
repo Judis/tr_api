@@ -2,36 +2,46 @@ defmodule I18NAPIWeb.InvitationController do
   use I18NAPIWeb, :controller
 
   alias I18NAPI.Accounts.{Invitation, User}
+  alias I18NAPI.Projects
+  alias I18NAPI.Projects.UserRoles
 
   action_fallback(I18NAPIWeb.FallbackController)
 
   def invite(conn, %{
         "user_id" => _,
         "invite" =>
-          %{
-            "name" => _,
-            "email" => _,
-            "project_id" => _,
-            "role" => _,
-            "message" => _
-          } = invite_params
+          %{"name" => _, "email" => _, "project_id" => _, "role" => _, "message" => _} =
+            invite_params
       }) do
     invite_params = I18NAPI.Utilities.key_to_atom(invite_params)
 
-    result =
-      with {:ok, %User{} = user} <- Invitation.start_invite_creating(invite_params, conn.user) do
-        conn
-        |> put_status(:created)
-        |> put_resp_header("location", user_invitation_path(conn, :invite, user))
-        |> render("show.json", user: user)
-      end
-
-    result
+    Projects.get_user_roles!(invite_params.project_id, conn.user.id)
+    |> check_user_roles()
+    |> start_invite_creating(invite_params, conn)
   end
 
   def invite(_conn, _args) do
     {:error, :bad_request}
   end
+
+  defp check_user_roles(%UserRoles{} = user_role) do
+    user_role.role
+  end
+
+  defp check_user_roles(_) do
+    {:error, :forbidden}
+  end
+
+  defp start_invite_creating(role, invite_params, conn) when :admin == role or :manager == role do
+    with {:ok, %User{} = user} <- Invitation.create_invite(invite_params, conn.user) do
+      conn
+      |> put_status(:created)
+      |> put_resp_header("location", user_invitation_path(conn, :invite, user))
+      |> render("show.json", user: user)
+    end
+  end
+
+  defp start_invite_creating(_, _, _), do: {:error, :forbidden}
 
   def accept(conn, %{"user" => user_params}) do
     user_params = I18NAPI.Utilities.key_to_string(user_params)

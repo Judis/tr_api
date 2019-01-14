@@ -75,7 +75,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       project = fixture(:project, user: conn.user)
       user = fixture(:user_alter)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      {:ok, prepared_user} = Invitation.prepare_user(:manager, prepared_data, conn.user)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
 
       {:ok, %User{} = user} =
         Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
@@ -96,7 +96,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       project = fixture(:project, user: conn.user)
       user = fixture(:user_alter)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      {:ok, prepared_user} = Invitation.prepare_user(:manager, prepared_data, conn.user)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
 
       {:ok, %User{} = user} =
         Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
@@ -117,7 +117,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       project = fixture(:project, user: conn.user)
       user = fixture(:user_alter)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      {:ok, prepared_user} = Invitation.prepare_user(:manager, prepared_data, conn.user)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
 
       {:ok, %User{} = user} =
         Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
@@ -143,7 +143,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       project = fixture(:project, user: conn.user)
       user = fixture(:user_alter)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      {:ok, prepared_user} = Invitation.prepare_user(:manager, prepared_data, conn.user)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
 
       {:ok, %User{} = user} =
         Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")

@@ -19,7 +19,15 @@ defmodule I18NAPI.InvitationTest do
       owner = fixture(:user)
       user = fixture(:user_alter)
       project = fixture(:project, user: owner)
-      assert {:ok, %User{}} = Invitation.send_invite_email_async({:ok, user}, owner, project, :translator, "message")
+
+      assert {:ok, %User{}} =
+               Invitation.send_invite_email_async(
+                 {:ok, user},
+                 owner,
+                 project,
+                 :translator,
+                 "message"
+               )
     end
 
     test "send_invite_email with prepared user" do
@@ -27,19 +35,22 @@ defmodule I18NAPI.InvitationTest do
       user = fixture(:user_alter)
       project = fixture(:project, user: owner)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      {:ok, prepared_user} = Invitation.prepare_user(:manager, prepared_data, owner)
-      assert {:ok, %User{} = user} = Invitation.send_invite_email(prepared_user, owner, project, :translator, "message")
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, owner)
+
+      assert {:ok, %User{} = user} =
+               Invitation.send_invite_email(prepared_user, owner, project, :translator, "message")
+
       assert user.invited_at
     end
 
-    test "start_invite_creating(user_params, owner)" do
+    test "create_invite(user_params, owner)" do
       owner = fixture(:user)
       user = fixture(:user_alter)
       project = fixture(:project, user: owner)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      assert {:ok, %User{} = user} = Invitation.start_invite_creating(prepared_data, owner)
-      refute user.invited_at #because include async function
-
+      assert {:ok, %User{} = user} = Invitation.create_invite(prepared_data, owner)
+      # because include async function
+      refute user.invited_at
     end
 
     test "prepare_user when :admin == role" do
@@ -47,7 +58,7 @@ defmodule I18NAPI.InvitationTest do
       user = fixture(:user_alter)
       project = fixture(:project, user: owner)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      assert {:ok, %User{} = user} = Invitation.prepare_user(:admin, prepared_data, owner)
+      assert {:ok, %User{} = user} = Invitation.prepare_user(prepared_data, owner)
     end
 
     test "prepare_user when :manager == role" do
@@ -55,14 +66,7 @@ defmodule I18NAPI.InvitationTest do
       user = fixture(:user_alter)
       project = fixture(:project, user: owner)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      assert {:ok, %User{} = user} = Invitation.prepare_user(:manager, prepared_data, owner)
-    end
-
-    test "prepare_user when role not authorized" do
-      owner = fixture(:user)
-      user = fixture(:user_alter)
-      project = fixture(:project, user: owner)
-      assert {:error, :forbidden} = Invitation.prepare_user(:translator, @invite_user_data, owner)
+      assert {:ok, %User{} = user} = Invitation.prepare_user(prepared_data, owner)
     end
 
     test "accept_user_by_token(restore_token, password, password_confirmation)" do
@@ -70,11 +74,16 @@ defmodule I18NAPI.InvitationTest do
       user = fixture(:user_alter)
       project = fixture(:project, user: owner)
       prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
-      {:ok, prepared_user} = Invitation.prepare_user(:manager, prepared_data, owner)
-      assert {:ok, %User{} = user} = Invitation.send_invite_email(prepared_user, owner, project, :translator, "message")
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, owner)
+
+      assert {:ok, %User{} = user} =
+               Invitation.send_invite_email(prepared_user, owner, project, :translator, "message")
+
       assert user.invited_at
 
-      assert {:ok, %User{} = user} = Invitation.accept_user_by_token(user.restore_token, "Qwerty123!", "Qwerty123!")
+      assert {:ok, %User{} = user} =
+               Invitation.accept_user_by_token(user.restore_token, "Qwerty123!", "Qwerty123!")
+
       refute user.invited_at
       refute user.restore_token
       refute user.confirmation_token
