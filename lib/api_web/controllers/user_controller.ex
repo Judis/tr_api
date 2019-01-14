@@ -2,7 +2,7 @@ defmodule I18NAPIWeb.UserController do
   use I18NAPIWeb, :controller
 
   alias I18NAPI.Accounts
-  alias I18NAPI.Accounts.User
+  alias I18NAPI.Accounts.{Confirmation, User}
 
   action_fallback(I18NAPIWeb.FallbackController)
 
@@ -13,6 +13,7 @@ defmodule I18NAPIWeb.UserController do
 
   def create(conn, %{"user" => user_params}) do
     with {:ok, %User{} = user} <- Accounts.create_user(user_params) do
+      Confirmation.send_confirmation_email_async(user)
       conn
       |> put_status(:created)
       |> put_resp_header("location", user_path(conn, :show, user))

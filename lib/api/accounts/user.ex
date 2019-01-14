@@ -81,11 +81,39 @@ defmodule I18NAPI.Accounts.User do
   end
 
   @doc false
+  def invite_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :invited_at
+    ])
+  end
+
+  @doc false
+  def accept_invite_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :invited_at,
+      :confirmation_token,
+      :confirmation_sent_at,
+      :confirmed_at,
+      :is_confirmed,
+      :restore_accepted_at,
+      :restore_token,
+      :password,
+      :password_confirmation
+    ])
+    |> validate_required([:confirmed_at, :restore_accepted_at, :password, :password_confirmation])
+    |> validate_password
+  end
+
+  @doc false
   def restore_changeset(user, attrs) do
     user
     |> cast(attrs, [
+      :invited_at,
       :restore_token,
       :restore_accepted_at,
+      :restore_requested_at,
       :password,
       :password_confirmation
     ])

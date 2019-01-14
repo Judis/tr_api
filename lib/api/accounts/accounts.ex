@@ -4,7 +4,6 @@ defmodule I18NAPI.Accounts do
   """
 
   import Ecto.Query, warn: false
-  import I18NAPI.Accounts.Confirmation
 
   alias I18NAPI.Accounts.User
   alias I18NAPI.Repo
@@ -59,14 +58,6 @@ defmodule I18NAPI.Accounts do
       |> Utilities.key_to_atom()
     )
     |> Repo.insert()
-    |> send_email_if_user_created()
-  end
-
-  defp send_email_if_user_created({:error, _} = result), do: result
-
-  defp send_email_if_user_created({:ok, user}) do
-    send_confirmation_email_async(user)
-    {:ok, user}
   end
 
   @doc """
@@ -211,7 +202,8 @@ defmodule I18NAPI.Accounts do
 
   def update_field_restore_token(%User{} = user, restore_token) do
     attrs = %{
-      restore_token: restore_token
+      restore_token: restore_token,
+      restore_requested_at: NaiveDateTime.utc_now()
     }
 
     user
@@ -226,6 +218,34 @@ defmodule I18NAPI.Accounts do
 
     user
     |> User.restore_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_field_invited_at(%User{} = user) do
+    attrs = %{
+      invited_at: NaiveDateTime.utc_now()
+    }
+
+    user
+    |> User.invite_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def accept_invitation(%User{} = user, password, password_confirmation) do
+    attrs = %{
+      confirmation_token: nil,
+      confirmation_sent_at: nil,
+      confirmed_at: NaiveDateTime.utc_now(),
+      invited_at: nil,
+      is_confirmed: true,
+      restore_accepted_at: NaiveDateTime.utc_now(),
+      restore_token: nil,
+      password: password,
+      password_confirmation: password_confirmation
+    }
+
+    user
+    |> User.accept_invite_changeset(attrs)
     |> Repo.update()
   end
 
