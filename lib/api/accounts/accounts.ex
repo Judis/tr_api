@@ -61,6 +61,27 @@ defmodule I18NAPI.Accounts do
   end
 
   @doc """
+  Creates a user with temp password.
+  Use it if you need create user without password (in fact with big unknown password)
+
+  ## Examples
+
+      iex> create_user(%{field: value})
+      {:ok, %User{}}
+
+      iex> create_user(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_user_with_temp_password(attrs \\ %{}) do
+    temp_pass = Utilities.generate_valid_password()
+    attrs
+    |> Map.put(:password, temp_pass)
+    |> Map.put(:password_confirmation, temp_pass)
+    |> create_user()
+  end
+
+  @doc """
   Updates a user.
 
   ## Examples

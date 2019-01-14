@@ -41,14 +41,7 @@ defmodule I18NAPI.Accounts.Invitation do
   end
 
   def prepare_user(role, user_params, owner) when :manager == role or :admin == role do
-    fake_pass = Utilities.random_string(32)
-
-    user_params =
-      user_params
-      |> Map.put(:password, fake_pass)
-      |> Map.put(:password_confirmation, fake_pass)
-
-    with {:ok, %User{} = user} <- Accounts.create_user(user_params),
+    with {:ok, %User{} = user} <- Accounts.create_user_with_temp_password(user_params),
          {:ok, %UserRoles{}} <-
            Projects.create_user_roles(%{
              user_id: user.id,
