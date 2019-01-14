@@ -2,6 +2,8 @@ defmodule I18NAPI.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias I18NAPI.Accounts.User
+
   schema "users" do
     field(:confirmation_sent_at, :naive_datetime)
     field(:confirmation_token, :string)
@@ -136,6 +138,20 @@ defmodule I18NAPI.Accounts.User do
 
       _ ->
         changeset
+    end
+  end
+
+  @doc false
+  def validate_string_password(password) do
+    result = %User{}
+             |> cast(%{password: password}, [:password])
+             |> validate_required([:password])
+             |> validate_password
+
+    if [] == result.errors do
+      password
+    else
+      {:error}
     end
   end
 end

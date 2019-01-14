@@ -1,6 +1,6 @@
 defmodule I18NAPI.Utilities do
   @moduledoc false
-
+alias I18NAPI.Accounts.User
   @doc """
   Translate keys to atoms
 
@@ -46,5 +46,9 @@ defmodule I18NAPI.Utilities do
     :crypto.strong_rand_bytes(length)
     |> Base.url_encode64()
     |> binary_part(0, length)
+  end
+
+  def generate_valid_password do
+    with {:error} <- User.validate_string_password(random_string(32)), do: generate_valid_password()
   end
 end
