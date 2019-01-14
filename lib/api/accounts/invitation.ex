@@ -60,7 +60,7 @@ defmodule I18NAPI.Accounts.Invitation do
   end
 
   def prepare_user(_, _, _) do
-    {:error, :access_denied}
+    {:error, :forbidden}
   end
 
   def accept_user_by_token(nil, _, _) do

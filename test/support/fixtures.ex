@@ -60,16 +60,22 @@ defmodule I18NAPI.Fixtures do
         source: "alter user source"
       }
 
-      def fixture(clause, attrs \\ [])
-      def fixture(:user_alter, attrs), do: fixture(:user, user: @valid_user_alter_attrs)
+      @valid_user_more_alter_attrs %{
+        name: "more user name",
+        email: "more_user@email.test",
+        password: "Qw!23456",
+        password_confirmation: "Qw!23456",
+        source: "more user source"
+      }
+      def fixture(:user), do: fixture(:user, user: @valid_user_attrs)
+      def fixture(:user_alter), do: fixture(:user, user: @valid_user_alter_attrs)
+      def fixture(:user_more_alter), do: fixture(:user, user: @valid_user_more_alter_attrs)
+
       def fixture(:user, attrs) do
         {_, user} =
           with {:error, _} <-
-                 Accounts.find_and_confirm_user(
-                   @valid_user_attrs.email,
-                   @valid_user_attrs.password
-                 ) do
-            Accounts.create_user(attrs[:user] || @valid_user_attrs)
+                 Accounts.find_and_confirm_user(attrs[:user].email, attrs[:user].password) do
+            Accounts.create_user(attrs[:user])
           end
 
         user

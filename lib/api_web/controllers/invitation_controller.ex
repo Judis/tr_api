@@ -18,12 +18,15 @@ defmodule I18NAPIWeb.InvitationController do
       }) do
     invite_params = I18NAPI.Utilities.key_to_atom(invite_params)
 
-    with {:ok, %User{} = user} <- Invitation.start_invite_creating(invite_params, conn.user) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", user_invitation_path(conn, :invite, user))
-      |> render("show.json", user: user)
-    end
+    result =
+      with {:ok, %User{} = user} <- Invitation.start_invite_creating(invite_params, conn.user) do
+        conn
+        |> put_status(:created)
+        |> put_resp_header("location", user_invitation_path(conn, :invite, user))
+        |> render("show.json", user: user)
+      end
+
+    result
   end
 
   def invite(_conn, _args) do
@@ -45,7 +48,10 @@ defmodule I18NAPIWeb.InvitationController do
         conn |> put_status(200) |> render("200.json")
 
       {:error, :unauthorized} ->
-        conn |> put_status(200) |> render("200.json")
+        {:error, :unauthorized}
+
+      {:error, :forbidden} ->
+        {:error, :forbidden}
 
       {:error, :nil_found} ->
         {:error, :bad_request}

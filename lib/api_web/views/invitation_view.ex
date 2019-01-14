@@ -7,7 +7,7 @@ defmodule I18NAPIWeb.InvitationView do
   end
 
   def render("200.json", _) do
-    %{ok: %{detail: "User invited"}}
+    %{ok: %{detail: "User accepted"}}
   end
 
   def render("422.json", %{detail: :password}) do
@@ -37,5 +37,4 @@ defmodule I18NAPIWeb.InvitationView do
       invited_at: user.invited_at
     }
   end
-
 end
