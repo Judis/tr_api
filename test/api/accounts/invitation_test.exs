@@ -62,7 +62,7 @@ defmodule I18NAPI.InvitationTest do
       owner = fixture(:user)
       user = fixture(:user_alter)
       project = fixture(:project, user: owner)
-      assert {:error, :access_denied} = Invitation.prepare_user(:translator, @invite_user_data, owner)
+      assert {:error, :forbidden} = Invitation.prepare_user(:translator, @invite_user_data, owner)
     end
 
     test "accept_user_by_token(restore_token, password, password_confirmation)" do
