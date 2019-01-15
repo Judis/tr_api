@@ -26,6 +26,7 @@ defmodule I18NAPIWeb.Router do
     pipe_through(:authenticated)
     resources("/users", UserController) do
       post("/create_invite", InvitationController, :invite)
+      delete("/reject_invite", InvitationController, :reject)
     end
 
     resources("/projects", ProjectController) do

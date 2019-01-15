@@ -160,4 +160,76 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       assert %{"error" => %{"detail" => "Does not match confirmation"}} = json_response(conn, 422)
     end
   end
+
+  describe "reject invite" do
+    test "if reject data is valid", %{conn: conn} do
+      project = fixture(:project, user: conn.user)
+      user = fixture(:user_alter)
+      prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
+
+      {:ok, %User{} = user} =
+        Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
+
+      no_content_response =
+        delete(conn, user_invitation_path(conn, :reject, conn.user),
+          reject: %{} |> Map.put(:project_id, project.id) |> Map.put(:user_id, user.id)
+        )
+
+      assert response(no_content_response, 204)
+      no_content_response = delete(conn, user_path(conn, :show, conn.user))
+      assert response(no_content_response, 204)
+    end
+
+    test "if project_id is another", %{conn: conn} do
+      project = fixture(:project, user: conn.user)
+      user = fixture(:user_alter)
+      prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
+
+      {:ok, %User{} = user} =
+        Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
+
+      response =
+        delete(conn, user_invitation_path(conn, :reject, conn.user),
+          reject: %{} |> Map.put(:project_id, 1) |> Map.put(:user_id, user.id)
+        )
+
+      assert %{"errors" => %{"detail" => "Forbidden"}} = json_response(response, 403)
+    end
+
+    test "if user_id is another", %{conn: conn} do
+      project = fixture(:project, user: conn.user)
+      user = fixture(:user_alter)
+      prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
+
+      {:ok, %User{} = user} =
+        Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
+
+      response =
+        delete(conn, user_invitation_path(conn, :reject, conn.user),
+          reject: %{} |> Map.put(:project_id, project.id) |> Map.put(:user_id, 1)
+        )
+
+      assert %{"errors" => %{"detail" => "Forbidden"}} = json_response(response, 403)
+    end
+
+    test "if data is invalid", %{conn: conn} do
+      project = fixture(:project, user: conn.user)
+      user = fixture(:user_alter)
+      prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
+
+      {:ok, %User{} = user} =
+        Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
+
+      response =
+        delete(conn, user_invitation_path(conn, :reject, conn.user),
+          reject: %{} |> Map.put(:project_id, nil) |> Map.put(:user_id, nil)
+        )
+
+      assert %{"errors" => %{"detail" => "Bad Request"}} = json_response(response, 400)
+    end
+  end
 end
