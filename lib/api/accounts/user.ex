@@ -61,12 +61,12 @@ defmodule I18NAPI.Accounts.User do
   @doc false
   defp validate_password(struct) do
     struct
-    |> validate_length(:password, min: 8)
-    |> validate_format(
-      :password,
-      ~r/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*/,
-      message: "Must include at least one lowercase letter, one uppercase letter, and one digit"
-    )
+    |> validate_length(:password, min: 8, max: 50)
+#    |> validate_format(
+#      :password,
+#      ~r/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*/,
+#      message: "Must include at least one lowercase letter, one uppercase letter, and one digit"
+#    )
     |> validate_confirmation(:password)
     |> generate_password_hash
   end
@@ -138,20 +138,6 @@ defmodule I18NAPI.Accounts.User do
 
       _ ->
         changeset
-    end
-  end
-
-  @doc false
-  def validate_string_password(password) do
-    result = %User{}
-             |> cast(%{password: password}, [:password])
-             |> validate_required([:password])
-             |> validate_password
-
-    if [] == result.errors do
-      password
-    else
-      {:error}
     end
   end
 end

@@ -134,7 +134,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       assert %{
                "error" => %{
                  "detail" =>
-                   "Password must have 8-255 symbols, include at least one lowercase letter, one uppercase letter, and one digit"
+                   "Password must have 8-50 symbols"
                }
              } = json_response(conn, 422)
     end

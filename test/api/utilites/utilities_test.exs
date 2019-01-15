@@ -35,8 +35,6 @@ defmodule I18NAPI.UtilitiesTest do
 
   test "generate_valid_password" do
     password = Utilities.generate_valid_password
-    IO.puts "----------------"
-    IO.inspect password, label: "generate_valid_password"
     assert 32 == password |> String.length
   end
 end

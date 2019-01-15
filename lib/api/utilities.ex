@@ -49,6 +49,6 @@ alias I18NAPI.Accounts.User
   end
 
   def generate_valid_password do
-    with {:error} <- User.validate_string_password(random_string(32)), do: generate_valid_password()
+    random_string(32)
   end
 end
