@@ -90,11 +90,13 @@ defmodule I18NAPI.Accounts do
 
   """
   def create_user_with_temp_password(attrs \\ %{}) do
-    temp_pass = Utilities.generate_valid_password()
     attrs
-    |> Map.put(:password, temp_pass)
-    |> Map.put(:password_confirmation, temp_pass)
+    |> set_temp_password(Utilities.generate_valid_password())
     |> create_user()
+  end
+
+  defp set_temp_password(attrs, temp_pass) do
+    Map.merge(attrs, %{password: temp_pass, password_confirmation: temp_pass})
   end
 
   @doc """
@@ -190,12 +192,8 @@ defmodule I18NAPI.Accounts do
   end
 
   def update_field_confirmation_sent_at(%User{} = user) do
-    attrs = %{
-      confirmation_sent_at: NaiveDateTime.utc_now()
-    }
-
     user
-    |> User.confirmation_changeset(attrs)
+    |> User.confirmation_changeset(%{confirmation_sent_at: NaiveDateTime.utc_now()})
     |> Repo.update()
   end
 
@@ -238,76 +236,53 @@ defmodule I18NAPI.Accounts do
   end
 
   def update_field_restore_token(%User{} = user, restore_token) do
-    attrs = %{
+    user
+    |> User.restore_changeset(%{
       restore_token: restore_token,
       restore_requested_at: NaiveDateTime.utc_now()
-    }
-
-    user
-    |> User.restore_changeset(attrs)
+    })
     |> Repo.update()
   end
 
   def update_field_password_restore_requested_at(%User{} = user) do
-    attrs = %{
-      restore_requested_at: NaiveDateTime.utc_now()
-    }
-
     user
-    |> User.restore_changeset(attrs)
+    |> User.restore_changeset(%{restore_requested_at: NaiveDateTime.utc_now()})
     |> Repo.update()
   end
 
   def update_field_invited_at(%User{} = user) do
-    attrs = %{
-      invited_at: NaiveDateTime.utc_now()
-    }
-
     user
-    |> User.invite_changeset(attrs)
+    |> User.invite_changeset()
     |> Repo.update()
   end
 
   def accept_invitation(%User{} = user, password, password_confirmation) do
-    attrs = %{
-      confirmation_token: nil,
-      confirmation_sent_at: nil,
-      confirmed_at: NaiveDateTime.utc_now(),
-      invited_at: nil,
-      is_confirmed: true,
-      restore_accepted_at: NaiveDateTime.utc_now(),
-      restore_token: nil,
+    user
+    |> User.accept_invite_changeset(%{
       password: password,
       password_confirmation: password_confirmation
-    }
-
-    user
-    |> User.accept_invite_changeset(attrs)
+    })
     |> Repo.update()
   end
 
   def accept_restoration(%User{} = user, password, password_confirmation) do
-    attrs = %{
+    user
+    |> User.restore_changeset(%{
       restore_accepted_at: NaiveDateTime.utc_now(),
       password: password,
       password_confirmation: password_confirmation
-    }
-
-    user
-    |> User.restore_changeset(attrs)
+    })
     |> Repo.update()
   end
 
   def confirm_user(%User{} = user) do
-    attrs = %{
+    user
+    |> User.confirmation_changeset(%{
       confirmation_token: nil,
       confirmation_sent_at: nil,
       confirmed_at: NaiveDateTime.utc_now(),
       is_confirmed: true
-    }
-
-    user
-    |> User.confirmation_changeset(attrs)
+    })
     |> Repo.update()
   end
 end

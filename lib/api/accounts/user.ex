@@ -62,11 +62,6 @@ defmodule I18NAPI.Accounts.User do
   defp validate_password(struct) do
     struct
     |> validate_length(:password, min: 8, max: 50)
-#    |> validate_format(
-#      :password,
-#      ~r/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*/,
-#      message: "Must include at least one lowercase letter, one uppercase letter, and one digit"
-#    )
     |> validate_confirmation(:password)
     |> generate_password_hash
   end
@@ -83,27 +78,37 @@ defmodule I18NAPI.Accounts.User do
   end
 
   @doc false
-  def invite_changeset(user, attrs) do
+  def invite_changeset(user) do
     user
-    |> cast(attrs, [
-      :invited_at
-    ])
+    |> cast(%{invited_at: NaiveDateTime.utc_now()}, [:invited_at])
   end
 
   @doc false
   def accept_invite_changeset(user, attrs) do
     user
-    |> cast(attrs, [
-      :invited_at,
-      :confirmation_token,
-      :confirmation_sent_at,
-      :confirmed_at,
-      :is_confirmed,
-      :restore_accepted_at,
-      :restore_token,
-      :password,
-      :password_confirmation
-    ])
+    |> cast(
+      attrs
+      |> Map.merge(%{
+        confirmation_token: nil,
+        confirmation_sent_at: nil,
+        confirmed_at: NaiveDateTime.utc_now(),
+        invited_at: nil,
+        is_confirmed: true,
+        restore_accepted_at: NaiveDateTime.utc_now(),
+        restore_token: nil
+      }),
+      [
+        :invited_at,
+        :confirmation_token,
+        :confirmation_sent_at,
+        :confirmed_at,
+        :is_confirmed,
+        :restore_accepted_at,
+        :restore_token,
+        :password,
+        :password_confirmation
+      ]
+    )
     |> validate_required([:confirmed_at, :restore_accepted_at, :password, :password_confirmation])
     |> validate_password
   end

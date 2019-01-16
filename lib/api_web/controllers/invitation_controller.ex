@@ -31,25 +31,8 @@ defmodule I18NAPIWeb.InvitationController do
       }) do
     invite_params = I18NAPI.Utilities.key_to_atom(invite_params)
 
-    Projects.get_user_roles!(invite_params.project_id, conn.user.id)
-    |> check_user_roles()
-    |> start_invite_creating(invite_params, conn)
-  end
-
-  def invite(_conn, _args) do
-    {:error, :bad_request}
-  end
-
-  defp check_user_roles(%UserRoles{} = user_role) do
-    user_role.role
-  end
-
-  defp check_user_roles(_) do
-    {:error, :forbidden}
-  end
-
-  defp start_invite_creating(role, invite_params, conn) when :admin == role or :manager == role do
-    with {:ok, %User{} = user} <- Invitation.create_invite(invite_params, conn.user) do
+    with :ok <- check_access_policy(invite_params, conn),
+         {:ok, %User{} = user} <- Invitation.create_invite(invite_params, conn.user) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", user_invitation_path(conn, :invite, user))
@@ -57,7 +40,22 @@ defmodule I18NAPIWeb.InvitationController do
     end
   end
 
-  defp start_invite_creating(_, _, _), do: {:error, :forbidden}
+  def invite(_conn, _args) do
+    {:error, :bad_request}
+  end
+
+  defp check_access_policy(invite_params, conn) do
+    with %UserRoles{} <-
+           user_role = Projects.get_user_roles!(invite_params.project_id, conn.user.id) do
+      case user_role.role do
+        :admin -> :ok
+        :manager -> :ok
+        _ -> {:error, :forbidden}
+      end
+    else
+      _ -> {:error, :forbidden}
+    end
+  end
 
   def reject(conn, %{
         "user_id" => id,
@@ -72,17 +70,8 @@ defmodule I18NAPIWeb.InvitationController do
       }) do
     reject_params = I18NAPI.Utilities.key_to_atom(reject_params)
 
-    Projects.get_user_roles!(reject_params.project_id, conn.user.id)
-    |> check_user_roles()
-    |> start_rejecting(reject_params, conn)
-  end
-
-  def reject(_conn, _args) do
-    {:error, :bad_request}
-  end
-
-  defp start_rejecting(role, invite_params, conn) when :admin == role or :manager == role do
-    with %User{} = user <- Accounts.get_user(invite_params.user_id),
+    with :ok <- check_access_policy(reject_params, conn),
+         %User{} = user <- Accounts.get_user(reject_params.user_id),
          false <- is_nil(user.invited_at),
          {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")
@@ -90,8 +79,6 @@ defmodule I18NAPIWeb.InvitationController do
       _ -> {:error, :forbidden}
     end
   end
-
-  defp start_rejecting(_, _, _), do: {:error, :forbidden}
 
   def accept(conn, %{
         "user" =>
