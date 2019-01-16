@@ -24,12 +24,10 @@ defmodule I18NAPIWeb.Router do
     post("/reset_password", RestorationController, :reset)
     post("/accept_invite", InvitationController, :accept)
     pipe_through(:authenticated)
-    resources("/users", UserController) do
+    resources("/users", UserController)
+    resources("/projects", ProjectController) do
       post("/create_invite", InvitationController, :invite)
       delete("/reject_invite", InvitationController, :reject)
-    end
-
-    resources("/projects", ProjectController) do
       resources("/translation_keys", TranslationKeyController)
       resources("/locales", LocaleController) do
         get("/keys_and_translations", LocaleController, :keys_and_translations)

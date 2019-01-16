@@ -5,37 +5,23 @@ defmodule I18NAPIWeb.InvitationController do
   alias I18NAPI.Accounts.{Invitation, User}
   alias I18NAPI.Projects
   alias I18NAPI.Projects.UserRoles
+  alias I18NAPI.Utilities
 
   action_fallback(I18NAPIWeb.FallbackController)
 
   def invite(conn, %{
-        "user_id" => id,
-        "invite" =>
-          %{
-            "name" => name,
-            "email" => email,
-            "project_id" => project_id,
-            "role" => role,
-            "message" => message
-          } = invite_params
-      })
-      when is_nil(id) or is_nil(name) or is_nil(email) or is_nil(project_id) or is_nil(role) or
-             is_nil(message),
-      do: {:error, :bad_request}
-
-  def invite(conn, %{
-        "user_id" => _,
-        "invite" =>
-          %{"name" => _, "email" => _, "project_id" => _, "role" => _, "message" => _} =
-            invite_params
+        "project_id" => project_id,
+        "invite" => %{"role" => _, "message" => _} = invite_params
       }) do
-    invite_params = I18NAPI.Utilities.key_to_atom(invite_params)
-
-    with :ok <- check_access_policy(invite_params, conn),
-         {:ok, %User{} = user} <- Invitation.create_invite(invite_params, conn.user) do
+    with :ok <- check_access_policy(project_id, conn.user.id),
+         {:ok, %User{} = user} <-
+           invite_params
+           |> Map.put(:project_id, project_id)
+           |> Utilities.key_to_atom()
+           |> Invitation.create_invite(conn.user) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", user_invitation_path(conn, :invite, user))
+      |> put_resp_header("location", project_invitation_path(conn, :invite, project_id))
       |> render("show.json", user: user)
     end
   end
@@ -44,9 +30,8 @@ defmodule I18NAPIWeb.InvitationController do
     {:error, :bad_request}
   end
 
-  defp check_access_policy(invite_params, conn) do
-    with %UserRoles{} <-
-           user_role = Projects.get_user_roles!(invite_params.project_id, conn.user.id) do
+  defp check_access_policy(project_id, user_id) do
+    with %UserRoles{} <- user_role = Projects.get_user_roles!(project_id, user_id) do
       case user_role.role do
         :admin -> :ok
         :manager -> :ok
@@ -58,25 +43,20 @@ defmodule I18NAPIWeb.InvitationController do
   end
 
   def reject(conn, %{
-        "user_id" => id,
-        "reject" => %{"user_id" => user_id, "project_id" => project_id} = reject_params
-      })
-      when is_nil(id) or is_nil(user_id) or is_nil(project_id),
-      do: {:error, :bad_request}
-
-  def reject(conn, %{
-        "user_id" => _,
-        "reject" => %{"user_id" => _, "project_id" => _} = reject_params
+        "project_id" => project_id,
+        "reject" => %{"user_id" => user_id} = reject_params
       }) do
-    reject_params = I18NAPI.Utilities.key_to_atom(reject_params)
-
-    with :ok <- check_access_policy(reject_params, conn),
-         %User{} = user <- Accounts.get_user(reject_params.user_id),
-         false <- is_nil(user.invited_at),
-         {:ok, %User{}} <- Accounts.delete_user(user) do
-      send_resp(conn, :no_content, "")
+    if is_nil(user_id) do
+      {:error, :bad_request}
     else
-      _ -> {:error, :forbidden}
+      with :ok <- check_access_policy(project_id, conn.user.id),
+           %User{} = user <- Accounts.get_user(user_id),
+           false <- is_nil(user.invited_at),
+           {:ok, %User{}} <- Accounts.delete_user(user) do
+        send_resp(conn, :no_content, "")
+      else
+        _ -> {:error, :forbidden}
+      end
     end
   end
 
