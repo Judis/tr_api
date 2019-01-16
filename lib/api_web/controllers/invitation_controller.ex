@@ -42,10 +42,7 @@ defmodule I18NAPIWeb.InvitationController do
     end
   end
 
-  def reject(conn, %{
-        "project_id" => project_id,
-        "reject" => %{"user_id" => user_id} = reject_params
-      }) do
+  def reject(conn, %{"project_id" => project_id, "user_id" => user_id}) do
     if is_nil(user_id) do
       {:error, :bad_request}
     else

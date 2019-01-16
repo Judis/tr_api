@@ -176,9 +176,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
         Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
 
       no_content_response =
-        delete(conn, project_invitation_path(conn, :reject, project.id),
-          reject: %{} |> Map.put(:user_id, user.id)
-        )
+        delete(conn, project_invitation_path(conn, :reject, project.id), user_id: user.id)
 
       assert response(no_content_response, 204)
       no_content_response = delete(conn, user_path(conn, :show, conn.user))
@@ -194,10 +192,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       {:ok, %User{} = user} =
         Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
 
-      response =
-        delete(conn, project_invitation_path(conn, :reject, 1),
-          reject: %{} |> Map.put(:user_id, user.id)
-        )
+      response = delete(conn, project_invitation_path(conn, :reject, 1), user_id: user.id)
 
       assert %{"errors" => %{"detail" => "Forbidden"}} = json_response(response, 403)
     end
@@ -211,10 +206,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       {:ok, %User{} = user} =
         Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
 
-      response =
-        delete(conn, project_invitation_path(conn, :reject, project.id),
-          reject: %{} |> Map.put(:user_id, 1)
-        )
+      response = delete(conn, project_invitation_path(conn, :reject, project.id), user_id: 1)
 
       assert %{"errors" => %{"detail" => "Forbidden"}} = json_response(response, 403)
     end
@@ -228,10 +220,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       {:ok, %User{} = user} =
         Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
 
-      response =
-        delete(conn, project_invitation_path(conn, :reject, project.id),
-          reject: %{} |> Map.put(:user_id, nil)
-        )
+      response = delete(conn, project_invitation_path(conn, :reject, project.id), user_id: nil)
 
       assert %{"errors" => %{"detail" => "Bad Request"}} = json_response(response, 400)
     end
