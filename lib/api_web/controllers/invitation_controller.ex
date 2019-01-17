@@ -9,11 +9,9 @@ defmodule I18NAPIWeb.InvitationController do
 
   action_fallback(I18NAPIWeb.FallbackController)
 
-  def invite(conn, %{
-        "project_id" => project_id,
-        "invite" => %{"role" => _, "message" => _} = invite_params
-      }) do
+  def invite(conn, %{"project_id" => project_id, "invite" => invite_params}) do
     with :ok <- check_access_policy(project_id, conn.user.id),
+         {:ok, invite_params} <- Invitation.check_invite_params(invite_params),
          {:ok, %User{} = user} <-
            invite_params
            |> Map.put(:project_id, project_id)
@@ -24,10 +22,6 @@ defmodule I18NAPIWeb.InvitationController do
       |> put_resp_header("location", project_invitation_path(conn, :invite, project_id))
       |> render("show.json", user: user)
     end
-  end
-
-  def invite(_conn, _args) do
-    {:error, :bad_request}
   end
 
   defp check_access_policy(project_id, user_id) do
@@ -42,45 +36,39 @@ defmodule I18NAPIWeb.InvitationController do
     end
   end
 
+  def reject(conn, %{"project_id" => project_id, "user_id" => user_id})
+      when is_nil(project_id) or is_nil(user_id),
+      do: {:error, :bad_request}
+
   def reject(conn, %{"project_id" => project_id, "user_id" => user_id}) do
-    if is_nil(user_id) do
-      {:error, :bad_request}
+    with :ok <- check_access_policy(project_id, conn.user.id),
+         %User{} = user <- Accounts.get_user(user_id),
+         false <- is_nil(user.invited_at),
+         {:ok, %User{}} <- Accounts.delete_user(user) do
+      send_resp(conn, :no_content, "")
     else
-      with :ok <- check_access_policy(project_id, conn.user.id),
-           %User{} = user <- Accounts.get_user(user_id),
-           false <- is_nil(user.invited_at),
-           {:ok, %User{}} <- Accounts.delete_user(user) do
-        send_resp(conn, :no_content, "")
-      else
-        _ -> {:error, :forbidden}
-      end
+      _ -> {:error, :forbidden}
     end
   end
 
   def accept(conn, %{
-        "user" =>
-          %{
-            "restore_token" => restore_token,
-            "password" => password,
-            "password_confirmation" => password_confirmation
-          } = user_params
+        "user" => %{
+          "restore_token" => restore_token,
+          "password" => password,
+          "password_confirmation" => password_confirmation
+        }
       })
       when is_nil(restore_token) or is_nil(password) or is_nil(password_confirmation),
       do: {:error, :bad_request}
 
   def accept(conn, %{
-        "user" =>
-          %{
-            "restore_token" => restore_token,
-            "password" => password,
-            "password_confirmation" => password_confirmation
-          } = user_params
+        "user" => %{
+          "restore_token" => restore_token,
+          "password" => password,
+          "password_confirmation" => password_confirmation
+        }
       }) do
-    user_params = I18NAPI.Utilities.key_to_string(user_params)
-
-    result = Invitation.accept_user_by_token(restore_token, password, password_confirmation)
-
-    case result do
+    case Invitation.accept_user_by_token(restore_token, password, password_confirmation) do
       {:ok, _} ->
         conn |> put_status(200) |> render("200.json")
 
@@ -100,7 +88,5 @@ defmodule I18NAPIWeb.InvitationController do
     end
   end
 
-  def accept(_conn, _args) do
-    {:error, :bad_request}
-  end
+  def accept(_conn, _args), do: {:error, :bad_request}
 end

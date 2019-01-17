@@ -1,6 +1,10 @@
 defmodule I18NAPIWeb.ErrorView do
   use I18NAPIWeb, :view
 
+  def render("400.json", %{validation: validation}) do
+    %{errors: %{detail: "Bad Request", validation: validation}}
+  end
+
   def render("400.json", _assigns) do
     %{errors: %{detail: "Bad Request"}}
   end

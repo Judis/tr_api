@@ -40,12 +40,14 @@ defmodule I18NAPIWeb.InvitationControllerTest do
     test "if required field is not exists", %{conn: conn} do
       project = fixture(:project, user: conn.user)
 
-      conn =
-        post(conn, project_invitation_path(conn, :invite, project.id),
-          invite: %{email: "invited@email.test", role: :translator, message: "some message"}
-        )
+      conn = post(conn, project_invitation_path(conn, :invite, project.id), invite: %{})
+      errors = Map.get(json_response(conn, 400), "errors")
+      assert Map.get(errors, "detail") == "Bad Request"
 
-      assert %{"errors" => %{"name" => ["can't be blank"]}} = json_response(conn, 422)
+      assert Map.get(errors, "validation") == [
+               %{"role" => "can't be blank"},
+               %{"message" => "can't be blank"}
+             ]
     end
 
     test "if inviter not are owner", %{conn: conn} do
@@ -118,6 +120,27 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       assert %{"errors" => %{"detail" => "Unauthorized"}} = json_response(conn, 401)
     end
 
+    test "if token is nil", %{conn: conn} do
+      project = fixture(:project, user: conn.user)
+      user = fixture(:user_alter)
+      prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
+
+      {:ok, %User{} = user} =
+        Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
+
+      conn =
+        post(conn, invitation_path(conn, :accept),
+          user:
+            %{}
+            |> Map.put(:restore_token, nil)
+            |> Map.put(:password, "Qwerty1234!")
+            |> Map.put(:password_confirmation, "Qwerty1234!")
+        )
+
+      assert %{"errors" => %{"detail" => "Bad Request"}} = json_response(conn, 400)
+    end
+
     test "if password is invalid", %{conn: conn} do
       project = fixture(:project, user: conn.user)
       user = fixture(:user_alter)
@@ -141,6 +164,27 @@ defmodule I18NAPIWeb.InvitationControllerTest do
                  "detail" => "Password must have 8-50 symbols"
                }
              } = json_response(conn, 422)
+    end
+
+    test "if password is nil", %{conn: conn} do
+      project = fixture(:project, user: conn.user)
+      user = fixture(:user_alter)
+      prepared_data = @invite_user_data |> Map.put(:project_id, project.id)
+      {:ok, prepared_user} = Invitation.prepare_user(prepared_data, conn.user)
+
+      {:ok, %User{} = user} =
+        Invitation.send_invite_email(prepared_user, conn.user, project, :translator, "message")
+
+      conn =
+        post(conn, invitation_path(conn, :accept),
+          user:
+            %{}
+            |> Map.put(:restore_token, user.restore_token)
+            |> Map.put(:password, nil)
+            |> Map.put(:password_confirmation, "Qwerty1234!")
+        )
+
+      assert %{"errors" => %{"detail" => "Bad Request"}} = json_response(conn, 400)
     end
 
     test "if password is unconfirmed", %{conn: conn} do

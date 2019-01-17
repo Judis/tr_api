@@ -12,6 +12,8 @@ defmodule I18NAPI.Accounts.Invitation do
   alias I18NAPI.UserEmail
   alias I18NAPI.Utilities
 
+  @invite_requires [:role, :message]
+
   def send_invite_email_async({:ok, user}, owner, project, role, message) do
     spawn(I18NAPI.Accounts.Invitation, :send_invite_email, [user, role])
     {:ok, user}
@@ -27,13 +29,17 @@ defmodule I18NAPI.Accounts.Invitation do
     end
   end
 
-  def create_invite(user_params, owner) do
-    prepare_user(user_params, owner)
+  def check_invite_params(invite_params) do
+    Utilities.validate_required(invite_params, @invite_requires)
+  end
+
+  def create_invite(invite_params, owner) do
+    prepare_user(invite_params, owner)
     |> send_invite_email_async(
       owner,
-      Projects.get_project!(user_params.project_id),
-      user_params.role,
-      user_params.message
+      Projects.get_project!(invite_params.project_id),
+      invite_params.role,
+      invite_params.message
     )
   end
 

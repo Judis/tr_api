@@ -12,6 +12,12 @@ defmodule I18NAPIWeb.FallbackController do
     |> render(I18NAPIWeb.ChangesetView, "error.json", changeset: changeset)
   end
 
+  def call(conn, {:error, :bad_request, validation}) do
+    conn
+    |> put_status(:bad_request)
+    |> render(I18NAPIWeb.ErrorView, :"400", validation: validation)
+  end
+
   def call(conn, {:error, :bad_request}) do
     conn
     |> put_status(:bad_request)
