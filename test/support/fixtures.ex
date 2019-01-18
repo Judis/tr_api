@@ -51,6 +51,7 @@ defmodule I18NAPI.Fixtures do
         password_confirmation: "Qw!23456",
         source: "valid user source"
       }
+      def attrs(:user), do: @valid_user_attrs
 
       @valid_user_alter_attrs %{
         name: "alter user name",
@@ -59,6 +60,7 @@ defmodule I18NAPI.Fixtures do
         password_confirmation: "Qw!23456",
         source: "alter user source"
       }
+      def attrs(:user_alter), do: @valid_user_attrs
 
       @valid_user_more_alter_attrs %{
         name: "more user name",
@@ -67,15 +69,17 @@ defmodule I18NAPI.Fixtures do
         password_confirmation: "Qw!23456",
         source: "more user source"
       }
+      def attrs(:user_more_alter), do: @valid_user_more_alter_attrs
+
       def fixture(:user), do: fixture(:user, user: @valid_user_attrs)
       def fixture(:user_alter), do: fixture(:user, user: @valid_user_alter_attrs)
       def fixture(:user_more_alter), do: fixture(:user, user: @valid_user_more_alter_attrs)
 
-      def fixture(:user, attrs) do
+      def fixture(:user, user: attrs) do
         {_, user} =
           with {:error, _} <-
-                 Accounts.find_and_confirm_user(attrs[:user].email, attrs[:user].password) do
-            Accounts.create_user(attrs[:user])
+                 Accounts.find_and_confirm_user(attrs.email, attrs.password) do
+            Accounts.create_user(attrs)
           end
 
         user
@@ -88,16 +92,80 @@ defmodule I18NAPI.Fixtures do
     alias I18NAPI.Projects
 
     quote do
-      @valid_project_attrs %{
+      @project_valid_attrs %{
         name: "some name",
         default_locale: "en"
       }
+      def attrs(:project), do: @project_valid_attrs
+
+      @project_alter_attrs %{
+        name: "alter name"
+      }
+      def attrs(:project_alter), do: @project_alter_attrs
+
+      @project_nil_attrs %{name: nil, default_locale: nil, is_removed: nil, removed_at: nil}
+      def attrs(:project_nil), do: @project_nil_attrs
 
       def fixture(:project, attrs) do
         {:ok, project} =
-          (attrs[:project] || @valid_project_attrs) |> Projects.create_project(attrs[:user])
+          (attrs[:project] || @project_valid_attrs) |> Projects.create_project(attrs[:user])
 
         project
+      end
+    end
+  end
+
+  def user_role do
+    alias I18NAPI.Accounts.User
+    alias I18NAPI.Projects
+    alias I18NAPI.Projects.{Project, UserRoles}
+
+    quote do
+      @user_role_admin %{role: :admin}
+      def attrs(:user_role), do: @user_role_admin
+
+      @user_role_manager %{role: :manager}
+      def attrs(:user_role_manager), do: @user_role_manager
+
+      @user_role_translator %{role: :translator}
+      def attrs(:user_role_translator), do: @user_role_translator
+
+      @user_role_invalid %{role: :abrakadabra}
+      def attrs(:user_role_invalid), do: @user_role_invalid
+
+      @user_role_nil %{role: nil}
+      def attrs(:user_role_nil), do: @user_role_nil
+
+      def fixture(:user_role, user_role: attrs) do
+        with {:error, _} <-
+               Projects.get_user_roles!(attrs.project_id, attrs.user_id) do
+          Projects.create_user_roles(attrs)
+        end
+      end
+
+      def fixture(:user_role, %{user_id: _, project_id: _} = attrs) do
+        attrs = @user_role_admin |> Map.merge(attrs)
+        fixture(:user_role, user_role: attrs)
+      end
+
+      def fixture(:user_role_manager, %{user_id: _, project_id: _} = attrs) do
+        attrs = @user_role_manager |> Map.merge(attrs)
+        fixture(:user_role, user_role: attrs)
+      end
+
+      def fixture(:user_role_translator, %{user_id: _, project_id: _} = attrs) do
+        attrs = @user_role_translator |> Map.merge(attrs)
+        fixture(:user_role, user_role: attrs)
+      end
+
+      def fixture(:user_role_invalid, %{user_id: _, project_id: _} = attrs) do
+        attrs = @user_role_invalid |> Map.merge(attrs)
+        fixture(:user_role, user_role: attrs)
+      end
+
+      def fixture(:user_role_nil, %{user_id: _, project_id: _} = attrs) do
+        attrs = @user_role_nil |> Map.merge(attrs)
+        fixture(:user_role, user_role: attrs)
       end
     end
   end
