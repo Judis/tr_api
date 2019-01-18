@@ -28,7 +28,6 @@ defmodule I18NAPIWeb.UserControllerTest do
     email: nil,
     failed_restore_attempts: nil,
     failed_sign_in_attempts: nil,
-    invited_at: nil,
     is_confirmed: nil,
     last_visited_at: nil,
     name: nil,

@@ -26,8 +26,7 @@ defmodule I18NAPIWeb.UserView do
       confirmation_sent_at: user.confirmation_sent_at,
       restore_requested_at: user.restore_requested_at,
       restore_accepted_at: user.restore_accepted_at,
-      last_visited_at: user.last_visited_at,
-      invited_at: user.invited_at
+      last_visited_at: user.last_visited_at
     }
   end
 end
