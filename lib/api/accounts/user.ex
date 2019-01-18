@@ -11,7 +11,6 @@ defmodule I18NAPI.Accounts.User do
     field(:email, :string)
     field(:failed_restore_attempts, :integer)
     field(:failed_sign_in_attempts, :integer)
-    field(:invited_at, :naive_datetime)
     field(:is_confirmed, :boolean, default: false)
     field(:is_removed, :boolean, default: false)
     field(:last_visited_at, :naive_datetime)
@@ -78,46 +77,9 @@ defmodule I18NAPI.Accounts.User do
   end
 
   @doc false
-  def invite_changeset(user) do
-    user
-    |> cast(%{invited_at: NaiveDateTime.utc_now()}, [:invited_at])
-  end
-
-  @doc false
-  def accept_invite_changeset(user, attrs) do
-    user
-    |> cast(
-      attrs
-      |> Map.merge(%{
-        confirmation_token: nil,
-        confirmation_sent_at: nil,
-        confirmed_at: NaiveDateTime.utc_now(),
-        invited_at: nil,
-        is_confirmed: true,
-        restore_accepted_at: NaiveDateTime.utc_now(),
-        restore_token: nil
-      }),
-      [
-        :invited_at,
-        :confirmation_token,
-        :confirmation_sent_at,
-        :confirmed_at,
-        :is_confirmed,
-        :restore_accepted_at,
-        :restore_token,
-        :password,
-        :password_confirmation
-      ]
-    )
-    |> validate_required([:confirmed_at, :restore_accepted_at, :password, :password_confirmation])
-    |> validate_password
-  end
-
-  @doc false
   def restore_changeset(user, attrs) do
     user
     |> cast(attrs, [
-      :invited_at,
       :restore_token,
       :restore_accepted_at,
       :restore_requested_at,

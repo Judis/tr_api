@@ -60,7 +60,6 @@ defmodule I18NAPI.AccountsTest do
       assert user.email == user_prepared.email
       assert user.password_hash == user_prepared.password_hash
       assert user.source == user_prepared.source
-      assert user.invited_at == user_prepared.invited_at
     end
 
     test "create_user/1 with valid data creates a user" do
