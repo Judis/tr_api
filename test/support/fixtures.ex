@@ -92,17 +92,10 @@ defmodule I18NAPI.Fixtures do
     alias I18NAPI.Projects
 
     quote do
-      @project_valid_attrs %{
-        name: "some name",
-        default_locale: "en"
-      }
+      @project_valid_attrs %{name: "some name", default_locale: "en"}
       def attrs(:project), do: @project_valid_attrs
-
-      @project_alter_attrs %{
-        name: "alter name"
-      }
+      @project_alter_attrs %{name: "alter name"}
       def attrs(:project_alter), do: @project_alter_attrs
-
       @project_nil_attrs %{name: nil, default_locale: nil, is_removed: nil, removed_at: nil}
       def attrs(:project_nil), do: @project_nil_attrs
 
@@ -116,23 +109,18 @@ defmodule I18NAPI.Fixtures do
   end
 
   def user_role do
-    alias I18NAPI.Accounts.User
     alias I18NAPI.Projects
     alias I18NAPI.Projects.{Project, UserRoles}
 
     quote do
       @user_role_admin %{role: :admin}
       def attrs(:user_role), do: @user_role_admin
-
       @user_role_manager %{role: :manager}
       def attrs(:user_role_manager), do: @user_role_manager
-
       @user_role_translator %{role: :translator}
       def attrs(:user_role_translator), do: @user_role_translator
-
       @user_role_invalid %{role: :abrakadabra}
       def attrs(:user_role_invalid), do: @user_role_invalid
-
       @user_role_nil %{role: nil}
       def attrs(:user_role_nil), do: @user_role_nil
 
@@ -166,6 +154,69 @@ defmodule I18NAPI.Fixtures do
       def fixture(:user_role_nil, %{user_id: _, project_id: _} = attrs) do
         attrs = @user_role_nil |> Map.merge(attrs)
         fixture(:user_role, user_role: attrs)
+      end
+    end
+  end
+
+  def invite do
+    alias I18NAPI.Projects
+    alias I18NAPI.Projects.{Invite, Project}
+
+    quote do
+      @invite %{
+        message: "some message",
+        role: :translator,
+        is_removed: false,
+        token: "1234567890qwertyopASDF"
+      }
+      def attrs(:invite), do: @invite
+
+      @invite_alter %{
+        message: "alter message",
+        role: :translator,
+        is_removed: false,
+        token: "1234567890qwertyopASDF"
+      }
+      def attrs(:invite_alter), do: @invite_alter
+
+      @invite_invalid %{
+        message: "some message",
+        role: :translator,
+        is_removed: false,
+        token: "1234567890qwertyopASDF"
+      }
+      def attrs(:invite_invalid), do: @invite_invalid
+
+      @invite_nil %{
+        message: nil,
+        role: :translator,
+        is_removed: false,
+        token: "1234567890qwertyopASDF"
+      }
+      def attrs(:invite_nil), do: @invite_nil
+
+      def fixture(:invite, invite: attrs) do
+          Projects.create_invite(attrs)
+      end
+
+      def fixture(:invite, %{inviter_id: _, recipient_id: _, project_id: _} = attrs) do
+        attrs = @invite |> Map.merge(attrs)
+        fixture(:invite, invite: attrs)
+      end
+
+      def fixture(:invite_alter, %{inviter_id: _, recipient_id: _, project_id: _} = attrs) do
+        attrs = @invite_alter |> Map.merge(attrs)
+        fixture(:invite, invite: attrs)
+      end
+
+      def fixture(:invite_invalid, %{inviter_id: _, recipient_id: _, project_id: _} = attrs) do
+        attrs = @invite_invalid |> Map.merge(attrs)
+        fixture(:invite, invite: attrs)
+      end
+
+      def fixture(:invite_nil, %{inviter_id: _, recipient_id: _, project_id: _} = attrs) do
+        attrs = @invite_nil |> Map.merge(attrs)
+        fixture(:invite, invite: attrs)
       end
     end
   end
