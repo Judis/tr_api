@@ -82,10 +82,10 @@ defmodule I18NAPI.Accounts do
 
   ## Examples
 
-      iex> create_user(%{field: value})
+      iex> create_user_with_temp_password(%{field: value})
       {:ok, %User{}}
 
-      iex> create_user(%{field: bad_value})
+      iex> create_user_with_temp_password(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
