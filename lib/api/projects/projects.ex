@@ -9,6 +9,7 @@ defmodule I18NAPI.Projects do
   alias I18NAPI.Projects.Project
   alias I18NAPI.Translations
   alias I18NAPI.Translations.Locale
+  alias I18NAPI.Utilities
 
   def default_locale_to_project(%Project{} = project) do
     locale = Translations.get_default_locale!(project.id)
@@ -509,7 +510,6 @@ defmodule I18NAPI.Projects do
 
   alias I18NAPI.Projects.Invite
 
-
   @doc """
   Returns the list of invites chained with specific inviter.
 
@@ -594,6 +594,45 @@ defmodule I18NAPI.Projects do
   def get_invite(id), do: Repo.get(Invite, id)
 
   @doc """
+  Find invite by token.
+
+  ## Examples
+
+      iex> find_invite_by_token(token)
+      {:ok, %Invite{}}
+
+      iex> find_invite_by_token(token)
+      {:error, :unauthorized}
+
+  """
+  def find_invite_by_token(token) do
+    case Repo.get_by(Invite, token: token) do
+      nil -> {:error, :unauthorized}
+      invite -> {:ok, invite}
+    end
+  end
+
+  @doc """
+  Accepts a invite.
+
+  ## Examples
+
+      iex> accept_invite(%Invite{} = invite)
+      {:ok, %Invite{}}
+
+      iex> accept_invite(%{bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def accept_invite(%Invite{} = invite) do
+    invite
+    |> Invite.accept_changeset()
+    |> Repo.update()
+  end
+
+  def accept_invite(_), do: {:error, :bad_value}
+
+  @doc """
   Creates a invite.
 
   ## Examples
@@ -607,11 +646,16 @@ defmodule I18NAPI.Projects do
   """
   def create_invite(attrs \\ %{}) do
     %Invite{}
-    |> Invite.changeset(attrs)
+    |> Invite.changeset(
+      attrs
+      |> Map.put(:token, Utilities.random_string(32))
+      |> Map.put(:invited_at, NaiveDateTime.utc_now())
+      |> Utilities.key_to_atom()
+    )
     |> Repo.insert()
   end
 
-   @doc """
+  @doc """
   Updates a invite.
 
   ## Examples
@@ -626,6 +670,12 @@ defmodule I18NAPI.Projects do
   def update_invite(%Invite{} = invite, attrs) do
     invite
     |> Invite.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_field_invited_at(%Invite{} = invite) do
+    invite
+    |> Invite.invite_changeset()
     |> Repo.update()
   end
 

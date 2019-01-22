@@ -250,12 +250,6 @@ defmodule I18NAPI.Accounts do
     |> Repo.update()
   end
 
-  def update_field_invited_at(%User{} = user) do
-    user
-    |> User.invite_changeset()
-    |> Repo.update()
-  end
-
   def accept_invitation(%User{} = user, password, password_confirmation) do
     user
     |> User.accept_invite_changeset(%{

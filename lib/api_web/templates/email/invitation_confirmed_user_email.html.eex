@@ -1,11 +1,11 @@
 <div>
   <h1>Dear, <%= @username %>!</h1>
  <body>
-   <p> You invited by <%= @owner %> to <%= @project %>
+   <p> You invited by <%= @inviter %> to <%= @project %>
    <p> for role <%= @role %>
-   <p> <%= @owner %> wrote younext message:
+   <p> <%= @inviter %> wrote younext message:
    <p> <%= @message %>
-   <p> Please, use this token for accept invite in i18n system <%= @invite_token %>
+   <p> Please, use this token for accept invite in i18n system <%= @token %>
   <p>or follow this link<a href=<%= @invite_link %>><%= @invite_link %></a></p>
  </body>
 </div>

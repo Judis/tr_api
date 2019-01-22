@@ -2,9 +2,9 @@ defmodule I18NAPIWeb.InvitationController do
   use I18NAPIWeb, :controller
 
   alias I18NAPI.Accounts
-  alias I18NAPI.Accounts.{Invitation, User}
+  alias I18NAPI.Accounts.User
   alias I18NAPI.Projects
-  alias I18NAPI.Projects.UserRoles
+  alias I18NAPI.Projects.{Invitation, Invite, UserRoles}
   alias I18NAPI.Utilities
 
   action_fallback(I18NAPIWeb.FallbackController)
@@ -12,15 +12,16 @@ defmodule I18NAPIWeb.InvitationController do
   def invite(conn, %{"project_id" => project_id, "invite" => invite_params}) do
     with :ok <- check_access_policy(project_id, conn.user.id),
          {:ok, invite_params} <- Invitation.check_invite_params(invite_params),
-         {:ok, %User{} = user} <-
+         {:ok, %Invite{} = invite} <-
            invite_params
            |> Map.put(:project_id, project_id)
+           |> Map.put(:inviter_id, conn.user.id)
            |> Utilities.key_to_atom()
-           |> Invitation.create_invite(conn.user) do
+           |> Invitation.start_invitation_process(conn.user) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", project_invitation_path(conn, :invite, project_id))
-      |> render("show.json", user: user)
+      |> render("show.json", invite: invite)
     end
   end
 
@@ -36,57 +37,57 @@ defmodule I18NAPIWeb.InvitationController do
     end
   end
 
-  def reject(conn, %{"project_id" => project_id, "user_id" => user_id})
-      when is_nil(project_id) or is_nil(user_id),
+  def accept_user(conn, %{
+        "user" => %{
+          "token" => token,
+          "password" => password,
+          "password_confirmation" => password_confirmation
+        }
+      })
+      when is_nil(token) or is_nil(password) or is_nil(password_confirmation),
       do: {:error, :bad_request}
 
-  def reject(conn, %{"project_id" => project_id, "user_id" => user_id}) do
-    with :ok <- check_access_policy(project_id, conn.user.id),
-         %User{} = user <- Accounts.get_user(user_id),
-         false <- is_nil(user.invited_at),
-         {:ok, %User{}} <- Accounts.delete_user(user) do
+  def accept_user(conn, %{
+        "user" => %{
+          "token" => token,
+          "password" => password,
+          "password_confirmation" => password_confirmation
+        }
+      }) do
+    with {:ok, %User{}} <- Invitation.accept_user_by_token(token, password, password_confirmation) do
+      conn |> put_status(200) |> render("200.json")
+    end
+  end
+
+  def accept_user(_conn, _args), do: {:error, :bad_request}
+
+  def accept_project(conn, %{"token" => token}) when is_nil(token), do: {:error, :bad_request}
+
+  def accept_project(conn, %{"token" => token}) do
+    with {:ok, %Invite{}} <- Invitation.accept_project_by_token(token) do
+      conn |> put_status(200) |> render("200.json")
+    end
+  end
+
+  def accept_project(_conn, _args), do: {:error, :bad_request}
+
+  def reject(conn, %{"invite_id" => nil}), do: {:error, :bad_request}
+
+  def reject(conn, %{"invite_id" => invite_id}) do
+    with {:ok, invite} <- check_invite_access_policy(invite_id, conn.user.id),
+         Projects.safely_delete_invite(invite) do
       send_resp(conn, :no_content, "")
     else
       _ -> {:error, :forbidden}
     end
   end
 
-  def accept(conn, %{
-        "user" => %{
-          "restore_token" => restore_token,
-          "password" => password,
-          "password_confirmation" => password_confirmation
-        }
-      })
-      when is_nil(restore_token) or is_nil(password) or is_nil(password_confirmation),
-      do: {:error, :bad_request}
-
-  def accept(conn, %{
-        "user" => %{
-          "restore_token" => restore_token,
-          "password" => password,
-          "password_confirmation" => password_confirmation
-        }
-      }) do
-    case Invitation.accept_user_by_token(restore_token, password, password_confirmation) do
-      {:ok, _} ->
-        conn |> put_status(200) |> render("200.json")
-
-      {:error, :unauthorized} ->
-        {:error, :unauthorized}
-
-      {:error, :forbidden} ->
-        {:error, :forbidden}
-
-      {:error, :nil_found} ->
-        {:error, :bad_request}
-
-      {:error, error} ->
-        conn
-        |> put_status(422)
-        |> render("422.json", %{detail: error.errors |> Enum.at(0) |> elem(0)})
+  defp check_invite_access_policy(invite_id, user_id) do
+    with %Invite{} <- invite = Projects.get_invite(invite_id),
+         user_id == invite.inviter_id do
+      {:ok, invite}
+    else
+      _ -> {:error, :forbidden}
     end
   end
-
-  def accept(_conn, _args), do: {:error, :bad_request}
 end

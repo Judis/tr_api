@@ -2,8 +2,8 @@ defmodule I18NAPIWeb.InvitationView do
   use I18NAPIWeb, :view
   alias I18NAPIWeb.InvitationView
 
-  def render("show.json", %{user: user}) do
-    %{data: render_one(user, InvitationView, "user.json")}
+  def render("show.json", %{invite: invite}) do
+    %{data: render_one(invite, InvitationView, "invite.json")}
   end
 
   def render("200.json", _) do
@@ -13,8 +13,7 @@ defmodule I18NAPIWeb.InvitationView do
   def render("422.json", %{detail: :password}) do
     %{
       error: %{
-        detail:
-          "Password must have 8-50 symbols"
+        detail: "Password must have 8-50 symbols"
       }
     }
   end
@@ -27,14 +26,15 @@ defmodule I18NAPIWeb.InvitationView do
     %{error: %{detail: "Unprocessable Entity"}}
   end
 
-  def render("user.json", %{invitation: user}) do
+  def render("invite.json", %{invitation: invite}) do
     %{
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      is_confirmed: user.is_confirmed,
-      source: user.source,
-      invited_at: user.invited_at
+      id: invite.id,
+      inviter_id: invite.inviter_id,
+      recipient_id: invite.recipient_id,
+      project_id: invite.project_id,
+      role: invite.role,
+      message: invite.message,
+      invited_at: invite.invited_at
     }
   end
 end

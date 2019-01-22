@@ -24,7 +24,26 @@ defmodule I18NAPI.Projects.Invite do
   def changeset(invite, attrs) do
     invite
     |> cast(attrs, [:inviter_id, :message, :recipient_id, :project_id, :role, :token])
-    |> validate_required([:inviter_id, :message, :recipient_id, :project_id, :role, :token])
+    |> validate_required([:inviter_id, :message, :recipient_id, :project_id, :role])
+  end
+
+  @doc false
+  def update_changeset(invite, attrs) do
+    invite
+    |> cast(attrs, [:message, :recipient_id, :project_id, :role])
+    |> validate_required([:inviter_id, :message, :recipient_id, :project_id, :role])
+  end
+
+  @doc false
+  def accept_changeset(invite) do
+    invite
+    |> cast(%{accepted_at: NaiveDateTime.utc_now(), token: nil}, [:accepted_at, :token])
+  end
+
+  @doc false
+  def invite_changeset(invite) do
+    invite
+    |> cast(%{invited_at: NaiveDateTime.utc_now()}, [:invited_at])
   end
 
   @doc false
