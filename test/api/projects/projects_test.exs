@@ -3,7 +3,7 @@ defmodule I18NAPI.ProjectsTest do
   @moduletag :project_api
 
   use I18NAPI.DataCase
-  use I18NAPI.Fixtures, [:setup, :user, :project, :user_role, :invite]
+  use I18NAPI.Fixtures, [:setup, :user, :project, :invitation, :user_role]
 
   alias EctoEnum
   alias I18NAPI.Accounts
@@ -68,7 +68,7 @@ defmodule I18NAPI.ProjectsTest do
   end
 
   describe "user_roles" do
-    def user_roles_fixture(attrs \\ %{}, %User{} = user) do
+    def user_roles_fixture(_, %User{} = user) do
       project_id = fixture(:project, user: user).id
 
       Projects.get_user_roles!(project_id, user.id)
@@ -233,7 +233,7 @@ defmodule I18NAPI.ProjectsTest do
       recipient_id = fixture(:user_alter).id
       project_id = fixture(:project, user: inviter).id
 
-      {:ok, invite} =
+      invite =
         fixture(:invite, %{
           inviter_id: inviter.id,
           recipient_id: recipient_id,
@@ -272,7 +272,7 @@ defmodule I18NAPI.ProjectsTest do
       recipient_id = fixture(:user_alter).id
       project_id = fixture(:project, user: inviter).id
 
-      {:ok, invite} =
+      invite =
         fixture(:invite, %{
           inviter_id: inviter.id,
           recipient_id: recipient_id,
@@ -293,7 +293,7 @@ defmodule I18NAPI.ProjectsTest do
       recipient_id = fixture(:user_alter).id
       project_id = fixture(:project, user: inviter).id
 
-      {:ok, invite} =
+      invite =
         fixture(:invite, %{
           inviter_id: inviter.id,
           recipient_id: recipient_id,
@@ -308,7 +308,7 @@ defmodule I18NAPI.ProjectsTest do
       recipient_id = fixture(:user_alter).id
       project_id = fixture(:project, user: inviter).id
 
-      {:ok, invite} =
+      invite =
         fixture(:invite, %{
           inviter_id: inviter.id,
           recipient_id: recipient_id,
@@ -319,17 +319,19 @@ defmodule I18NAPI.ProjectsTest do
 
       assert Projects.get_invite(invite.id) |> is_nil
     end
+
     test "safely_delete_invite!/1 safely delete the invite" do
       inviter = fixture(:user)
       recipient_id = fixture(:user_alter).id
       project_id = fixture(:project, user: inviter).id
 
-      {:ok, invite} =
+      invite =
         fixture(:invite, %{
           inviter_id: inviter.id,
           recipient_id: recipient_id,
           project_id: project_id
         })
+
       assert invite.is_removed == false
 
       Projects.safely_delete_invite(invite)

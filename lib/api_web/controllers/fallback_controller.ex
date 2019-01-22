@@ -41,4 +41,10 @@ defmodule I18NAPIWeb.FallbackController do
     |> put_status(:not_found)
     |> render(I18NAPIWeb.ErrorView, :"404")
   end
+
+  def call(conn, {:error, error}) do
+    conn
+    |> put_status(:not_found)
+    |> render(I18NAPIWeb.ErrorView, :"422", detail: error.errors |> Enum.at(0) |> elem(0))
+  end
 end

@@ -77,6 +77,27 @@ defmodule I18NAPI.Accounts.User do
   end
 
   @doc false
+  def accept_invite_changeset(user, attrs) do
+    user
+    |> cast(
+      attrs
+      |> Map.put(:confirmation_token, nil)
+      |> Map.put(:confirmed_at, NaiveDateTime.utc_now())
+      |> Map.put(:is_confirmed, true),
+      [
+        :confirmation_token,
+        :confirmation_sent_at,
+        :confirmed_at,
+        :is_confirmed,
+        :password,
+        :password_confirmation
+      ]
+    )
+    |> validate_required([:password, :password_confirmation])
+    |> validate_password
+  end
+
+  @doc false
   def restore_changeset(user, attrs) do
     user
     |> cast(attrs, [

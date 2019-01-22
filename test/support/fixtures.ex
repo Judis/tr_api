@@ -158,7 +158,7 @@ defmodule I18NAPI.Fixtures do
     end
   end
 
-  def invite do
+  def invitation do
     alias I18NAPI.Accounts
     alias I18NAPI.Projects
     alias I18NAPI.Projects.{Invite, Invitation}
@@ -207,17 +207,21 @@ defmodule I18NAPI.Fixtures do
       def fixture(:invite, invite: attrs) do
         recipient = Accounts.get_user(attrs[:recipient_id])
         inviter = Accounts.get_user(attrs[:inviter_id])
-        project = Projects.get_project(attrs[:project_id])
+        new_project = Projects.get_project(attrs[:project_id])
 
-        {:ok, invite} =
-          Projects.create_invite(attrs)
-          |> Invitation.create_invite_and_send_email_for_not_confirmed_user(
-            recipient,
-            inviter,
-            project
-          )
+        {:ok, new_invite} = Projects.create_invite(attrs)
 
-        invite
+        invite_link = Invitation.create_invitation_project_link(new_project.id, new_invite.token)
+
+        Invitation.create_link_and_send_email_for_not_confirmed_user(
+          {:ok, new_invite},
+          recipient,
+          inviter,
+          new_project
+        )
+
+        {:ok, new_invite} = Projects.update_field_invited_at(new_invite)
+        new_invite
       end
 
       def fixture(:invite, %{inviter_id: _, recipient_id: _, project_id: _} = attrs) do
