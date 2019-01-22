@@ -159,11 +159,14 @@ defmodule I18NAPI.Fixtures do
   end
 
   def invite do
+    alias I18NAPI.Accounts
     alias I18NAPI.Projects
-    alias I18NAPI.Projects.{Invite, Project}
+    alias I18NAPI.Projects.{Invite, Invitation}
 
     quote do
       @invite %{
+        name: "some name",
+        email: "some_email@email.test",
         message: "some message",
         role: :translator,
         is_removed: false,
@@ -172,6 +175,8 @@ defmodule I18NAPI.Fixtures do
       def attrs(:invite), do: @invite
 
       @invite_alter %{
+        name: "some name",
+        email: "some_email@email.test",
         message: "alter message",
         role: :translator,
         is_removed: false,
@@ -180,6 +185,8 @@ defmodule I18NAPI.Fixtures do
       def attrs(:invite_alter), do: @invite_alter
 
       @invite_invalid %{
+        name: "some name",
+        email: "some_email@email.test",
         message: "some message",
         role: :translator,
         is_removed: false,
@@ -188,6 +195,8 @@ defmodule I18NAPI.Fixtures do
       def attrs(:invite_invalid), do: @invite_invalid
 
       @invite_nil %{
+        name: "some name",
+        email: "some_email@email.test",
         message: nil,
         role: :translator,
         is_removed: false,
@@ -196,7 +205,19 @@ defmodule I18NAPI.Fixtures do
       def attrs(:invite_nil), do: @invite_nil
 
       def fixture(:invite, invite: attrs) do
+        recipient = Accounts.get_user(attrs[:recipient_id])
+        inviter = Accounts.get_user(attrs[:inviter_id])
+        project = Projects.get_project(attrs[:project_id])
+
+        {:ok, invite} =
           Projects.create_invite(attrs)
+          |> Invitation.create_invite_and_send_email_for_not_confirmed_user(
+            recipient,
+            inviter,
+            project
+          )
+
+        invite
       end
 
       def fixture(:invite, %{inviter_id: _, recipient_id: _, project_id: _} = attrs) do
