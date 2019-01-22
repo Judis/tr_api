@@ -17,7 +17,7 @@ defmodule I18NAPIWeb.InvitationController do
            |> Map.put(:project_id, project_id)
            |> Map.put(:inviter_id, conn.user.id)
            |> Utilities.key_to_atom()
-           |> Invitation.start_invitation_process(conn.user) do
+           |> Invitation.start_invitation(conn.user) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", project_invitation_path(conn, :invite, project_id))

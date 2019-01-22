@@ -79,7 +79,7 @@ defmodule I18NAPI.Projects.Invitation do
     Utilities.validate_required(invite_params, @invite_requires)
   end
 
-  def start_invitation_process(invite_params, inviter) do
+  def start_invitation(invite_params, inviter) do
     with %Project{} = project <- Projects.get_project!(invite_params.project_id) do
       with {:ok, recipient} <- Accounts.find_user_by_email(invite_params.email) do
         invite_params
