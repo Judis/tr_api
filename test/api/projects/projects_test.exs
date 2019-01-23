@@ -109,6 +109,19 @@ defmodule I18NAPI.ProjectsTest do
       assert user_role.role == attrs(:user_role).role
     end
 
+    test "create user_role duplicate" do
+      user = fixture(:user)
+      user_alter = fixture(:user_alter)
+      project_id = fixture(:project, user: user).id
+      attrs = attrs(:user_role)
+
+      attrs = Map.put(attrs, :user_id, user_alter.id)
+      attrs = Map.put(attrs, :project_id, project_id)
+      assert {:ok, %UserRole{} = user_role} = Projects.create_user_role(attrs)
+      assert {:error, _} = Projects.create_user_role(attrs)
+      assert user_role.role == attrs(:user_role).role
+    end
+
     test "create_user_role/1 with invalid data returns error changeset" do
       user = fixture(:user)
       attrs = attrs(:user_role_nil)
@@ -123,8 +136,7 @@ defmodule I18NAPI.ProjectsTest do
       user_role =
         fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
 
-      assert {:ok, user_role} =
-               Projects.update_user_role(user_role, attrs(:user_role_translator))
+      assert {:ok, user_role} = Projects.update_user_role(user_role, attrs(:user_role_translator))
 
       assert %UserRole{} = user_role
       assert user_role.role == attrs(:user_role_translator).role
