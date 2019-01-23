@@ -162,7 +162,7 @@ defmodule I18NAPI.Projects do
   end
 
   defp create_default_locale_relation_for_owner({:ok, %Locale{} = locale}, %{} = user) do
-    create_user_locales(%{
+    Translations.create_user_locales(%{
       user_id: user.id,
       locale_id: locale.id,
       role: 1
@@ -446,124 +446,6 @@ defmodule I18NAPI.Projects do
   """
   def change_user_role(%UserRole{} = user_role) do
     UserRole.changeset(user_role, %{})
-  end
-
-  alias I18NAPI.Projects.UserLocales
-
-  @doc """
-  Returns the list of user_locales.
-
-  ## Examples
-
-      iex> list_user_locales()
-      [%UserLocales{}, ...]
-
-  """
-  def list_user_locales do
-    Repo.all(UserLocales)
-  end
-
-  @doc """
-  Gets a single user_locales.
-
-  Raises `Ecto.NoResultsError` if the User locales does not exist.
-
-  ## Examples
-
-      iex> get_user_locales!(123)
-      %UserLocales{}
-
-      iex> get_user_locales!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_user_locales!(id), do: Repo.get!(UserLocales, id)
-
-  @doc """
-  Gets a single user_locales.
-
-  Raises `Ecto.NoResultsError` if the User locales does not exist.
-
-  ## Examples
-
-      iex> get_user_locales!(123, 321)
-      %UserLocales{}
-
-      iex> get_user_locales!(456, 654)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_user_locales!(locale_id, user_id) do
-    from(
-      ul in UserLocales,
-      where: ul.locale_id == ^locale_id and ul.user_id == ^user_id
-    )
-    |> Repo.one()
-  end
-
-  @doc """
-  Creates a user_locales.
-
-  ## Examples
-
-      iex> create_user_locales(%{field: value})
-      {:ok, %UserLocales{}}
-
-      iex> create_user_locales(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_user_locales(attrs \\ %{}) do
-    %UserLocales{}
-    |> UserLocales.create_changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a user_locales.
-
-  ## Examples
-
-      iex> update_user_locales(user_locales, %{field: new_value})
-      {:ok, %UserLocales{}}
-
-      iex> update_user_locales(user_locales, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_user_locales(%UserLocales{} = user_locales, attrs) do
-    user_locales
-    |> UserLocales.update_changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a UserLocales.
-
-  ## Examples
-
-      iex> delete_user_locales(user_locales)
-      {:ok, %UserLocales{}}
-
-      iex> delete_user_locales(user_locales)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_user_locales(%UserLocales{} = user_locales) do
-    Repo.delete(user_locales)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user_locales changes.
-
-  ## Examples
-
-      iex> change_user_locales(user_locales)
-      %Ecto.Changeset{source: %UserLocales{}}
-
-  """
-  def change_user_locales(%UserLocales{} = user_locales) do
-    UserLocales.update_changeset(user_locales, %{})
   end
 
   @doc """

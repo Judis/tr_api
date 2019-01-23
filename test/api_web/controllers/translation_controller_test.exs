@@ -223,7 +223,6 @@ defmodule I18NAPIWeb.TranslationControllerTest do
       result_translation = Translations.get_translation!(id)
       assert %Translation{} = result_translation
       assert result_translation.value == nil
-      assert result_translation.status == :empty
       assert result_translation.translation_key_id == translation_key.id
     end
   end

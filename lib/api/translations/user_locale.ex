@@ -1,4 +1,4 @@
-defmodule I18NAPI.Projects.UserLocales do
+defmodule I18NAPI.Translations.UserLocale do
   use Ecto.Schema
   import Ecto.Changeset
 
