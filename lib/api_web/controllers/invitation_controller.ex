@@ -25,7 +25,7 @@ defmodule I18NAPIWeb.InvitationController do
   end
 
   defp check_access_policy(project_id, user_id) do
-    with %UserRole{} <- user_role = Projects.get_user_roles!(project_id, user_id) do
+    with %UserRole{} <- user_role = Projects.get_user_role!(project_id, user_id) do
       case user_role.role do
         :admin -> :ok
         :manager -> :ok

@@ -57,7 +57,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       more_alter_user = fixture(:user_more_alter)
       project = fixture(:project, user: more_alter_user)
 
-      I18NAPI.Projects.create_user_roles(%{
+      I18NAPI.Projects.create_user_role(%{
         role: :translator,
         project_id: project.id,
         user_id: conn.user.id

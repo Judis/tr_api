@@ -122,7 +122,7 @@ defmodule I18NAPI.Projects do
 
   """
   def create_owner_for_project({:ok, %Project{} = project}, %{} = user) do
-    create_user_roles(%{
+    create_user_role(%{
       project_id: project.id,
       user_id: user.id,
       role: 1
@@ -261,36 +261,36 @@ defmodule I18NAPI.Projects do
   end
 
   @doc """
-  Gets a single user_roles.
+  Gets a single user_role.
 
   Raises `Ecto.NoResultsError` if the User roles does not exist.
 
   ## Examples
 
-      iex> get_user_roles!(123)
+      iex> get_user_role!(123)
       %UserRole{}
 
-      iex> get_user_roles!(456)
+      iex> get_user_role!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_user_roles!(id), do: Repo.get!(UserRole, id)
+  def get_user_role!(id), do: Repo.get!(UserRole, id)
 
   @doc """
-  Gets a single user_roles.
+  Gets a single user_role.
 
   Raises `Ecto.NoResultsError` if the User roles does not exist.
 
   ## Examples
 
-      iex> get_user_roles!(123, 321)
+      iex> get_user_role!(123, 321)
       %UserRole{}
 
-      iex> get_user_roles!(456, 654)
+      iex> get_user_role!(456, 654)
       ** (Ecto.NoResultsError)
 
   """
-  def get_user_roles!(project_id, user_id) do
+  def get_user_role!(project_id, user_id) do
     from(
       ur in UserRole,
       where: ur.project_id == ^project_id and ur.user_id == ^user_id
@@ -299,37 +299,37 @@ defmodule I18NAPI.Projects do
   end
 
   @doc """
-  Creates a user_roles.
+  Creates a user_role.
 
   ## Examples
 
-      iex> create_user_roles(%{field: value})
+      iex> create_user_role(%{field: value})
       {:ok, %UserRole{}}
 
-      iex> create_user_roles(%{field: bad_value})
+      iex> create_user_role(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_user_roles(attrs \\ %{}) do
+  def create_user_role(attrs \\ %{}) do
     %UserRole{}
     |> UserRole.changeset(attrs)
     |> Repo.insert()
   end
 
   @doc """
-  Updates a user_roles.
+  Updates a user_role.
 
   ## Examples
 
-      iex> update_user_roles(user_roles, %{field: new_value})
+      iex> update_user_role(user_role, %{field: new_value})
       {:ok, %UserRole{}}
 
-      iex> update_user_roles(user_roles, %{field: bad_value})
+      iex> update_user_role(user_role, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_user_roles(%UserRole{} = user_roles, attrs) do
-    user_roles
+  def update_user_role(%UserRole{} = user_role, attrs) do
+    user_role
     |> UserRole.changeset(attrs)
     |> Repo.update()
   end
@@ -339,28 +339,28 @@ defmodule I18NAPI.Projects do
 
   ## Examples
 
-      iex> delete_user_roles(user_roles)
+      iex> delete_user_role(user_role)
       {:ok, %UserRole{}}
 
-      iex> delete_user_roles(user_roles)
+      iex> delete_user_role(user_role)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_user_roles(%UserRole{} = user_roles) do
-    Repo.delete(user_roles)
+  def delete_user_role(%UserRole{} = user_role) do
+    Repo.delete(user_role)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user_roles changes.
+  Returns an `%Ecto.Changeset{}` for tracking user_role changes.
 
   ## Examples
 
-      iex> change_user_roles(user_roles)
+      iex> change_user_role(user_role)
       %Ecto.Changeset{source: %UserRole{}}
 
   """
-  def change_user_roles(%UserRole{} = user_roles) do
-    UserRole.changeset(user_roles, %{})
+  def change_user_role(%UserRole{} = user_role) do
+    UserRole.changeset(user_role, %{})
   end
 
   alias I18NAPI.Projects.UserLocales

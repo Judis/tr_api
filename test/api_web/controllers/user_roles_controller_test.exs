@@ -17,13 +17,13 @@ defmodule I18NAPIWeb.UserRoleControllerTest do
     end
   end
 
-  describe "create user_roles" do
-    test "renders user_roles when data is valid", %{conn: conn} do
+  describe "create user_role" do
+    test "renders user_role when data is valid", %{conn: conn} do
       project = fixture(:project, user: conn.user)
       user = fixture(:user_alter)
       conn =
         post(conn, project_user_role_path(conn, :create, project.id),
-          user_roles: attrs(:user_role)
+          user_role: attrs(:user_role)
         )
 
       assert %{"id" => id} = json_response(conn, 201)["data"]
@@ -34,41 +34,41 @@ defmodule I18NAPIWeb.UserRoleControllerTest do
 
     test "renders errors when data is invalid", %{conn: conn} do
       project = fixture(:project, user: conn.user)
-      conn = post(conn, project_user_role_path(conn, :create, project.id), user_roles: attrs(:user_role_invalid))
+      conn = post(conn, project_user_role_path(conn, :create, project.id), user_role: attrs(:user_role_invalid))
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
 
-  describe "update user_roles" do
+  describe "update user_role" do
 
-    test "renders user_roles when data is valid", %{
+    test "renders user_role when data is valid", %{
       conn: conn,
-      user_roles: %UserRole{id: id} = user_roles
+      user_role: %UserRole{id: id} = user_role
     } do
       project = fixture(:project, user: conn.user)
-      conn = put(conn, project_user_role_path(conn, :update, project.id, user_roles), user_roles: attrs(:user_role_manager))
+      conn = put(conn, project_user_role_path(conn, :update, project.id, user_role), user_role: attrs(:user_role_manager))
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
       conn = get(conn, project_user_role_path(conn, :show, id))
       assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 1}
     end
 
-    test "renders errors when data is invalid", %{conn: conn, user_roles: user_roles} do
+    test "renders errors when data is invalid", %{conn: conn, user_role: user_role} do
       project = fixture(:project, user: conn.user)
-      conn = put(conn, project_user_role_path(conn, :update, project.id, user_roles), user_roles: attrs(:user_role_invalid))
+      conn = put(conn, project_user_role_path(conn, :update, project.id, user_role), user_role: attrs(:user_role_invalid))
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
 
-  describe "delete user_roles" do
+  describe "delete user_role" do
 
-    test "deletes chosen user_roles", %{conn: conn, user_roles: user_roles} do
+    test "deletes chosen user_role", %{conn: conn, user_role: user_role} do
       project = fixture(:project, user: conn.user)
-      conn = delete(conn, project_user_role_path(conn, :delete, project.id, user_roles))
+      conn = delete(conn, project_user_role_path(conn, :delete, project.id, user_role))
       assert response(conn, 204)
 
       assert_error_sent(404, fn ->
-        get(conn, project_user_role_path(conn, :show, project.id, user_roles))
+        get(conn, project_user_role_path(conn, :show, project.id, user_role))
       end)
     end
   end

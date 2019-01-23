@@ -126,8 +126,8 @@ defmodule I18NAPI.Fixtures do
 
       def fixture(:user_role, user_role: attrs) do
         with {:error, _} <-
-               Projects.get_user_roles!(attrs.project_id, attrs.user_id) do
-          Projects.create_user_roles(attrs)
+               Projects.get_user_role!(attrs.project_id, attrs.user_id) do
+          Projects.create_user_role(attrs)
         end
       end
 

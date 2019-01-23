@@ -66,38 +66,38 @@ defmodule I18NAPI.ProjectsTest do
     end
   end
 
-  describe "user_roles" do
-    def user_roles_fixture(_, %User{} = user) do
+  describe "user_role" do
+    def user_role_fixture(_, %User{} = user) do
       project_id = fixture(:project, user: user).id
 
-      Projects.get_user_roles!(project_id, user.id)
+      Projects.get_user_role!(project_id, user.id)
     end
 
     test "list_user_roles/0 returns all user_roles" do
       user = fixture(:user)
 
-      user_roles =
+      user_role =
         fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
 
-      assert Projects.list_user_roles() == [user_roles]
+      assert Projects.list_user_roles() == [user_role]
     end
 
-    test "get_user_roles!/1 returns the user_roles with given id" do
+    test "get_user_role!/1 returns the user_role with given id" do
       user = fixture(:user)
 
-      user_roles =
+      user_role =
         fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
 
-      assert Projects.get_user_roles!(user_roles.id) == user_roles
+      assert Projects.get_user_role!(user_role.id) == user_role
     end
 
-    test "get_user_roles!/2 returns the user_roles with given id" do
+    test "get_user_role!/2 returns the user_role with given id" do
       user = fixture(:user)
       project_id = fixture(:project, user: user).id
-      assert %UserRole{} = Projects.get_user_roles!(project_id, user.id)
+      assert %UserRole{} = Projects.get_user_role!(project_id, user.id)
     end
 
-    test "create_user_roles/1 with valid data creates a user_roles" do
+    test "create_user_role/1 with valid data creates a user_role" do
       user = fixture(:user)
       user_alter = fixture(:user_alter)
       project_id = fixture(:project, user: user).id
@@ -105,58 +105,58 @@ defmodule I18NAPI.ProjectsTest do
       # use alternative user because user_role already created on project creating
       attrs = Map.put(attrs, :user_id, user_alter.id)
       attrs = Map.put(attrs, :project_id, project_id)
-      assert {:ok, %UserRole{} = user_roles} = Projects.create_user_roles(attrs)
-      assert user_roles.role == attrs(:user_role).role
+      assert {:ok, %UserRole{} = user_role} = Projects.create_user_role(attrs)
+      assert user_role.role == attrs(:user_role).role
     end
 
-    test "create_user_roles/1 with invalid data returns error changeset" do
+    test "create_user_role/1 with invalid data returns error changeset" do
       user = fixture(:user)
       attrs = attrs(:user_role_nil)
       attrs = Map.put(attrs, :user_id, user.id)
       attrs = Map.put(attrs, :project_id, fixture(:project, user: user).id)
-      assert {:error, %Ecto.Changeset{}} = Projects.create_user_roles(attrs)
+      assert {:error, %Ecto.Changeset{}} = Projects.create_user_role(attrs)
     end
 
-    test "update_user_roles/2 with valid data updates the user_roles" do
+    test "update_user_role/2 with valid data updates the user_role" do
       user = fixture(:user)
 
-      user_roles =
+      user_role =
         fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
 
-      assert {:ok, user_roles} =
-               Projects.update_user_roles(user_roles, attrs(:user_role_translator))
+      assert {:ok, user_role} =
+               Projects.update_user_role(user_role, attrs(:user_role_translator))
 
-      assert %UserRole{} = user_roles
-      assert user_roles.role == attrs(:user_role_translator).role
+      assert %UserRole{} = user_role
+      assert user_role.role == attrs(:user_role_translator).role
     end
 
-    test "update_user_roles/2 with invalid data returns error changeset" do
+    test "update_user_role/2 with invalid data returns error changeset" do
       user = fixture(:user)
 
-      user_roles =
+      user_role =
         fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
 
       assert {:error, %Ecto.Changeset{}} =
-               Projects.update_user_roles(user_roles, attrs(:user_role_nil))
+               Projects.update_user_role(user_role, attrs(:user_role_nil))
 
-      assert user_roles == Projects.get_user_roles!(user_roles.id)
+      assert user_role == Projects.get_user_role!(user_role.id)
     end
 
-    test "delete_user_roles/1 deletes the user_roles" do
+    test "delete_user_role/1 deletes the user_role" do
       user = fixture(:user)
 
-      user_roles =
+      user_role =
         fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
 
-      assert {:ok, %UserRole{}} = Projects.delete_user_roles(user_roles)
-      assert_raise Ecto.NoResultsError, fn -> Projects.get_user_roles!(user_roles.id) end
+      assert {:ok, %UserRole{}} = Projects.delete_user_role(user_role)
+      assert_raise Ecto.NoResultsError, fn -> Projects.get_user_role!(user_role.id) end
     end
 
-    test "change_user_roles/1 returns a user_roles changeset" do
+    test "change_user_role/1 returns a user_role changeset" do
       user = fixture(:user)
       tmp = %{project_id: fixture(:project, %{user: user}).id, user_id: user.id}
-      user_roles = fixture(:user_role, tmp)
-      assert %Ecto.Changeset{} = Projects.change_user_roles(user_roles)
+      user_role = fixture(:user_role, tmp)
+      assert %Ecto.Changeset{} = Projects.change_user_role(user_role)
     end
   end
 

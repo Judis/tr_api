@@ -112,7 +112,7 @@ defmodule I18NAPI.Projects.Invitation do
          {:ok, %User{} = user} <- Accounts.confirm_user(user),
          {:ok, %User{}} <- Accounts.accept_invitation(user, password, password_confirmation),
          {:ok, %UserRole{}} <-
-           Projects.create_user_roles(%{
+           Projects.create_user_role(%{
              project_id: invite.project_id,
              user_id: invite.recipient_id,
              role: invite.role
@@ -125,7 +125,7 @@ defmodule I18NAPI.Projects.Invitation do
   def accept_project_by_token(token) do
     with {:ok, %Invite{} = invite} <- Projects.find_invite_by_token(token),
          {:ok, %UserRole{}} <-
-           Projects.create_user_roles(%{
+           Projects.create_user_role(%{
              project_id: invite.project_id,
              user_id: invite.recipient_id,
              role: invite.role
