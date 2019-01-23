@@ -3,7 +3,7 @@ defmodule I18NAPIWeb.InvitationController do
 
   alias I18NAPI.Accounts.User
   alias I18NAPI.Projects
-  alias I18NAPI.Projects.{Invitation, Invite, UserRoles}
+  alias I18NAPI.Projects.{Invitation, Invite, UserRole}
   alias I18NAPI.Utilities
 
   action_fallback(I18NAPIWeb.FallbackController)
@@ -25,7 +25,7 @@ defmodule I18NAPIWeb.InvitationController do
   end
 
   defp check_access_policy(project_id, user_id) do
-    with %UserRoles{} <- user_role = Projects.get_user_roles!(project_id, user_id) do
+    with %UserRole{} <- user_role = Projects.get_user_roles!(project_id, user_id) do
       case user_role.role do
         :admin -> :ok
         :manager -> :ok

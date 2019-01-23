@@ -31,6 +31,7 @@ defmodule I18NAPIWeb.Router do
       post("/create_invite", InvitationController, :invite)
       delete("/reject_invite", InvitationController, :reject)
       resources("/translation_keys", TranslationKeyController)
+      resources("/user_roles", UserRoleController)
 
       resources("/locales", LocaleController) do
         get("/keys_and_translations", LocaleController, :keys_and_translations)
@@ -39,6 +40,5 @@ defmodule I18NAPIWeb.Router do
     end
 
     resources("/user_locales", UserLocalesController)
-    resources("/user_roles", UserRolesController)
   end
 end
