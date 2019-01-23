@@ -1,8 +1,8 @@
-defmodule I18NAPIWeb.UserRolesController do
+defmodule I18NAPIWeb.UserRoleController do
   use I18NAPIWeb, :controller
 
   alias I18NAPI.Projects
-  alias I18NAPI.Projects.UserRoles
+  alias I18NAPI.Projects.UserRole
 
   action_fallback(I18NAPIWeb.FallbackController)
 
@@ -12,10 +12,10 @@ defmodule I18NAPIWeb.UserRolesController do
   end
 
   def create(conn, %{"user_roles" => user_roles_params}) do
-    with {:ok, %UserRoles{} = user_roles} <- Projects.create_user_roles(user_roles_params) do
+    with {:ok, %UserRole{} = user_roles} <- Projects.create_user_roles(user_roles_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", user_roles_path(conn, :show, user_roles))
+      |> put_resp_header("location", project_user_role_path(conn, :show, user_roles))
       |> render("show.json", user_roles: user_roles)
     end
   end
@@ -28,7 +28,7 @@ defmodule I18NAPIWeb.UserRolesController do
   def update(conn, %{"id" => id, "user_roles" => user_roles_params}) do
     user_roles = Projects.get_user_roles!(id)
 
-    with {:ok, %UserRoles{} = user_roles} <-
+    with {:ok, %UserRole{} = user_roles} <-
            Projects.update_user_roles(user_roles, user_roles_params) do
       render(conn, "show.json", user_roles: user_roles)
     end
@@ -37,7 +37,7 @@ defmodule I18NAPIWeb.UserRolesController do
   def delete(conn, %{"id" => id}) do
     user_roles = Projects.get_user_roles!(id)
 
-    with {:ok, %UserRoles{}} <- Projects.delete_user_roles(user_roles) do
+    with {:ok, %UserRole{}} <- Projects.delete_user_roles(user_roles) do
       send_resp(conn, :no_content, "")
     end
   end

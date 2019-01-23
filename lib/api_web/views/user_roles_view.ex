@@ -1,13 +1,13 @@
-defmodule I18NAPIWeb.UserRolesView do
+defmodule I18NAPIWeb.UserRoleView do
   use I18NAPIWeb, :view
-  alias I18NAPIWeb.UserRolesView
+  alias I18NAPIWeb.UserRoleView
 
   def render("index.json", %{user_roles: user_roles}) do
-    %{data: render_many(user_roles, UserRolesView, "user_roles.json")}
+    %{data: render_many(user_roles, UserRoleView, "user_roles.json")}
   end
 
   def render("show.json", %{user_roles: user_roles}) do
-    %{data: render_one(user_roles, UserRolesView, "user_roles.json")}
+    %{data: render_one(user_roles, UserRoleView, "user_roles.json")}
   end
 
   def render("user_roles.json", %{user_roles: user_roles}) do

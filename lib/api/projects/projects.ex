@@ -245,7 +245,7 @@ defmodule I18NAPI.Projects do
     Project.changeset(project, %{})
   end
 
-  alias I18NAPI.Projects.UserRoles
+  alias I18NAPI.Projects.UserRole
 
   @doc """
   Returns the list of user_roles.
@@ -253,11 +253,11 @@ defmodule I18NAPI.Projects do
   ## Examples
 
       iex> list_user_roles()
-      [%UserRoles{}, ...]
+      [%UserRole{}, ...]
 
   """
   def list_user_roles do
-    Repo.all(UserRoles)
+    Repo.all(UserRole)
   end
 
   @doc """
@@ -268,13 +268,13 @@ defmodule I18NAPI.Projects do
   ## Examples
 
       iex> get_user_roles!(123)
-      %UserRoles{}
+      %UserRole{}
 
       iex> get_user_roles!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_user_roles!(id), do: Repo.get!(UserRoles, id)
+  def get_user_roles!(id), do: Repo.get!(UserRole, id)
 
   @doc """
   Gets a single user_roles.
@@ -284,7 +284,7 @@ defmodule I18NAPI.Projects do
   ## Examples
 
       iex> get_user_roles!(123, 321)
-      %UserRoles{}
+      %UserRole{}
 
       iex> get_user_roles!(456, 654)
       ** (Ecto.NoResultsError)
@@ -292,7 +292,7 @@ defmodule I18NAPI.Projects do
   """
   def get_user_roles!(project_id, user_id) do
     from(
-      ur in UserRoles,
+      ur in UserRole,
       where: ur.project_id == ^project_id and ur.user_id == ^user_id
     )
     |> Repo.one()
@@ -304,15 +304,15 @@ defmodule I18NAPI.Projects do
   ## Examples
 
       iex> create_user_roles(%{field: value})
-      {:ok, %UserRoles{}}
+      {:ok, %UserRole{}}
 
       iex> create_user_roles(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
   def create_user_roles(attrs \\ %{}) do
-    %UserRoles{}
-    |> UserRoles.changeset(attrs)
+    %UserRole{}
+    |> UserRole.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -322,31 +322,31 @@ defmodule I18NAPI.Projects do
   ## Examples
 
       iex> update_user_roles(user_roles, %{field: new_value})
-      {:ok, %UserRoles{}}
+      {:ok, %UserRole{}}
 
       iex> update_user_roles(user_roles, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_user_roles(%UserRoles{} = user_roles, attrs) do
+  def update_user_roles(%UserRole{} = user_roles, attrs) do
     user_roles
-    |> UserRoles.changeset(attrs)
+    |> UserRole.changeset(attrs)
     |> Repo.update()
   end
 
   @doc """
-  Deletes a UserRoles.
+  Deletes a UserRole.
 
   ## Examples
 
       iex> delete_user_roles(user_roles)
-      {:ok, %UserRoles{}}
+      {:ok, %UserRole{}}
 
       iex> delete_user_roles(user_roles)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_user_roles(%UserRoles{} = user_roles) do
+  def delete_user_roles(%UserRole{} = user_roles) do
     Repo.delete(user_roles)
   end
 
@@ -356,11 +356,11 @@ defmodule I18NAPI.Projects do
   ## Examples
 
       iex> change_user_roles(user_roles)
-      %Ecto.Changeset{source: %UserRoles{}}
+      %Ecto.Changeset{source: %UserRole{}}
 
   """
-  def change_user_roles(%UserRoles{} = user_roles) do
-    UserRoles.changeset(user_roles, %{})
+  def change_user_roles(%UserRole{} = user_roles) do
+    UserRole.changeset(user_roles, %{})
   end
 
   alias I18NAPI.Projects.UserLocales

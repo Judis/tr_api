@@ -1,4 +1,4 @@
-defmodule I18NAPI.Projects.UserRoles do
+defmodule I18NAPI.Projects.UserRole do
   use Ecto.Schema
   import Ecto.Changeset
 

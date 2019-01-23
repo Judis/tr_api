@@ -1,7 +1,7 @@
 defmodule I18NAPI.Projects.Project do
   use Ecto.Schema
   import Ecto.Changeset
-  alias I18NAPI.Projects.{UserRoles}
+  alias I18NAPI.Projects.{UserRole}
   alias I18NAPI.Translations.{Locale, TranslationKey}
 
   schema "projects" do
@@ -16,7 +16,7 @@ defmodule I18NAPI.Projects.Project do
     field(:count_of_translated_keys, :integer, default: 0)
     field(:count_of_untranslated_keys, :integer, default: 0)
 
-    has_many(:user_roles, UserRoles, on_delete: :delete_all)
+    has_many(:user_roles, UserRole, on_delete: :delete_all)
     has_many(:locales, Locale, on_delete: :delete_all)
     has_many(:translation_keys, TranslationKey, on_delete: :delete_all)
 

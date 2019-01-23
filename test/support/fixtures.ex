@@ -110,7 +110,7 @@ defmodule I18NAPI.Fixtures do
 
   def user_role do
     alias I18NAPI.Projects
-    alias I18NAPI.Projects.{Project, UserRoles}
+    alias I18NAPI.Projects.{Project, UserRole}
 
     quote do
       @user_role_admin %{role: :admin}
