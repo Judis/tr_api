@@ -26,7 +26,7 @@ defmodule I18NAPIWeb.ProjectController do
 
     case project.is_removed do
       false -> render(conn, "show.json", project: project)
-      _ -> conn |> put_status(204) |> render("204.json")
+      _ -> {:error, :no_content}
     end
   end
 
@@ -36,7 +36,7 @@ defmodule I18NAPIWeb.ProjectController do
     with {:ok, %Project{} = project} <- Projects.update_project(project, project_params) do
       case project.is_removed do
         false -> render(conn, "show.json", project: project)
-        _ -> conn |> put_status(204) |> render("204.json")
+        _ -> {:error, :no_content}
       end
     end
   end
@@ -47,7 +47,7 @@ defmodule I18NAPIWeb.ProjectController do
     with {:ok, %Project{} = project} <- Projects.safely_delete_project(project) do
       case project.is_removed do
         false -> render(conn, "show.json", project: project)
-        _ -> conn |> put_status(204) |> render("204.json")
+        _ -> {:error, :no_content}
       end
     end
   end

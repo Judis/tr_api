@@ -1,7 +1,7 @@
 defmodule I18NAPI.Translations.Locale do
   use Ecto.Schema
   import Ecto.Changeset
-  alias I18NAPI.Projects.{UserLocales}
+  alias I18NAPI.Translations.UserLocale
 
   schema "locales" do
     field(:is_default, :boolean, default: false)
@@ -16,7 +16,7 @@ defmodule I18NAPI.Translations.Locale do
     field(:count_of_untranslated_keys, :integer, default: 0)
 
     belongs_to(:project, I18NAPI.Projects.Project)
-    has_many(:user_locales, UserLocales, on_delete: :delete_all)
+    has_many(:user_locales, UserLocale, on_delete: :delete_all)
     has_many(:translations, I18NAPI.Translations.Translation)
 
     timestamps()

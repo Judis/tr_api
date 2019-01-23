@@ -39,6 +39,6 @@ defmodule I18NAPIWeb.Router do
       end
     end
 
-    resources("/user_locales", UserLocalesController)
+    resources("/user_locales", UserLocaleController)
   end
 end
