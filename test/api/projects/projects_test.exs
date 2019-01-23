@@ -6,7 +6,6 @@ defmodule I18NAPI.ProjectsTest do
   use I18NAPI.Fixtures, [:setup, :user, :project, :invitation, :user_role]
 
   alias EctoEnum
-  alias I18NAPI.Accounts
   alias I18NAPI.Accounts.User
   alias I18NAPI.Projects
   alias I18NAPI.Projects.{Invite, Project, UserLocales, UserRoles}

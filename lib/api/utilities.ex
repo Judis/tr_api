@@ -1,6 +1,5 @@
 defmodule I18NAPI.Utilities do
   @moduledoc false
-  alias I18NAPI.Accounts.User
 
   @doc """
   Translate keys to atoms
