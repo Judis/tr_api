@@ -2,6 +2,8 @@ defmodule I18NAPI.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias I18NAPI.Accounts.User
+
   schema "users" do
     field(:confirmation_sent_at, :naive_datetime)
     field(:confirmation_token, :string)
@@ -9,7 +11,6 @@ defmodule I18NAPI.Accounts.User do
     field(:email, :string)
     field(:failed_restore_attempts, :integer)
     field(:failed_sign_in_attempts, :integer)
-    field(:invited_at, :naive_datetime)
     field(:is_confirmed, :boolean, default: false)
     field(:is_removed, :boolean, default: false)
     field(:last_visited_at, :naive_datetime)
@@ -59,12 +60,7 @@ defmodule I18NAPI.Accounts.User do
   @doc false
   defp validate_password(struct) do
     struct
-    |> validate_length(:password, min: 8)
-    |> validate_format(
-      :password,
-      ~r/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*/,
-      message: "Must include at least one lowercase letter, one uppercase letter, and one digit"
-    )
+    |> validate_length(:password, min: 8, max: 50)
     |> validate_confirmation(:password)
     |> generate_password_hash
   end
@@ -81,11 +77,33 @@ defmodule I18NAPI.Accounts.User do
   end
 
   @doc false
+  def accept_invite_changeset(user, attrs) do
+    user
+    |> cast(
+      attrs
+      |> Map.put(:confirmation_token, nil)
+      |> Map.put(:confirmed_at, NaiveDateTime.utc_now())
+      |> Map.put(:is_confirmed, true),
+      [
+        :confirmation_token,
+        :confirmation_sent_at,
+        :confirmed_at,
+        :is_confirmed,
+        :password,
+        :password_confirmation
+      ]
+    )
+    |> validate_required([:password, :password_confirmation])
+    |> validate_password
+  end
+
+  @doc false
   def restore_changeset(user, attrs) do
     user
     |> cast(attrs, [
       :restore_token,
       :restore_accepted_at,
+      :restore_requested_at,
       :password,
       :password_confirmation
     ])

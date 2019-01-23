@@ -9,6 +9,7 @@ defmodule I18NAPI.Projects do
   alias I18NAPI.Projects.Project
   alias I18NAPI.Translations
   alias I18NAPI.Translations.Locale
+  alias I18NAPI.Utilities
 
   def default_locale_to_project(%Project{} = project) do
     locale = Translations.get_default_locale!(project.id)
@@ -65,6 +66,22 @@ defmodule I18NAPI.Projects do
 
   """
   def get_project!(id), do: Repo.get!(Project, id) |> default_locale_to_project()
+
+  @doc """
+  Gets a single project.
+
+  Return :nil if the Project does not exist.
+
+  ## Examples
+
+      iex> get_project!(123)
+      %Project{}
+
+      iex> get_project!(456)
+      nil
+
+  """
+  def get_project(id), do: Repo.get(Project, id) |> default_locale_to_project()
 
   def get_total_count_of_translation_keys(project_id) do
     from(
@@ -489,5 +506,215 @@ defmodule I18NAPI.Projects do
 
   def safely_delete_entity(%I18NAPI.Translations.Locale{} = child) do
     I18NAPI.Translations.safely_delete_locale(child)
+  end
+
+  alias I18NAPI.Projects.Invite
+
+  @doc """
+  Returns the list of invites chained with specific inviter.
+
+  ## Examples
+
+      iex> list_invites_by_inviter(1)
+      [%Invite{}, ...]
+
+  """
+  def list_invites_by_inviter(inviter_id) do
+    from(
+      i in Invite,
+      where: [inviter_id: ^inviter_id, is_removed: false]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns the list of invites chained with specific project.
+
+  ## Examples
+
+      iex> list_invites_by_project(1)
+      [%Invite{}, ...]
+
+  """
+  def list_invites_by_project(project_id) do
+    from(
+      i in Invite,
+      where: [project_id: ^project_id, is_removed: false]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns the list of invites chained with specific recipient.
+
+  ## Examples
+
+      iex> list_invites_by_recipient(1)
+      [%Invite{}, ...]
+
+  """
+  def list_invites_by_recipient(recipient_id) do
+    from(
+      i in Invite,
+      where: [recipient_id: ^recipient_id, is_removed: false]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets a single invite.
+
+  Raises `Ecto.NoResultsError` if the Project does not exist.
+
+  ## Examples
+
+      iex> get_invite!(123)
+      %Invite{}
+
+      iex> get_project!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_invite!(id), do: Repo.get!(Invite, id)
+
+  @doc """
+  Gets a single invite.
+
+  Return :nil if the Invite does not exist.
+
+  ## Examples
+
+      iex> get_invite!(123)
+      %Project{}
+
+      iex> get_invite!(456)
+      nil
+
+  """
+  def get_invite(id), do: Repo.get(Invite, id)
+
+  @doc """
+  Find invite by token.
+
+  ## Examples
+
+      iex> find_invite_by_token(token)
+      {:ok, %Invite{}}
+
+      iex> find_invite_by_token(token)
+      {:error, :unauthorized}
+
+  """
+  def find_invite_by_token(token) do
+    case Repo.get_by(Invite, token: token) do
+      nil -> {:error, :unauthorized}
+      invite -> {:ok, invite}
+    end
+  end
+
+  @doc """
+  Accepts a invite.
+
+  ## Examples
+
+      iex> accept_invite(%Invite{} = invite)
+      {:ok, %Invite{}}
+
+      iex> accept_invite(%{bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def accept_invite(%Invite{} = invite) do
+    invite
+    |> Invite.accept_changeset()
+    |> Repo.update()
+  end
+
+  def accept_invite(_), do: {:error, :bad_value}
+
+  @doc """
+  Creates a invite.
+
+  ## Examples
+
+      iex> create_invite(%{field: value})
+      {:ok, %Invite{}}
+
+      iex> create_invite(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_invite(attrs \\ %{}) do
+    %Invite{}
+    |> Invite.changeset(
+      attrs
+      |> Map.put(:token, Utilities.random_string(32))
+      |> Map.put(:invited_at, NaiveDateTime.utc_now())
+      |> Utilities.key_to_atom()
+    )
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a invite.
+
+  ## Examples
+
+      iex> update_invite(invite, %{field: new_value})
+      {:ok, %Invite{}}
+
+      iex> update_invite(invite, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_invite(%Invite{} = invite, attrs) do
+    invite
+    |> Invite.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_field_invited_at(%Invite{} = invite) do
+    invite
+    |> Invite.invite_changeset()
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a Invite.
+
+  ## Examples
+
+      iex> delete_invite(invite)
+      {:ok, %Project{}}
+
+      iex> delete_invite(invite)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_invite(%Invite{} = invite) do
+    Repo.delete(invite)
+  end
+
+  @doc """
+  Safely Deletes a Invite.
+
+  ## Examples
+
+      iex> safely_delete_invite(invite)
+      {:ok, %Invite{}}
+
+      iex> safely_delete_invite(invite)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def safely_delete_invite(%Invite{} = invite) do
+    changeset = %{
+      is_removed: true,
+      removed_at: DateTime.utc_now()
+    }
+
+    invite
+    |> Invite.remove_changeset(changeset)
+    |> Repo.update()
   end
 end

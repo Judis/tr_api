@@ -12,10 +12,10 @@ defmodule I18NAPIWeb.FallbackController do
     |> render(I18NAPIWeb.ChangesetView, "error.json", changeset: changeset)
   end
 
-  def call(conn, {:error, :not_found}) do
+  def call(conn, {:error, :bad_request, validation}) do
     conn
-    |> put_status(:not_found)
-    |> render(I18NAPIWeb.ErrorView, :"404")
+    |> put_status(:bad_request)
+    |> render(I18NAPIWeb.ErrorView, :"400", validation: validation)
   end
 
   def call(conn, {:error, :bad_request}) do
@@ -28,5 +28,23 @@ defmodule I18NAPIWeb.FallbackController do
     conn
     |> put_status(:unauthorized)
     |> render(I18NAPIWeb.ErrorView, :"401")
+  end
+
+  def call(conn, {:error, :forbidden}) do
+    conn
+    |> put_status(:forbidden)
+    |> render(I18NAPIWeb.ErrorView, :"403")
+  end
+
+  def call(conn, {:error, :not_found}) do
+    conn
+    |> put_status(:not_found)
+    |> render(I18NAPIWeb.ErrorView, :"404")
+  end
+
+  def call(conn, {:error, error}) do
+    conn
+    |> put_status(:not_found)
+    |> render(I18NAPIWeb.ErrorView, :"422", detail: error.errors |> Enum.at(0) |> elem(0))
   end
 end

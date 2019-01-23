@@ -3,74 +3,31 @@ defmodule I18NAPI.ProjectsTest do
   @moduletag :project_api
 
   use I18NAPI.DataCase
-  alias I18NAPI.Projects
-  alias I18NAPI.Projects.Project
-  alias I18NAPI.Accounts
+  use I18NAPI.Fixtures, [:setup, :user, :project, :invitation, :user_role]
+
+  alias EctoEnum
   alias I18NAPI.Accounts.User
-
-  setup do
-    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
-    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
-    :ok
-  end
-
-  @user_attrs %{
-    name: "test name",
-    email: "test@email.test",
-    password: "Qw!23456",
-    password_confirmation: "Qw!23456",
-    source: "test source"
-  }
-
-  def user_fixture(attrs \\ %{}) do
-    {:ok, user} =
-      attrs
-      |> Enum.into(@user_attrs)
-      |> Accounts.create_user()
-
-    user
-  end
-
-  @valid_project_attrs %{
-    name: "some name",
-    default_locale: "en"
-  }
-
-  def project_fixture(attrs \\ %{}, %User{} = user) do
-    {:ok, project} =
-      attrs
-      |> Enum.into(@valid_project_attrs)
-      |> Projects.create_project(user)
-
-    project
-  end
+  alias I18NAPI.Projects
+  alias I18NAPI.Projects.{Invite, Project, UserLocales, UserRoles}
+  alias I18NAPI.Translations
 
   describe "projects" do
-    @update_project_attrs %{
-      name: "some updated name"
-    }
-
-    @invalid_project_attrs %{name: nil, default_locale: nil, is_removed: nil, removed_at: nil}
-
     test "list_projects/0 returns all projects" do
-      project = project_fixture(%{}, user_fixture())
+      project = fixture(:project, user: fixture(:user))
       assert Projects.list_projects() == [project]
     end
 
     test "get_project!/1 returns the project with given id" do
-      project = project_fixture(%{}, user_fixture())
+      project = fixture(:project, user: fixture(:user))
       assert Projects.get_project!(project.id) == project
     end
 
-    alias I18NAPI.Translations
-    alias I18NAPI.Projects.UserLocales
-
     test "create_project/1 with valid data creates a project" do
-      user = user_fixture()
-      {:ok, project} = Projects.create_project(@valid_project_attrs, user)
+      user = fixture(:user)
+      {:ok, project} = Projects.create_project(attrs(:project), user)
       assert %Project{} = project
       assert project.is_removed == false
-      assert project.default_locale == @valid_project_attrs.default_locale
+      assert project.default_locale == attrs(:project).default_locale
       assert project.total_count_of_translation_keys == 0
       locale = Translations.get_default_locale!(project.id)
       user_locale = Projects.get_user_locales!(locale.id, user.id)
@@ -78,125 +35,132 @@ defmodule I18NAPI.ProjectsTest do
     end
 
     test "create_project/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Projects.create_project(@invalid_project_attrs)
+      assert {:error, %Ecto.Changeset{}} = Projects.create_project(attrs(:project_nil))
     end
 
     test "update_project/2 with valid data updates the project" do
-      project = project_fixture(%{}, user_fixture())
-      assert {:ok, project} = Projects.update_project(project, @update_project_attrs)
+      project = fixture(:project, user: fixture(:user))
+      assert {:ok, project} = Projects.update_project(project, attrs(:project_alter))
       assert %Project{} = project
       assert project.is_removed == false
-      assert project.name == "some updated name"
+      assert project.name == attrs(:project_alter).name
     end
 
     test "update_project/2 with invalid data returns error changeset" do
-      project = project_fixture(%{}, user_fixture())
+      project = fixture(:project, user: fixture(:user))
 
-      assert {:error, %Ecto.Changeset{}} =
-               Projects.update_project(project, @invalid_project_attrs)
+      assert {:error, %Ecto.Changeset{}} = Projects.update_project(project, attrs(:project_nil))
 
       assert project == Projects.get_project!(project.id)
     end
 
     test "delete_project/1 deletes the project" do
-      project = project_fixture(%{}, user_fixture())
+      project = fixture(:project, user: fixture(:user))
       assert {:ok, %Project{}} = Projects.delete_project(project)
       assert_raise Ecto.NoResultsError, fn -> Projects.get_project!(project.id) end
     end
 
     test "change_project/1 returns a project changeset" do
-      project = project_fixture(%{}, user_fixture())
+      project = fixture(:project, user: fixture(:user))
       assert %Ecto.Changeset{} = Projects.change_project(project)
     end
   end
 
   describe "user_roles" do
-    alias I18NAPI.Projects.UserRoles
-    alias EctoEnum
-
-    @valid_attrs %{role: :manager}
-    @update_attrs %{role: :translator}
-    @invalid_attrs %{role: nil}
-
-    @user_alter_attrs %{
-      name: "alter name",
-      email: "alter@email.test",
-      password: "Qw!23456",
-      password_confirmation: "Qw!23456",
-      source: "test source"
-    }
-
-    def user_roles_fixture(attrs \\ %{}, %User{} = user) do
-      project_id = project_fixture(attrs, user).id
+    def user_roles_fixture(_, %User{} = user) do
+      project_id = fixture(:project, user: user).id
 
       Projects.get_user_roles!(project_id, user.id)
     end
 
     test "list_user_roles/0 returns all user_roles" do
-      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
+      user = fixture(:user)
+
+      user_roles =
+        fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
+
       assert Projects.list_user_roles() == [user_roles]
     end
 
     test "get_user_roles!/1 returns the user_roles with given id" do
-      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
+      user = fixture(:user)
+
+      user_roles =
+        fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
+
       assert Projects.get_user_roles!(user_roles.id) == user_roles
     end
 
     test "get_user_roles!/2 returns the user_roles with given id" do
-      user = user_fixture(@user_attrs)
-      project_id = project_fixture(@valid_project_attrs, user).id
-
+      user = fixture(:user)
+      project_id = fixture(:project, user: user).id
       assert %UserRoles{} = Projects.get_user_roles!(project_id, user.id)
     end
 
     test "create_user_roles/1 with valid data creates a user_roles" do
-      user = user_fixture(@user_attrs)
-      user_alter = user_fixture(@user_alter_attrs)
-      project_id = project_fixture(@valid_project_attrs, user).id
-      attrs = @valid_attrs
+      user = fixture(:user)
+      user_alter = fixture(:user_alter)
+      project_id = fixture(:project, user: user).id
+      attrs = attrs(:user_role)
       # use alternative user because user_role already created on project creating
       attrs = Map.put(attrs, :user_id, user_alter.id)
       attrs = Map.put(attrs, :project_id, project_id)
       assert {:ok, %UserRoles{} = user_roles} = Projects.create_user_roles(attrs)
-      assert user_roles.role == :manager
+      assert user_roles.role == attrs(:user_role).role
     end
 
     test "create_user_roles/1 with invalid data returns error changeset" do
-      user = user_fixture()
-      attrs = @invalid_attrs
+      user = fixture(:user)
+      attrs = attrs(:user_role_nil)
       attrs = Map.put(attrs, :user_id, user.id)
-      attrs = Map.put(attrs, :project_id, project_fixture(@valid_project_attrs, user).id)
+      attrs = Map.put(attrs, :project_id, fixture(:project, user: user).id)
       assert {:error, %Ecto.Changeset{}} = Projects.create_user_roles(attrs)
     end
 
     test "update_user_roles/2 with valid data updates the user_roles" do
-      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
-      assert {:ok, user_roles} = Projects.update_user_roles(user_roles, @update_attrs)
+      user = fixture(:user)
+
+      user_roles =
+        fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
+
+      assert {:ok, user_roles} =
+               Projects.update_user_roles(user_roles, attrs(:user_role_translator))
+
       assert %UserRoles{} = user_roles
-      assert user_roles.role == :translator
+      assert user_roles.role == attrs(:user_role_translator).role
     end
 
     test "update_user_roles/2 with invalid data returns error changeset" do
-      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
-      assert {:error, %Ecto.Changeset{}} = Projects.update_user_roles(user_roles, @invalid_attrs)
+      user = fixture(:user)
+
+      user_roles =
+        fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
+
+      assert {:error, %Ecto.Changeset{}} =
+               Projects.update_user_roles(user_roles, attrs(:user_role_nil))
+
       assert user_roles == Projects.get_user_roles!(user_roles.id)
     end
 
     test "delete_user_roles/1 deletes the user_roles" do
-      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
+      user = fixture(:user)
+
+      user_roles =
+        fixture(:user_role, %{project_id: fixture(:project, user: user).id, user_id: user.id})
+
       assert {:ok, %UserRoles{}} = Projects.delete_user_roles(user_roles)
       assert_raise Ecto.NoResultsError, fn -> Projects.get_user_roles!(user_roles.id) end
     end
 
     test "change_user_roles/1 returns a user_roles changeset" do
-      user_roles = user_roles_fixture(@valid_project_attrs, user_fixture())
+      user = fixture(:user)
+      tmp = %{project_id: fixture(:project, %{user: user}).id, user_id: user.id}
+      user_roles = fixture(:user_role, tmp)
       assert %Ecto.Changeset{} = Projects.change_user_roles(user_roles)
     end
   end
 
   describe "user_locales" do
-    alias I18NAPI.Projects.UserLocales
-
     @valid_attrs %{role: 0}
     @update_attrs %{role: 1}
     @invalid_attrs %{role: nil}
@@ -254,6 +218,123 @@ defmodule I18NAPI.ProjectsTest do
     test "change_user_locales/1 returns a user_locales changeset" do
       user_locales = user_locales_fixture()
       assert %Ecto.Changeset{} = Projects.change_user_locales(user_locales)
+    end
+  end
+
+  describe "invite" do
+    #    test "list_invite/0 returns all projects" do
+    #      project = fixture(:project, [user: fixture(:user)])
+    #      assert Projects.list_projects() == [project]
+    #    end
+
+    test "get_invite!/1 returns the invite with given id" do
+      inviter = fixture(:user)
+      recipient_id = fixture(:user_alter).id
+      project_id = fixture(:project, user: inviter).id
+
+      invite =
+        fixture(:invite, %{
+          inviter_id: inviter.id,
+          recipient_id: recipient_id,
+          project_id: project_id
+        })
+
+      assert Projects.get_invite!(invite.id) == invite
+    end
+
+    test "create_invite/1 with valid data" do
+      inviter = fixture(:user)
+      recipient_id = fixture(:user_alter).id
+      project_id = fixture(:project, user: inviter).id
+
+      attrs =
+        attrs(:invite)
+        |> Map.merge(%{inviter_id: inviter.id, recipient_id: recipient_id, project_id: project_id})
+
+      assert {:ok, %Invite{}} = Projects.create_invite(attrs)
+    end
+
+    test "create_invite/1 with nullable data" do
+      inviter = fixture(:user)
+      recipient_id = fixture(:user_alter).id
+      project_id = fixture(:project, user: inviter).id
+
+      attrs =
+        attrs(:invite_nil)
+        |> Map.merge(%{inviter_id: inviter.id, recipient_id: recipient_id, project_id: project_id})
+
+      assert {:error, %Ecto.Changeset{}} = Projects.create_invite(attrs)
+    end
+
+    test "update_invite/1 with valid data" do
+      inviter = fixture(:user)
+      recipient_id = fixture(:user_alter).id
+      project_id = fixture(:project, user: inviter).id
+
+      invite =
+        fixture(:invite, %{
+          inviter_id: inviter.id,
+          recipient_id: recipient_id,
+          project_id: project_id
+        })
+
+      assert {:ok, %Invite{}} = Projects.update_invite(invite, attrs(:invite_alter))
+      invite_alter = Projects.get_invite!(invite.id)
+
+      assert invite_alter.message == attrs(:invite_alter).message
+      assert invite_alter.role == attrs(:invite_alter).role
+      assert invite_alter.is_removed == attrs(:invite_alter).is_removed
+      assert invite_alter.token == attrs(:invite_alter).token
+    end
+
+    test "update_invite/1 with invalid data" do
+      inviter = fixture(:user)
+      recipient_id = fixture(:user_alter).id
+      project_id = fixture(:project, user: inviter).id
+
+      invite =
+        fixture(:invite, %{
+          inviter_id: inviter.id,
+          recipient_id: recipient_id,
+          project_id: project_id
+        })
+
+      assert {:error, %Ecto.Changeset{}} = Projects.update_invite(invite, attrs(:invite_nil))
+    end
+
+    test "delete_invite!/1 delete the invite" do
+      inviter = fixture(:user)
+      recipient_id = fixture(:user_alter).id
+      project_id = fixture(:project, user: inviter).id
+
+      invite =
+        fixture(:invite, %{
+          inviter_id: inviter.id,
+          recipient_id: recipient_id,
+          project_id: project_id
+        })
+
+      Projects.delete_invite(invite)
+
+      assert Projects.get_invite(invite.id) |> is_nil
+    end
+
+    test "safely_delete_invite!/1 safely delete the invite" do
+      inviter = fixture(:user)
+      recipient_id = fixture(:user_alter).id
+      project_id = fixture(:project, user: inviter).id
+
+      invite =
+        fixture(:invite, %{
+          inviter_id: inviter.id,
+          recipient_id: recipient_id,
+          project_id: project_id
+        })
+
+      assert invite.is_removed == false
+
+      Projects.safely_delete_invite(invite)
+      assert Projects.get_invite(invite.id).is_removed == true
     end
   end
 end

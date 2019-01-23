@@ -4,7 +4,6 @@ defmodule I18NAPI.Accounts do
   """
 
   import Ecto.Query, warn: false
-  import I18NAPI.Accounts.Confirmation
 
   alias I18NAPI.Accounts.User
   alias I18NAPI.Repo
@@ -40,6 +39,22 @@ defmodule I18NAPI.Accounts do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
+  Gets a single user.
+
+  Return nil if the User does not exist.
+
+  ## Examples
+
+      iex> get_user!(123)
+      %User{}
+
+      iex> get_user!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_user(id), do: Repo.get(User, id)
+
+  @doc """
   Creates a user.
 
   ## Examples
@@ -59,14 +74,29 @@ defmodule I18NAPI.Accounts do
       |> Utilities.key_to_atom()
     )
     |> Repo.insert()
-    |> send_email_if_user_created()
   end
 
-  defp send_email_if_user_created({:error, _} = result), do: result
+  @doc """
+  Creates a user with temp password.
+  Use it if you need create user without password (in fact with big unknown password)
 
-  defp send_email_if_user_created({:ok, user}) do
-    send_confirmation_email_async(user)
-    {:ok, user}
+  ## Examples
+
+      iex> create_user_with_temp_password(%{field: value})
+      {:ok, %User{}}
+
+      iex> create_user_with_temp_password(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_user_with_temp_password(attrs \\ %{}) do
+    attrs
+    |> set_temp_password(Utilities.generate_valid_password())
+    |> create_user()
+  end
+
+  defp set_temp_password(attrs, temp_pass) do
+    Map.merge(attrs, %{password: temp_pass, password_confirmation: temp_pass})
   end
 
   @doc """
@@ -162,12 +192,8 @@ defmodule I18NAPI.Accounts do
   end
 
   def update_field_confirmation_sent_at(%User{} = user) do
-    attrs = %{
-      confirmation_sent_at: NaiveDateTime.utc_now()
-    }
-
     user
-    |> User.confirmation_changeset(attrs)
+    |> User.confirmation_changeset(%{confirmation_sent_at: NaiveDateTime.utc_now()})
     |> Repo.update()
   end
 
@@ -210,47 +236,47 @@ defmodule I18NAPI.Accounts do
   end
 
   def update_field_restore_token(%User{} = user, restore_token) do
-    attrs = %{
-      restore_token: restore_token
-    }
-
     user
-    |> User.restore_changeset(attrs)
+    |> User.restore_changeset(%{
+      restore_token: restore_token,
+      restore_requested_at: NaiveDateTime.utc_now()
+    })
     |> Repo.update()
   end
 
   def update_field_password_restore_requested_at(%User{} = user) do
-    attrs = %{
-      restore_requested_at: NaiveDateTime.utc_now()
-    }
-
     user
-    |> User.restore_changeset(attrs)
+    |> User.restore_changeset(%{restore_requested_at: NaiveDateTime.utc_now()})
+    |> Repo.update()
+  end
+
+  def accept_invitation(%User{} = user, password, password_confirmation) do
+    user
+    |> User.accept_invite_changeset(%{
+      password: password,
+      password_confirmation: password_confirmation
+    })
     |> Repo.update()
   end
 
   def accept_restoration(%User{} = user, password, password_confirmation) do
-    attrs = %{
+    user
+    |> User.restore_changeset(%{
       restore_accepted_at: NaiveDateTime.utc_now(),
       password: password,
       password_confirmation: password_confirmation
-    }
-
-    user
-    |> User.restore_changeset(attrs)
+    })
     |> Repo.update()
   end
 
   def confirm_user(%User{} = user) do
-    attrs = %{
+    user
+    |> User.confirmation_changeset(%{
       confirmation_token: nil,
       confirmation_sent_at: nil,
       confirmed_at: NaiveDateTime.utc_now(),
       is_confirmed: true
-    }
-
-    user
-    |> User.confirmation_changeset(attrs)
+    })
     |> Repo.update()
   end
 end
