@@ -299,6 +299,73 @@ defmodule I18NAPI.Projects do
   end
 
   @doc """
+  Gets a single user_role.
+
+  Return nil if the User roles does not exist.
+
+  ## Examples
+
+      iex> get_user_role(123, 321)
+      %UserRole{}
+
+      iex> get_user_role(456, 654)
+      nil
+
+  """
+  def get_user_role(project_id, user_id) do
+    from(UserRole, where: [project_id: ^project_id, user_id: ^user_id])
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets a single user_role.
+
+  Return nil if the User roles does not exist.
+
+  ## Examples
+
+      iex> get_user_role(123, 321)
+      %UserRole{}
+
+      iex> get_user_role(456, 654)
+      nil
+
+  """
+  def get_user_role_non_removed(project_id, user_id) do
+    from(UserRole, where: [project_id: ^project_id, user_id: ^user_id, is_removed: false])
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets a single user_role but not this.
+
+  Return nil if the User roles does not exist.
+
+  ## Examples
+
+      iex> get_user_role(123, 321, 4)
+      %UserRole{}
+
+      iex> get_user_role(456, 654, 7)
+      nil
+
+  """
+
+  def get_user_role_non_removed_but_not_this(project_id, user_id, user_role_id)
+      when not is_nil(user_role_id) do
+    from(
+      ur in UserRole,
+      where:
+        ur.project_id == ^project_id and ur.user_id == ^user_id and ur.is_removed == false and
+          ur.id != ^user_role_id
+    )
+    |> Repo.one()
+  end
+
+  def get_user_role_non_removed_but_not_this(project_id, user_id, _),
+    do: get_user_role_non_removed(project_id, user_id)
+
+  @doc """
   Creates a user_role.
 
   ## Examples
@@ -348,6 +415,24 @@ defmodule I18NAPI.Projects do
   """
   def delete_user_role(%UserRole{} = user_role) do
     Repo.delete(user_role)
+  end
+
+  @doc """
+  Safely deletes a UserRole.
+
+  ## Examples
+
+      iex> safely_delete_user_role(user_role)
+      {:ok, %UserRole{}}
+
+      iex> safely_delete_user_role(user_role)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def safely_delete_user_role(%UserRole{} = user_role) do
+    user_role
+    |> UserRole.remove_changeset()
+    |> Repo.update()
   end
 
   @doc """

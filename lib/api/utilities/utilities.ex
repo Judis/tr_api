@@ -81,4 +81,9 @@ defmodule I18NAPI.Utilities do
       _ -> {:error, :bad_request, Enum.map(fields_with_errors, &%{&1 => "can't be blank"})}
     end
   end
+
+  @doc """
+    Returns the current datetime in UTC.
+  """
+  def get_utc_now(), do: NaiveDateTime.utc_now()
 end
