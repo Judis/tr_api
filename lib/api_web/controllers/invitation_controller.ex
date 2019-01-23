@@ -1,7 +1,6 @@
 defmodule I18NAPIWeb.InvitationController do
   use I18NAPIWeb, :controller
 
-  alias I18NAPI.Accounts
   alias I18NAPI.Accounts.User
   alias I18NAPI.Projects
   alias I18NAPI.Projects.{Invitation, Invite, UserRoles}

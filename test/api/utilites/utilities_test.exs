@@ -5,8 +5,6 @@ defmodule I18NAPI.UtilitiesTest do
   use I18NAPI.DataCase
   use I18NAPI.Fixtures, [:setup]
 
-  import Swoosh.TestAssertions
-
   alias I18NAPI.Utilities
 
   test "key_to_atom(map)" do
