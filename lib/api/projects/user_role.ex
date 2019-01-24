@@ -42,8 +42,8 @@ defmodule I18NAPI.Projects.UserRole do
   end
 
   @doc false
-  def remove_changeset(project) do
-    project
+  def remove_changeset(user_role) do
+    user_role
     |> cast(%{is_removed: true, removed_at: Utilities.get_utc_now()}, [:is_removed, :removed_at])
     |> validate_required([:is_removed, :removed_at])
   end

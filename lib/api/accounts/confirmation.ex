@@ -22,9 +22,9 @@ defmodule I18NAPI.Accounts.Confirmation do
   def confirm_user_by_token(nil), do: {:error, :not_found}
 
   def confirm_user_by_token(confirmation_token) do
-    with {:ok, user} <- Accounts.find_user_by_confirmation_token(confirmation_token),
-         {:ok, _} <- Accounts.confirm_user(user),
-         do: {:ok}
+    with {:ok, user} <- Accounts.find_user_by_confirmation_token(confirmation_token) do
+      Accounts.confirm_user(user)
+    end
   end
 
   def create_confirmation_link(confirmation_token) do

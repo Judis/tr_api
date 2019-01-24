@@ -7,8 +7,9 @@ defmodule I18NAPIWeb.TranslationController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    translations = Translations.list_translations(conn.params["locale_id"])
-    render(conn, "index.json", translations: translations)
+    render(conn, "index.json",
+      translations: Translations.list_translations(conn.params["locale_id"])
+    )
   end
 
   def create(conn, %{"translation" => translation_params}) do
@@ -34,25 +35,24 @@ defmodule I18NAPIWeb.TranslationController do
   end
 
   def show(conn, %{"id" => id}) do
-    translation = Translations.get_translation!(id)
-    render(conn, "show.json", translation: translation)
+    with %Translation{} = translation <- Translations.get_translation!(id) do
+      render(conn, "show.json", translation: translation)
+    end
   end
 
   def update(conn, %{"id" => id, "translation" => translation_params}) do
-    translation = Translations.get_translation!(id)
-
-    with {:ok, %Translation{} = translation} <-
+    with %Translation{} = translation <- Translations.get_translation!(id),
+         {:ok, %Translation{} = translation} <-
            Translations.update_translation(translation, translation_params) do
       render(conn, "show.json", translation: translation)
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    translation = Translations.get_translation!(id)
-
-    with {:ok, %Translation{} = translation} <-
+    with %Translation{} = translation <- Translations.get_translation!(id),
+         {:ok, %Translation{} = translation} <-
            Translations.safely_delete_translation(translation) do
-      render(conn, "show.json", translation: translation)
+      render(conn, "200.json")
     end
   end
 end

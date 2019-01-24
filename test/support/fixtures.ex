@@ -25,7 +25,7 @@ defmodule I18NAPI.Fixtures do
         Ecto.Adapters.SQL.Sandbox.checkout(Repo)
         Ecto.Adapters.SQL.Sandbox.mode(Repo, {:shared, self()})
 
-        user = fixture(:user)
+        user = fixture(:user_context)
         {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
 
         conn =
@@ -44,36 +44,65 @@ defmodule I18NAPI.Fixtures do
     alias I18NAPI.Accounts.User
 
     quote do
-      @valid_user_attrs %{
+      @user_nil %{
+        confirmation_sent_at: nil,
+        confirmation_token: nil,
+        confirmed_at: nil,
+        email: nil,
+        failed_restore_attempts: nil,
+        failed_sign_in_attempts: nil,
+        is_confirmed: nil,
+        last_visited_at: nil,
+        name: nil,
+        password_hash: nil,
+        restore_accepted_at: nil,
+        restore_requested_at: nil,
+        restore_token: nil,
+        source: nil
+      }
+      def attrs(:user_nil), do: @user_nil
+
+      @user_context %{
+        name: "context user name",
+        email: "context_user@email.test",
+        password: "Qw!23456",
+        password_confirmation: "Qw!23456",
+        source: "context user source"
+      }
+      def attrs(:user_context), do: @user_context
+
+      @user_valid %{
         name: "valid user name",
         email: "valid_user@email.test",
         password: "Qw!23456",
         password_confirmation: "Qw!23456",
         source: "valid user source"
       }
-      def attrs(:user), do: @valid_user_attrs
+      def attrs(:user), do: @user_valid
 
-      @valid_user_alter_attrs %{
+      @user_alter %{
         name: "alter user name",
         email: "alter_user@email.test",
         password: "Qw!23456",
         password_confirmation: "Qw!23456",
         source: "alter user source"
       }
-      def attrs(:user_alter), do: @valid_user_attrs
+      def attrs(:user_alter), do: @user_alter
 
-      @valid_user_more_alter_attrs %{
+      @user_more_alter %{
         name: "more user name",
         email: "more_user@email.test",
         password: "Qw!23456",
         password_confirmation: "Qw!23456",
         source: "more user source"
       }
-      def attrs(:user_more_alter), do: @valid_user_more_alter_attrs
+      def attrs(:user_more_alter), do: @user_more_alter
 
-      def fixture(:user), do: fixture(:user, user: @valid_user_attrs)
-      def fixture(:user_alter), do: fixture(:user, user: @valid_user_alter_attrs)
-      def fixture(:user_more_alter), do: fixture(:user, user: @valid_user_more_alter_attrs)
+      def fixture(:user), do: fixture(:user, user: @user_valid)
+      def fixture(:user_alter), do: fixture(:user, user: @user_alter)
+      def fixture(:user_more_alter), do: fixture(:user, user: @user_more_alter)
+      def fixture(:user_nil), do: fixture(:user, user: @user_nil)
+      def fixture(:user_context), do: fixture(:user, user: @user_context)
 
       def fixture(:user, user: attrs) do
         {_, user} =
@@ -94,7 +123,7 @@ defmodule I18NAPI.Fixtures do
     quote do
       @project_valid_attrs %{name: "some name", default_locale: "en"}
       def attrs(:project), do: @project_valid_attrs
-      @project_alter_attrs %{name: "alter name"}
+      @project_alter_attrs %{name: "alter name", default_locale: "en"}
       def attrs(:project_alter), do: @project_alter_attrs
       @project_nil_attrs %{name: nil, default_locale: nil, is_removed: nil, removed_at: nil}
       def attrs(:project_nil), do: @project_nil_attrs
@@ -154,6 +183,116 @@ defmodule I18NAPI.Fixtures do
       def fixture(:user_role_nil, %{user_id: _, project_id: _} = attrs) do
         attrs = @user_role_nil |> Map.merge(attrs)
         fixture(:user_role, user_role: attrs)
+      end
+    end
+  end
+
+  def user_locale do
+    alias I18NAPI.Projects.Project
+    alias I18NAPI.Translations
+    alias I18NAPI.Translations.UserLocale
+
+    quote do
+      @user_locale %{role: 0}
+      def attrs(:user_locale), do: @user_locale
+      @user_locale_alter %{role: 1}
+      def attrs(:user_locale_alter), do: @user_locale_alter
+      @user_locale_invalid %{role: :abrakadabra}
+      def attrs(:user_locale_invalid), do: @user_locale_invalid
+      @user_locale_nil %{role: nil}
+      def attrs(:user_locale_nil), do: @user_locale_nil
+
+      def fixture(:user_locale, user_locale: attrs) do
+        ul = Translations.get_user_locale(attrs.locale_id, attrs.user_id)
+
+        case is_nil(ul) do
+          true ->
+            {:ok, new_ul} = Translations.create_user_locale(attrs)
+            new_ul
+
+          false ->
+            ul
+        end
+      end
+
+      def fixture(:user_locale, %{user_id: _, locale_id: _} = attrs) do
+        attrs = @user_locale |> Map.merge(attrs)
+        fixture(:user_locale, user_locale: attrs)
+      end
+
+      def fixture(:user_locale_alter, %{user_id: _, locale_id: _} = attrs) do
+        attrs = @user_locale_alter |> Map.merge(attrs)
+        fixture(:user_locale, user_locale: attrs)
+      end
+
+      def fixture(:user_locale_invalid, %{user_id: _, locale_id: _} = attrs) do
+        attrs = @user_locale_invalid |> Map.merge(attrs)
+        fixture(:user_locale, user_locale: attrs)
+      end
+
+      def fixture(:user_locale_nil, %{user_id: _, locale_id: _} = attrs) do
+        attrs = @user_locale_nil |> Map.merge(attrs)
+        fixture(:user_locale, user_locale: attrs)
+      end
+    end
+  end
+
+  def locale do
+    alias I18NAPI.Translations
+    alias I18NAPI.Translations.Locale
+
+    quote do
+      @locale %{
+        locale: "some locale",
+        status: 0,
+        is_default: true
+      }
+      def attrs(:locale), do: @locale
+
+      @locale_alter %{
+        locale: "some updated locale",
+        status: 1,
+        is_default: false
+      }
+      def attrs(:locale_alter), do: @locale_alter
+
+      @locale_invalid %{
+        locale: "some updated locale",
+        status: "bad status",
+        is_default: false
+      }
+      def attrs(:locale_invalid), do: @locale_invalid
+
+      @locale_nil %{
+        locale: nil,
+        status: nil,
+        is_default: nil
+      }
+      def attrs(:locale_nil), do: @locale_nil
+
+      def fixture(:locale, locale: attrs) do
+        {:ok, locale} = (attrs || @locale) |> Translations.create_locale(attrs.project_id)
+        locale
+      end
+
+      def fixture(:locale, %{project_id: _} = attrs) do
+        attrs = @locale |> Map.merge(attrs)
+        fixture(:locale, locale: attrs)
+      end
+
+      def fixture(:locale_alter, %{project_id: _} = attrs) do
+        attrs = @locale_alter |> Map.merge(attrs)
+        fixture(:locale, locale: attrs)
+      end
+
+      def fixture(:locale_invalid, %{project_id: _} = attrs) do
+        attrs = @locale_invalid |> Map.merge(attrs)
+        fixture(:locale, locale: attrs)
+      end
+
+      def fixture(:locale_nil, %{project_id: _} = attrs) do
+        attrs = @locale_nil |> Map.merge(attrs)
+        fixture(:locale, locale: attrs)
       end
     end
   end
@@ -242,6 +381,63 @@ defmodule I18NAPI.Fixtures do
       def fixture(:invite_nil, %{inviter_id: _, recipient_id: _, project_id: _} = attrs) do
         attrs = @invite_nil |> Map.merge(attrs)
         fixture(:invite, invite: attrs)
+      end
+    end
+  end
+
+  def translation_key do
+    alias I18NAPI.Projects
+    alias I18NAPI.Projects.{Project}
+    alias I18NAPI.Translations
+    alias I18NAPI.Translations.{TranslationKey}
+
+    quote do
+      @translation_key_valid %{
+        context: "some context",
+        is_removed: false,
+        key: "some key",
+        default_value: "some value"
+      }
+      def attrs(:translation_key), do: @translation_key_valid
+
+      @translation_key_alter %{
+        context: "some updated context",
+        is_removed: false,
+        key: "some updated key",
+        default_value: "some updated value"
+      }
+      def attrs(:translation_key_alter), do: @translation_key_alter
+
+      @translation_key_nil %{
+        context: nil,
+        is_removed: nil,
+        key: nil,
+        removed_at: nil,
+        default_value: nil
+      }
+      def attrs(:translation_key_nil), do: @translation_key_nil
+
+      def fixture(:translation_key, translation_key: attrs) do
+        {:ok, translation_key} =
+          (attrs || @translation_key_valid)
+          |> Translations.create_translation_key(attrs.project_id)
+
+        translation_key
+      end
+
+      def fixture(:translation_key, %{project_id: _} = attrs) do
+        attrs = @translation_key_valid |> Map.merge(attrs)
+        fixture(:translation_key, translation_key: attrs)
+      end
+
+      def fixture(:translation_key_alter, %{project_id: _} = attrs) do
+        attrs = @translation_key_alter |> Map.merge(attrs)
+        fixture(:translation_key, translation_key: attrs)
+      end
+
+      def fixture(:translation_key_nil, %{project_id: _} = attrs) do
+        attrs = @translation_key_nil |> Map.merge(attrs)
+        fixture(:translation_key, translation_key: attrs)
       end
     end
   end

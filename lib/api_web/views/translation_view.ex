@@ -2,6 +2,10 @@ defmodule I18NAPIWeb.TranslationView do
   use I18NAPIWeb, :view
   alias I18NAPIWeb.TranslationView
 
+  def render("200.json", %{}) do
+    %{success: true}
+  end
+
   def render("index.json", %{translations: translations}) do
     %{data: render_many(translations, TranslationView, "translation.json")}
   end

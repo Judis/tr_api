@@ -182,7 +182,7 @@ defmodule I18NAPI.ProjectsTest do
       {:ok, user_locales} =
         attrs
         |> Enum.into(@valid_attrs)
-        |> Translations.create_user_locales()
+        |> Translations.create_user_locale()
 
       user_locales
     end
@@ -197,34 +197,34 @@ defmodule I18NAPI.ProjectsTest do
       assert Translations.get_user_locale!(user_locales.id) == user_locales
     end
 
-    test "create_user_locales/1 with valid data creates a user_locales" do
-      assert {:ok, %UserLocale{} = user_locales} = Translations.create_user_locales(@valid_attrs)
+    test "create_user_locale/1 with valid data creates a user_locales" do
+      assert {:ok, %UserLocale{} = user_locales} = Translations.create_user_locale(@valid_attrs)
       assert user_locales.role == 0
     end
 
-    test "create_user_locales/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Translations.create_user_locales(@invalid_attrs)
+    test "create_user_locale/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Translations.create_user_locale(@invalid_attrs)
     end
 
-    test "update_user_locales/2 with valid data updates the user_locales" do
+    test "update_user_locale/2 with valid data updates the user_locales" do
       user_locales = user_locales_fixture()
-      assert {:ok, user_locales} = Translations.update_user_locales(user_locales, @update_attrs)
+      assert {:ok, user_locales} = Translations.update_user_locale(user_locales, @update_attrs)
       assert %UserLocale{} = user_locales
       assert user_locales.role == 1
     end
 
-    test "update_user_locales/2 with invalid data returns error changeset" do
+    test "update_user_locale/2 with invalid data returns error changeset" do
       user_locales = user_locales_fixture()
 
       assert {:error, %Ecto.Changeset{}} =
-               Translations.update_user_locales(user_locales, @invalid_attrs)
+               Translations.update_user_locale(user_locales, @invalid_attrs)
 
       assert user_locales == Translations.get_user_locale!(user_locales.id)
     end
 
-    test "delete_user_locales/1 deletes the user_locales" do
+    test "delete_user_locale/1 deletes the user_locales" do
       user_locales = user_locales_fixture()
-      assert {:ok, %UserLocale{}} = Translations.delete_user_locales(user_locales)
+      assert {:ok, %UserLocale{}} = Translations.delete_user_locale(user_locales)
       assert_raise Ecto.NoResultsError, fn -> Translations.get_user_locale!(user_locales.id) end
     end
 

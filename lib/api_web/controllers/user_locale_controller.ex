@@ -8,38 +8,35 @@ defmodule I18NAPIWeb.UserLocaleController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    user_locales = Translations.list_user_locales()
-    render(conn, "index.json", user_locales: user_locales)
+    render(conn, "index.json", user_locale: Translations.list_user_locales_not_removed())
   end
 
   def create(conn, %{"user_locale" => user_locale_params}) do
-    with {:ok, %UserLocale{} = user_locale} <- Translations.create_user_locales(user_locale_params) do
+    with {:ok, %UserLocale{} = user_locale} <- Translations.create_user_locale(user_locale_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", user_locale_path(conn, :show, user_locale))
-      |> render("show.json", user_locales: user_locale)
+      |> render("show.json", user_locale: user_locale)
     end
   end
 
   def show(conn, %{"id" => id}) do
-    user_locale = Translations.get_user_locale!(id)
-    render(conn, "show.json", user_locale: user_locale)
+    with %UserLocale{} = user_locale <- Translations.get_user_locale_not_removed(id) do
+      render(conn, "show.json", user_locale: user_locale)
+    end
   end
 
   def update(conn, %{"id" => id, "user_locale" => user_locale_params}) do
-    user_locale = Translations.get_user_locale!(id)
-
     with {:ok, %UserLocale{} = user_locale} <-
-           Translations.update_user_locales(user_locale, user_locale_params) do
+           Translations.get_user_locale_not_removed(id)
+           |> Translations.update_user_locale(user_locale_params) do
       render(conn, "show.json", user_locale: user_locale)
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    user_locale = Translations.get_user_locale!(id)
-
-    with {:ok, %UserLocale{}} <- Translations.delete_user_locales(user_locale) do
-      send_resp(conn, :no_content, "")
+    with %UserLocale{} = user_locale <- Translations.get_user_locale(id),
+         {:ok, _} <- Translations.safely_delete_user_locale(user_locale) do
+      render(conn, "200.json")
     end
   end
 end
