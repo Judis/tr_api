@@ -7,8 +7,7 @@ defmodule I18NAPIWeb.UserController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    users = Accounts.list_users()
-    render(conn, "index.json", users: users)
+    render(conn, "index.json", users: Accounts.list_users_not_removed())
   end
 
   def create(conn, %{"user" => user_params}) do
@@ -23,23 +22,22 @@ defmodule I18NAPIWeb.UserController do
   end
 
   def show(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
-    render(conn, "show.json", user: user)
+    with %User{} = user <- Accounts.get_user_not_removed(id) do
+      render(conn, "show.json", user: user)
+    end
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
-    user = Accounts.get_user!(id)
-
-    with {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
+    with %User{} = user <- Accounts.get_user(id),
+         {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user)
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
-
-    with {:ok, %User{}} <- Accounts.delete_user(user) do
-      send_resp(conn, :no_content, "")
+    with %User{} = user <- Accounts.get_user(id),
+         {:ok, %User{} = user} <- Accounts.safely_delete_user(user) do
+      render(conn, "200.json")
     end
   end
 end

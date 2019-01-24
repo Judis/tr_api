@@ -7,8 +7,9 @@ defmodule I18NAPIWeb.TranslationKeyController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def index(conn, _params) do
-    translation_keys = Translations.list_translation_keys(conn.params["project_id"])
-    render(conn, "index.json", translation_keys: translation_keys)
+    render(conn, "index.json",
+      translation_keys: Translations.list_translation_keys_not_removed(conn.params["project_id"])
+    )
   end
 
   def create(conn, %{"translation_key" => translation_key_params}) do
@@ -33,35 +34,24 @@ defmodule I18NAPIWeb.TranslationKeyController do
   end
 
   def show(conn, %{"id" => id}) do
-    translation_key = Translations.get_translation_key!(id)
-
-    case translation_key.is_removed do
-      false -> render(conn, "show.json", translation_key: translation_key)
-      _ -> conn |> put_status(204) |> render("204.json")
+    with %TranslationKey{} = translation_key <- Translations.get_translation_key_not_removed(id) do
+      render(conn, "show.json", translation_key: translation_key)
     end
   end
 
   def update(conn, %{"id" => id, "translation_key" => translation_key_params}) do
-    translation_key = Translations.get_translation_key!(id)
-
-    with {:ok, %TranslationKey{} = translation_key} <-
+    with %TranslationKey{} = translation_key <- Translations.get_translation_key!(id),
+         {:ok, %TranslationKey{} = translation_key} <-
            Translations.update_translation_key(translation_key, translation_key_params) do
-      case translation_key.is_removed do
-        false -> render(conn, "show.json", translation_key: translation_key)
-        _ -> conn |> put_status(204) |> render("204.json")
-      end
+      render(conn, "show.json", translation_key: translation_key)
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    translation_key = Translations.get_translation_key!(id)
-
-    with {:ok, %TranslationKey{} = translation_key} <-
+    with %TranslationKey{} = translation_key <- Translations.get_translation_key!(id),
+         {:ok, %TranslationKey{} = translation_key} <-
            Translations.safely_delete_translation_key(translation_key) do
-      case translation_key.is_removed do
-        false -> render(conn, "show.json", translation_key: translation_key)
-        _ -> conn |> put_status(204) |> render("204.json")
-      end
+      render(conn, "200.json")
     end
   end
 end

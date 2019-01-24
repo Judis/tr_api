@@ -78,9 +78,9 @@ defmodule I18NAPIWeb.UserRoleControllerTest do
 
     test "deletes chosen user_role", %{conn: conn, project: project, user_role: user_role} do
       result_conn = delete(conn, project_user_role_path(conn, :delete, project.id, user_role))
-      assert response(result_conn, 204)
+      assert json_response(result_conn, 200)["success"]
 
-      result_conn = get(conn, project_user_role_path(conn, :show, project.id, user_role))
+      result_conn = get(conn, project_user_role_path(conn, :show, project.id, user_role.id))
       assert response(result_conn, 204)
     end
   end

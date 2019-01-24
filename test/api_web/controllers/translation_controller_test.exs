@@ -218,12 +218,7 @@ defmodule I18NAPIWeb.TranslationControllerTest do
           project_locale_translation_path(conn, :delete, project.id, locale.id, translation)
         )
 
-      assert %{"id" => id} = json_response(conn, 200)["data"]
-
-      result_translation = Translations.get_translation!(id)
-      assert %Translation{} = result_translation
-      assert result_translation.value == nil
-      assert result_translation.translation_key_id == translation_key.id
+      assert json_response(conn, 200)["success"]
     end
   end
 end

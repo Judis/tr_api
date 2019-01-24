@@ -15,7 +15,7 @@ defmodule I18NAPI.Accounts.Restoration do
   end
 
   def send_password_restore_email(%User{} = user) do
-    with {:ok, updated_user} =
+    with {:ok, updated_user} <-
            Accounts.update_field_restore_token(user, Utilities.random_string(32)),
          {:ok, _} <- Mailer.deliver(UserEmail.create_restoration_email(updated_user)) do
       Accounts.update_field_password_restore_requested_at(updated_user)
@@ -34,19 +34,20 @@ defmodule I18NAPI.Accounts.Restoration do
     end
   end
 
-  def restore_user_by_token(nil, _, _) do
+  def restore_user_by_token(%{
+        restore_token: restore_token,
+        password: password,
+        password_confirmation: password_confirmation
+      })
+      when is_nil(restore_token) or is_nil(password) or is_nil(password_confirmation) do
     {:error, :nil_found}
   end
 
-  def restore_user_by_token(_, nil, _) do
-    {:error, :nil_found}
-  end
-
-  def restore_user_by_token(_, _, nil) do
-    {:error, :nil_found}
-  end
-
-  def restore_user_by_token(restore_token, password, password_confirmation) do
+  def restore_user_by_token(%{
+        restore_token: restore_token,
+        password: password,
+        password_confirmation: password_confirmation
+      }) do
     with {:ok, %User{} = user} <- Accounts.find_user_by_restore_token(restore_token) do
       Accounts.accept_restoration(user, password, password_confirmation)
     end

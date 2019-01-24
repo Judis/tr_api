@@ -7,25 +7,16 @@ defmodule I18NAPIWeb.RestorationController do
 
   def request(conn, %{"email" => email}) do
     Restoration.start_password_restoration(email)
-
-    conn |> put_status(200) |> render("200.json")
+    render(conn, "200.json")
   end
 
-  def request(_conn, _args) do
-    {:error, :bad_request}
-  end
+  def request(_conn, _args), do: {:error, :bad_request}
 
   def reset(conn, %{"user" => user_params}) do
-    user_params = I18NAPI.Utilities.key_to_string(user_params)
-
-    result =
-      Restoration.restore_user_by_token(
-        user_params |> Map.get("restore_token"),
-        user_params |> Map.get("password"),
-        user_params |> Map.get("password_confirmation")
-      )
-
-    case result do
+    user_params
+    |> I18NAPI.Utilities.key_to_atom()
+    |> Restoration.restore_user_by_token()
+    |> case do
       {:ok, _} ->
         conn |> put_status(200) |> render("200.json")
 
@@ -42,7 +33,5 @@ defmodule I18NAPIWeb.RestorationController do
     end
   end
 
-  def reset(_conn, _args) do
-    {:error, :bad_request}
-  end
+  def reset(_conn, _args), do: {:error, :bad_request}
 end

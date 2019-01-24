@@ -6,15 +6,12 @@ defmodule I18NAPIWeb.ConfirmationController do
   action_fallback(I18NAPIWeb.FallbackController)
 
   def confirm(conn, %{"token" => confirmation_token}) do
-    result = Confirmation.confirm_user_by_token(confirmation_token)
-
-    case result do
-      {:ok} -> conn |> put_status(200) |> render("200.json")
-      _ -> conn |> put_status(404) |> render("404.json")
+    with {:ok, _} <- Confirmation.confirm_user_by_token(confirmation_token) do
+      render(conn, "200.json")
+    else
+      {:error, :unauthorized} -> {:error, :not_found}
     end
   end
 
-  def confirm(_conn, _args) do
-    {:error, :bad_request}
-  end
+  def confirm(_conn, _args), do: {:error, :bad_request}
 end

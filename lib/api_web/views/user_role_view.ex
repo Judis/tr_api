@@ -2,6 +2,10 @@ defmodule I18NAPIWeb.UserRoleView do
   use I18NAPIWeb, :view
   alias I18NAPIWeb.UserRoleView
 
+  def render("200.json", %{}) do
+    %{success: true}
+  end
+
   def render("index.json", %{user_role: user_role}) do
     %{data: render_many(user_role, UserRoleView, "user_role.json")}
   end

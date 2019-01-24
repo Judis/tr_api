@@ -16,6 +16,8 @@ defmodule I18NAPI.Projects do
     %{project | default_locale: locale.locale}
   end
 
+  def default_locale_to_project(project), do: project
+
   @doc """
   Returns the list of projects.
 
@@ -44,6 +46,27 @@ defmodule I18NAPI.Projects do
       p in Project,
       join: ur in "user_roles",
       on: p.id == ur.project_id,
+      where: ur.user_id == ^user_id,
+      order_by: p.name
+    )
+    |> Repo.all()
+    |> Enum.map(fn p -> default_locale_to_project(p) end)
+  end
+
+  @doc """
+  Returns the list of projects chained with specific user if not removed.
+
+  ## Examples
+
+      iex> list_projects_not_removed(1)
+      [%Project{}, ...]
+
+  """
+  def list_projects_not_removed(user_id) do
+    from(
+      p in Project,
+      join: ur in "user_roles",
+      on: p.id == ur.project_id,
       where: ur.user_id == ^user_id and p.is_removed == false,
       order_by: p.name
     )
@@ -66,6 +89,26 @@ defmodule I18NAPI.Projects do
 
   """
   def get_project!(id), do: Repo.get!(Project, id) |> default_locale_to_project()
+
+  @doc """
+  Gets a single project if not removed.
+
+  Raises `Ecto.NoResultsError` if the Project does not exist.
+
+  ## Examples
+
+      iex> get_project_not_removed(123)
+      %Project{}
+
+      iex> get_project_not_removed(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_project_not_removed(id) do
+    from(Project, where: [id: ^id, is_removed: false])
+    |> Repo.one()
+    |> default_locale_to_project()
+  end
 
   @doc """
   Gets a single project.
@@ -162,7 +205,7 @@ defmodule I18NAPI.Projects do
   end
 
   defp create_default_locale_relation_for_owner({:ok, %Locale{} = locale}, %{} = user) do
-    Translations.create_user_locales(%{
+    Translations.create_user_locale(%{
       user_id: user.id,
       locale_id: locale.id,
       role: 1
@@ -220,13 +263,8 @@ defmodule I18NAPI.Projects do
 
   """
   def safely_delete_project(%Project{} = project) do
-    changeset = %{
-      is_removed: true,
-      removed_at: DateTime.utc_now()
-    }
-
     project
-    |> Project.remove_changeset(changeset)
+    |> Project.remove_changeset()
     |> Repo.update()
     |> safely_delete_nested_entities(:locales)
     |> safely_delete_nested_entities(:translation_keys)
@@ -275,6 +313,25 @@ defmodule I18NAPI.Projects do
 
   """
   def get_user_role!(id), do: Repo.get!(UserRole, id)
+
+  @doc """
+  Gets a single user_role.
+
+  Return nil if the User roles does not exist.
+
+  ## Examples
+
+      iex> get_user_role(123, 321)
+      %UserRole{}
+
+      iex> get_user_role(456, 654)
+      nil
+
+  """
+  def get_user_role_non_removed(id) do
+    from(UserRole, where: [id: ^id, is_removed: false])
+    |> Repo.one()
+  end
 
   @doc """
   Gets a single user_role.
@@ -675,13 +732,8 @@ defmodule I18NAPI.Projects do
 
   """
   def safely_delete_invite(%Invite{} = invite) do
-    changeset = %{
-      is_removed: true,
-      removed_at: DateTime.utc_now()
-    }
-
     invite
-    |> Invite.remove_changeset(changeset)
+    |> Invite.remove_changeset()
     |> Repo.update()
   end
 end

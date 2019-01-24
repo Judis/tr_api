@@ -34,11 +34,10 @@ defmodule I18NAPIWeb.Router do
       resources("/user_roles", UserRoleController)
 
       resources("/locales", LocaleController) do
+        resources("/user_locales", UserLocaleController)
         get("/keys_and_translations", LocaleController, :keys_and_translations)
         resources("/translations", TranslationController)
       end
     end
-
-    resources("/user_locales", UserLocaleController)
   end
 end

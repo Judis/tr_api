@@ -42,8 +42,9 @@ defmodule I18NAPI.ConfirmationTest do
       refute user.is_confirmed
 
       user =
-        with {:ok} <- Confirmation.confirm_user_by_token(user.confirmation_token),
-             do: Accounts.get_user!(user.id)
+        with {:ok, _} <- Confirmation.confirm_user_by_token(user.confirmation_token) do
+          Accounts.get_user!(user.id)
+        end
 
       assert user.is_confirmed
     end

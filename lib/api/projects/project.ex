@@ -3,6 +3,7 @@ defmodule I18NAPI.Projects.Project do
   import Ecto.Changeset
   alias I18NAPI.Projects.{UserRole}
   alias I18NAPI.Translations.{Locale, TranslationKey}
+  alias I18NAPI.Utilities
 
   schema "projects" do
     field(:is_removed, :boolean, default: false)
@@ -32,9 +33,9 @@ defmodule I18NAPI.Projects.Project do
   end
 
   @doc false
-  def remove_changeset(project, attrs) do
+  def remove_changeset(project) do
     project
-    |> cast(attrs, [:is_removed, :removed_at])
+    |> cast(%{is_removed: true, removed_at: Utilities.get_utc_now()}, [:is_removed, :removed_at])
     |> validate_required([:is_removed, :removed_at])
   end
 end
