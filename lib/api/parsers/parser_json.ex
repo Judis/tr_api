@@ -51,5 +51,3 @@ defmodule I18NAPI.Parsers.JSON do
   defp to_list(map, pk) when is_binary(pk), do: Enum.map(map, &update_key(pk, &1))
   defp update_key(pk, {k, v} = _val) when is_binary(k), do: {"#{pk}.#{k}", v}
 end
-
-# I18NAPI.Parsers.parse("", "json")
