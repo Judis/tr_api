@@ -5,10 +5,6 @@ defmodule I18NAPIWeb.UserLocaleControllerTest do
   use I18NAPIWeb.ConnCase
   use I18NAPI.Fixtures, [:setup_with_auth, :user, :project, :locale, :user_locale]
 
-  alias I18NAPI.Accounts
-  alias I18NAPI.Projects
-  alias I18NAPI.Translations
-  alias I18NAPI.Translations.UserLocale
   import Ecto.Query, warn: false
 
   describe "index" do
@@ -109,19 +105,9 @@ defmodule I18NAPIWeb.UserLocaleControllerTest do
     end
   end
 
-  defp user(%{conn: conn}), do: {:ok, user: fixture(:user_alter)}
   defp project(%{conn: conn}), do: {:ok, project: fixture(:project, user: conn.user)}
 
   defp locale(%{conn: conn}) do
     {:ok, locale: fixture(:locale, %{project_id: fixture(:project, user: conn.user).id})}
-  end
-
-  defp user_locale(%{conn: conn}) do
-    {:ok,
-     user_locale:
-       fixture(:user_locale, %{
-         user_id: conn.user.id,
-         locale_id: locale(%{conn: conn}).id
-       })}
   end
 end
