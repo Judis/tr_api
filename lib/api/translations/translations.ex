@@ -257,7 +257,6 @@ defmodule I18NAPI.Translations do
     locale
     |> Locale.remove_changeset(changeset)
     |> Repo.update()
-    |> safely_delete_nested_entities(:translations)
     |> StatisticsInterface.update_statistics(:locale, :delete, locale.id, locale.project_id)
   end
 
@@ -549,7 +548,6 @@ defmodule I18NAPI.Translations do
     translation_key
     |> TranslationKey.remove_changeset(changeset)
     |> Repo.update()
-    |> safely_delete_nested_entities(:translations)
     |> StatisticsInterface.update_statistics(:translation_key, :delete)
   end
 
@@ -754,27 +752,6 @@ defmodule I18NAPI.Translations do
   def change_translation(%Translation{} = translation) do
     Translation.changeset(translation, %{})
   end
-
-  @doc """
-  Safely Deletes nested Entities
-
-  ## Examples
-
-      iex> safely_delete_nested_entities({:ok, %TranslationKey{}})
-      {:ok, %TranslationKey{}}
-  """
-  def safely_delete_nested_entities({:ok, parent}, child_key) do
-    parent
-    |> Repo.preload(child_key)
-    |> Map.fetch!(child_key)
-    |> Enum.each(fn child -> safely_delete_entity(child) end)
-
-    {:ok, parent}
-  end
-
-  def safely_delete_nested_entities(response, _), do: response
-
-  def safely_delete_entity(%Translation{} = child), do: safely_delete_translation(child)
 
   @doc """
   Get all translation_keys and translations for locale
