@@ -266,8 +266,6 @@ defmodule I18NAPI.Projects do
     project
     |> Project.remove_changeset()
     |> Repo.update()
-    |> safely_delete_nested_entities(:locales)
-    |> safely_delete_nested_entities(:translation_keys)
   end
 
   @doc """
@@ -503,33 +501,6 @@ defmodule I18NAPI.Projects do
   """
   def change_user_role(%UserRole{} = user_role) do
     UserRole.changeset(user_role, %{})
-  end
-
-  @doc """
-  Safely Deletes nested Entities
-
-  ## Examples
-
-      iex> safely_delete_nested_entities({:ok, %TranslationKey{}})
-      {:ok, %TranslationKey{}}
-  """
-  def safely_delete_nested_entities({:ok, %{} = parent}, children_key) do
-    parent
-    |> Repo.preload(children_key)
-    |> Map.fetch!(children_key)
-    |> Enum.each(fn children ->
-      safely_delete_entity(children)
-    end)
-
-    {:ok, parent}
-  end
-
-  def safely_delete_entity(%I18NAPI.Translations.TranslationKey{} = child) do
-    I18NAPI.Translations.safely_delete_translation_key(child)
-  end
-
-  def safely_delete_entity(%I18NAPI.Translations.Locale{} = child) do
-    I18NAPI.Translations.safely_delete_locale(child)
   end
 
   alias I18NAPI.Projects.Invite
