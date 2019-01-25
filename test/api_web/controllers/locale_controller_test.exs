@@ -6,7 +6,6 @@ defmodule I18NAPIWeb.LocaleControllerTest do
   use I18NAPI.Fixtures, [:setup_with_auth, :user, :project, :locale]
 
   alias I18NAPI.Accounts
-  alias I18NAPI.Projects
   alias I18NAPI.Translations
   alias I18NAPI.Translations.Locale
 

@@ -63,5 +63,5 @@ defmodule I18NAPIWeb.UserControllerTest do
     end
   end
 
-  defp user(%{conn: conn}), do: {:ok, user: fixture(:user)}
+  defp user(%{conn: _}), do: {:ok, user: fixture(:user)}
 end

@@ -5,8 +5,6 @@ defmodule I18NAPIWeb.TranslationKeyControllerTest do
   use I18NAPIWeb.ConnCase
   use I18NAPI.Fixtures, [:setup_with_auth, :user, :project, :translation_key]
 
-  alias I18NAPI.Accounts
-  alias I18NAPI.Projects
   alias I18NAPI.Translations
   alias I18NAPI.Translations.{TranslationKey}
 
@@ -92,7 +90,7 @@ defmodule I18NAPIWeb.TranslationKeyControllerTest do
 
     test "deletes chosen translation_key", %{
       conn: conn,
-      project: project,
+      project: _,
       translation_key: translation_key
     } do
       response =

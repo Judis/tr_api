@@ -5,7 +5,6 @@ defmodule I18NAPIWeb.ProjectControllerTest do
   use I18NAPIWeb.ConnCase
   use I18NAPI.Fixtures, [:setup_with_auth, :user, :project, :translation_key]
 
-  alias I18NAPI.Accounts
   alias I18NAPI.Projects
   alias I18NAPI.Projects.Project
   alias I18NAPI.Translations.Statistics

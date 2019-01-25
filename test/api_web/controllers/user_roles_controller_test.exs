@@ -5,9 +5,7 @@ defmodule I18NAPIWeb.UserRoleControllerTest do
   use I18NAPIWeb.ConnCase
   use I18NAPI.Fixtures, [:setup_with_auth, :user, :project, :user_role]
 
-  alias I18NAPI.Projects
   alias I18NAPI.Projects.UserRole
-  alias I18NAPI.Utilities
 
   describe "index" do
     setup [:project]
@@ -85,7 +83,7 @@ defmodule I18NAPIWeb.UserRoleControllerTest do
     end
   end
 
-  defp user(%{conn: conn}), do: {:ok, user: fixture(:user_alter)}
+  defp user(%{conn: _}), do: {:ok, user: fixture(:user_alter)}
   defp project(%{conn: conn}), do: {:ok, project: fixture(:project, user: conn.user)}
 
   defp user_role(%{conn: conn}) do
