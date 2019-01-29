@@ -35,17 +35,4 @@ defmodule I18NAPI.UtilitiesTest do
     password = Utilities.generate_valid_password
     assert 32 == password |> String.length
   end
-
-  describe "flatten_key" do
-    @nested_valid %{a: 1, b: %{ba: 21, bb: %{bba: 241}}, c: 3}
-    @flatten_valid %{"a" => 1, "c" => 3, "b.ba" => 21, "b.bb.bba" => 241}
-
-    test "nested to flatten valid" do
-     assert @flatten_valid == Utilities.flatten_key(@nested_valid)
-    end
-
-    test "flatten to flatten valid" do
-      assert @flatten_valid == Utilities.flatten_key(@flatten_valid)
-    end
-  end
 end
