@@ -11,15 +11,19 @@ defmodule I18NAPI.ParserTest do
     @content_invalid ~s({a: 1}})
 
     test "valid" do
-      assert Parsers.parse(@content_valid, "json")
+      assert %{"a" => 1} = Parsers.parse(@content_valid, "json")
     end
 
     test "empty" do
-      assert Parsers.parse(@content_empty, "json")
+      assert %{} = Parsers.parse(@content_empty, "json")
+    end
+
+    test "invalid" do
+      assert {:error, :invalid_data} = Parsers.parse(@content_invalid, "json")
     end
 
     test "nil" do
-      assert Parsers.parse(nil, "json")
+      assert {:error, :nil_found} = Parsers.parse(nil, "json")
     end
   end
 
