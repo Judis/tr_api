@@ -6,8 +6,7 @@ defmodule I18NAPI.Parsers.JSON do
   @doc """
   Return file extensions, valid for this MIME type
   """
-  @impl I18NAPI.Parsers
-  def extensions, do: ["json"]
+  def extensions(), do: ["json"]
 
   @impl I18NAPI.Parsers
   def parse(content) when is_nil(content), do: {:error, :nil_found}
@@ -17,6 +16,7 @@ defmodule I18NAPI.Parsers.JSON do
     try do
       Poison.decode!(str)
       |> flatten_key()
+      |> Utilities.value_to_string()
     rescue
       e in Poison.SyntaxError -> {:error, :invalid_data}
     end

@@ -43,8 +43,10 @@ defmodule I18NAPI.Parsers do
   defp valid_module_name?(name) do
     name = to_string(name)
 
-    with String.starts_with?(name, @included_module_prefix) do
-      List.keymember?(@excluded_modules, name, 0)
+    if Enum.member?(@excluded_modules, name) do
+      false
+    else
+      String.starts_with?(name, @included_module_prefix)
     end
   end
 end
