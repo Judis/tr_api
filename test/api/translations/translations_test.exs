@@ -3,16 +3,11 @@ defmodule I18NAPI.TranslationsTest do
   @moduletag :translations_api
 
   use I18NAPI.DataCase
+  use I18NAPI.Fixtures, [:setup]
   alias I18NAPI.Translations
   alias I18NAPI.Projects
   alias I18NAPI.Accounts
   alias I18NAPI.Accounts.User
-
-  setup do
-    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo, ownership_timeout: 30_000)
-    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
-    :ok
-  end
 
   @user_attrs %{
     name: "test name",
@@ -309,6 +304,16 @@ defmodule I18NAPI.TranslationsTest do
       translation = translation_fixture(@valid_translation_attrs, project_id)
 
       assert Enum.member?(Translations.list_translations(), translation)
+    end
+
+
+    test "list_translation_keys_with_values/1" do
+      user = user_fixture()
+      project_id = project_fixture(@valid_project_attrs, user).id
+      translation_key = translation_key_fixture(@valid_translation_key_attrs, project_id)
+      locale_id = Translations.get_default_locale!(project_id).id
+
+      assert [{"some key", "some value"}] == Translations.list_translation_keys_with_values(locale_id)
     end
 
     test "get_translation!/1 returns the translation with given id" do

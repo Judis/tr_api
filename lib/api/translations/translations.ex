@@ -731,6 +731,30 @@ defmodule I18NAPI.Translations do
   end
 
   @doc """
+  Returns the list of translation keys with values associated with specific locale
+
+  ## Examples
+
+      iex> list_translation_keys_with_values(1)
+      [{key, value}, ...]
+
+  """
+  def list_translation_keys_with_values(locale_id) do
+    with %Locale{} <- locale = get_locale!(locale_id) do
+      query =
+      from(
+        t_k in TranslationKey,
+        join: t in Translation,
+        where: t.translation_key_id == t_k.id,
+        where: t.locale_id == ^locale_id,
+        where: t_k.project_id == ^locale.project_id,
+        select: {t_k.key, t.value}
+      )
+      |> Repo.all()
+    end
+  end
+
+  @doc """
   Gets a single translation.
 
   Raises `Ecto.NoResultsError` if the Translation does not exist.
