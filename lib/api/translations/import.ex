@@ -4,24 +4,27 @@ defmodule I18NAPI.Translations.Import do
   """
   import Ecto.Query, warn: false
 
-  alias I18NAPI.Repo
   alias I18NAPI.Utilities
   alias I18NAPI.Translations
   alias I18NAPI.Translations.{Locale, StatisticsInterface, Translation, TranslationKey}
 
+  def import_locale(_, data) when is_nil(data), do: {:error, :bad_request}
+
   def import_locale(locale_id, data) do
-    with %Locale{} = locale <- Translations.get_locale(locale_id) do
-        data
-        |> Enum.each(fn {key, value} ->
-          {key, value, locale}
-          |> process_translation_key()
-          |> process_translation()
-        end)
+    with %Locale{} = locale <- Translations.get_locale(locale_id),
+         {:ok, map} <- data do
+      map
+      |> Enum.each(fn {key, value} ->
+        {key, value, locale}
+        |> process_translation_key()
+        |> process_translation()
+      end)
 
       {:ok, locale}
       |> StatisticsInterface.update_statistics(:locale, :update)
     else
-      _ -> {:error, :unknown_locale}
+      nil -> {:error, :unknown_locale}
+      reason -> reason
     end
   end
 

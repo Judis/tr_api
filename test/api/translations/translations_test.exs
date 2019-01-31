@@ -306,14 +306,14 @@ defmodule I18NAPI.TranslationsTest do
       assert Enum.member?(Translations.list_translations(), translation)
     end
 
-
     test "list_translation_keys_with_values/1" do
       user = user_fixture()
       project_id = project_fixture(@valid_project_attrs, user).id
       translation_key = translation_key_fixture(@valid_translation_key_attrs, project_id)
       locale_id = Translations.get_default_locale!(project_id).id
 
-      assert [{"some key", "some value"}] == Translations.list_translation_keys_with_values(locale_id)
+      assert [{"some key", "some value"}] ==
+               Translations.list_translation_keys_with_values(locale_id)
     end
 
     test "get_translation!/1 returns the translation with given id" do

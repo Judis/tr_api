@@ -50,7 +50,7 @@ defmodule I18NAPI.Translations.ImportTest do
     end
 
     test "import_locale to  empty locale", %{locale: locale} do
-      assert :ok = Import.import_locale(locale.id, attrs(:import_locale_valid))
+      assert {:ok, _} = Import.import_locale(locale.id, {:ok, attrs(:import_locale_valid)})
       t_k_id = Translations.get_translation_key_by_key("a_key", locale.project_id).id
 
       assert attrs(:import_locale_valid)["a_key"] ==
@@ -58,13 +58,13 @@ defmodule I18NAPI.Translations.ImportTest do
     end
 
     test "import_locale to not empty locale", %{locale: locale} do
-        fixture(:translation_key, %{
-          project_id: locale.project_id,
-          key: "a_key",
-          default_value: "a_default_value"
-        })
+      fixture(:translation_key, %{
+        project_id: locale.project_id,
+        key: "a_key",
+        default_value: "a_default_value"
+      })
 
-      assert :ok = Import.import_locale(locale.id, attrs(:import_locale_valid))
+      assert {:ok, _} = Import.import_locale(locale.id, {:ok, attrs(:import_locale_valid)})
       t_k_id = Translations.get_translation_key_by_key("a_key", locale.project_id).id
 
       assert attrs(:import_locale_valid)["a_key"] ==
@@ -72,7 +72,8 @@ defmodule I18NAPI.Translations.ImportTest do
     end
 
     test "import_locale with unknown_locale" do
-      assert {:error, :unknown_locale} = Import.import_locale(0, attrs(:import_locale_valid))
+      assert {:error, :unknown_locale} =
+               Import.import_locale(0, {:ok, attrs(:import_locale_valid)})
     end
 
     test "process_translation pass if valid", %{locale: locale} do

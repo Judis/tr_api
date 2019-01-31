@@ -13,12 +13,15 @@ defmodule I18NAPI.Parsers.JSON do
 
   @impl I18NAPI.Parsers
   def parse(str) do
-    try do
-      Poison.decode!(str)
-      |> flatten_key()
-      |> Utilities.value_to_string()
-    rescue
-      e in Poison.SyntaxError -> {:error, :invalid_data}
+    with {:ok, map} <- Poison.decode(str) do
+      {:ok, map |> flatten_key() |> Utilities.value_to_string()}
+    else
+      {:error, {:invalid, symbol, position}} ->
+        {:error,
+         %{errors: [invalid_json_with_symbol: symbol, invalid_json_in_position: position]}}
+
+      {:error, :invalid, position} ->
+        {:error, %{errors: [invalid_json_in_position: position]}}
     end
   end
 
