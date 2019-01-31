@@ -5,13 +5,10 @@ defmodule I18NAPI.ComposerTest do
   use I18NAPI.DataCase
   alias I18NAPI.Composers
   @content_valid %{a: 1}
-  @content_valid_string %{"a" => "1"}
-  @content_valid_list [{"a", "1"}]
-
 
   describe "content" do
     test "valid" do
-      assert {:ok, "{\"a\":1}"} = Composers.compose(@content_valid, :json_flat)
+      assert {:ok, "{\"a\":1}", "json"} = Composers.compose(@content_valid, :json_flat)
     end
 
     test "nil" do
@@ -24,7 +21,7 @@ defmodule I18NAPI.ComposerTest do
     @ext_invalid "abrakadabra"
 
     test "valid" do
-      assert {:ok, _} = Composers.compose(@content_valid, @ext_valid_flat)
+      assert {:ok, _, "json"} = Composers.compose(@content_valid, @ext_valid_flat)
     end
 
     test "invalid" do

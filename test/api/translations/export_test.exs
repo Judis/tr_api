@@ -5,8 +5,7 @@ defmodule I18NAPI.Translations.ExportTest do
   use I18NAPIWeb.ConnCase
   use I18NAPI.Fixtures, [:setup, :user, :project, :locale]
 
-  alias I18NAPI.Translations
-  alias I18NAPI.Translations.{Export, TranslationKey}
+  alias I18NAPI.Translations.{Export}
 
   describe "export locale" do
     setup [:locale]

@@ -6,7 +6,7 @@ defmodule I18NAPI.ComposerJsonTest do
   use I18NAPI.Fixtures, [:setup]
   alias I18NAPI.Composers.JSON
 
-  @extensions [:json, :json_flat, :json_nested]
+  @formats [:json, :json_flat, :json_nested]
   @json_valid_nested ~s({"a":{"b":{"key":"value_1.2"}}})
   @json_valid_flat ~s({"a.b.key":"value_1.2"})
   @map_valid %{"a.b.key" => "value_1.2"}
@@ -29,9 +29,15 @@ defmodule I18NAPI.ComposerJsonTest do
     end
   end
 
-  describe "JSON extensions" do
+  describe "JSON formats" do
     test "get valid" do
-      assert @extensions == JSON.extensions()
+      assert @formats == JSON.formats()
+    end
+  end
+
+  describe "JSON extention" do
+    test "get valid" do
+      assert "json" == JSON.extension()
     end
   end
 end

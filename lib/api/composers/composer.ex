@@ -18,8 +18,10 @@ defmodule I18NAPI.Composers do
   def compose(keywords_list, _) when is_nil(keywords_list), do: {:error, :nil_found}
   def compose(keywords_list, format) do
     with [module] <- get_module(format),
-    {:ok, data} <- call_composer([module], keywords_list, format) do
+         {:ok, data} <- call_composer([module], keywords_list, format) do
       {:ok, data, call_extension([module])}
+    else
+      [] -> {:error, :composer_not_defined}
     end
   end
 
