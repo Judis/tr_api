@@ -1,5 +1,6 @@
 defmodule I18NAPI.Composers do
-  @callback compose(String.t(), Atom.t()) :: {:ok, term} | {:error, :invalid_data} | {:error, :nil_found}
+  @callback compose(String.t(), Atom.t()) ::
+              {:ok, term} | {:error, :invalid_data} | {:error, :nil_found}
   @callback formats() :: String.t()
   @callback extension() :: String.t()
   alias I18NAPI.Utilities
@@ -16,6 +17,7 @@ defmodule I18NAPI.Composers do
           {:error, :parser_not_defined}
   """
   def compose(keywords_list, _) when is_nil(keywords_list), do: {:error, :nil_found}
+
   def compose(keywords_list, format) do
     with [module] <- get_module(format),
          {:ok, data} <- call_composer([module], keywords_list, format) do
@@ -33,6 +35,7 @@ defmodule I18NAPI.Composers do
   end
 
   defp call_extension([]), do: {:error, :composer_not_defined}
+
   defp call_extension([module]) do
     module
     |> Kernel.apply(:extension, [])

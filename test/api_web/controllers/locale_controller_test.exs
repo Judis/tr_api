@@ -144,6 +144,7 @@ defmodule I18NAPIWeb.LocaleControllerTest do
         get(conn, project_locale_locale_path(conn, :export, project.id, locale.id), %{
           "format" => "json_flat"
         })
+
       assert "{\"some key\":\"some value\"}" = response(conn, 200)
       assert {key, value} = List.keyfind(conn.resp_headers, "content-disposition", 0)
       assert "attachment; filename=\"some_locale.json\"" = value

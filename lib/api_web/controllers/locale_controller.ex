@@ -56,8 +56,7 @@ defmodule I18NAPIWeb.LocaleController do
 
   def export(conn, %{"project_id" => project_id, "locale_id" => locale_id, "format" => format}) do
     with %Locale{} <- locale = Translations.get_locale(locale_id),
-      {:ok, data, ext} <- Export.export_locale(locale_id, format) do
-
+         {:ok, data, ext} <- Export.export_locale(locale_id, format) do
       send_download(conn, {:binary, data}, filename: create_filename(locale.locale, ext))
     end
   end
