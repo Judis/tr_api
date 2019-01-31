@@ -14,11 +14,11 @@ defmodule I18NAPI.ParserJsonTest do
 
   describe "parse JSON" do
     test "valid nested" do
-      assert {:ok, @map_valid} == JSON.parse(@json_valid_nested)
+      assert {:ok, @map_valid} = JSON.parse(@json_valid_nested)
     end
 
     test "valid flat" do
-      assert {:ok, @map_valid} == JSON.parse(@json_valid_flat)
+      assert {:ok, @map_valid} = JSON.parse(@json_valid_flat)
     end
 
     test "invalid" do
@@ -26,7 +26,7 @@ defmodule I18NAPI.ParserJsonTest do
     end
 
     test "nil" do
-      assert JSON.parse(nil)
+      assert {:error, :nil_found} = JSON.parse(nil)
     end
   end
 
