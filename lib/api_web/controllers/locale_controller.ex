@@ -47,7 +47,7 @@ defmodule I18NAPIWeb.LocaleController do
   def keys_and_translations(conn, %{"locale_id" => id}) do
     render(conn, "keys_and_translations.json",
       keys_and_translations:
-        Translations.get_locale_not_removed!(id)
+        Translations.get_locale_not_removed(id)
         |> Translations.get_keys_and_translations()
     )
   end

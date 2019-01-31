@@ -110,7 +110,7 @@ defmodule I18NAPI.Translations.StatisticsWatcher do
     end
   end
 
-  def process_statistics({locales, projects}) do
+  def process_statistics({projects, locales}) do
     locales
     |> MapSet.to_list()
     |> List.flatten()
@@ -125,12 +125,11 @@ defmodule I18NAPI.Translations.StatisticsWatcher do
   defp recalculate_locales([]), do: []
 
   defp recalculate_locales([head | locales]) do
+    {locale_id, project_id} = head
+
     task =
       Task.async(fn ->
-        case head do
-          {locale_id, nil} -> Statistics.update_all_locale_counts(locale_id)
-          {locale_id, project_id} -> Statistics.update_all_locale_counts(locale_id, project_id)
-        end
+        Statistics.update_all_locale_counts(locale_id, project_id)
       end)
 
     result_locales = recalculate_locales(locales)

@@ -296,9 +296,9 @@ defmodule I18NAPI.TranslationsTest do
         %{translation_key_id: translation_key_id}
         |> Enum.into(attrs)
 
-      #      attrs = Map.put(@valid_translation_attrs, :translation_key_id, translation_key_id)
-
-      {:ok, translation} = Translations.create_translation(attrs, locale_id)
+      {:ok, translation} =
+        Translations.get_translation(translation_key_id, locale_id)
+        |> Translations.update_translation(attrs)
 
       translation
     end
@@ -327,14 +327,10 @@ defmodule I18NAPI.TranslationsTest do
       attrs = Map.put(@valid_translation_attrs, :translation_key_id, translation_key.id)
 
       assert {:ok, %Translation{} = translation} =
-               Translations.create_translation(attrs, locale_id)
+               Translations.get_translation(translation_key.id, locale_id)
+               |> Translations.update_translation(attrs)
 
       assert translation.value == @valid_translation_attrs.value
-    end
-
-    test "create_translation/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} =
-               Translations.create_translation(@invalid_translation_attrs, 1)
     end
 
     @valid_not_default_locale_attrs %{
@@ -359,7 +355,10 @@ defmodule I18NAPI.TranslationsTest do
       # ^^^ created default translation for key
       locale = locale_fixture(@valid_not_default_locale_attrs, project_id)
       attrs = Map.put(@valid_translation_attrs, :translation_key_id, translation_key.id)
-      {:ok, %Translation{} = translation} = Translations.create_translation(attrs, locale.id)
+
+      {:ok, %Translation{} = translation} =
+        Translations.get_translation(translation_key.id, locale.id)
+        |> Translations.update_translation(attrs)
 
       alter_locale_id = locale_fixture(@valid_alternative_not_default_locale_attrs, project_id).id
 
@@ -367,7 +366,8 @@ defmodule I18NAPI.TranslationsTest do
         Map.put(@valid_alternative_translation_attrs, :translation_key_id, translation_key.id)
 
       {:ok, %Translation{} = alternative_translation} =
-        Translations.create_translation(alter_attrs, alter_locale_id)
+        Translations.get_translation(translation_key.id, alter_locale_id)
+        |> Translations.update_translation(alter_attrs)
 
       assert alternative_translation.status == @valid_alternative_translation_attrs.status
 
@@ -394,8 +394,10 @@ defmodule I18NAPI.TranslationsTest do
         Translations.create_locale(@valid_alternative_not_default_locale_attrs, project_id)
 
       {:ok, %Translation{} = alternative_translation} =
-        Map.put(@valid_alternative_translation_attrs, :translation_key_id, translation_key.id)
-        |> Translations.create_translation(alter_locale.id)
+        Translations.get_translation(translation_key.id, alter_locale.id)
+        |> Translations.update_translation(
+          Map.put(@valid_alternative_translation_attrs, :translation_key_id, translation_key.id)
+        )
 
       assert Translations.get_locale!(alternative_translation.locale_id).is_default == false
 

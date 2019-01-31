@@ -11,9 +11,16 @@ defmodule I18NAPIWeb.UploadLocaleControllerTest do
     test "renders locale when data is valid", %{conn: conn, project: project} do
       locale = fixture(:locale, %{project_id: project.id})
 
-      upload = %Plug.Upload{path: "test/support/upload_controller_fixture.json", filename: "upload_controller_fixture.json"}
+      upload = %Plug.Upload{
+        path: "test/support/upload_controller_fixture.json",
+        filename: "upload_controller_fixture.json"
+      }
 
-      conn = post(conn, project_locale_upload_locale_path(conn, :upload, project.id, locale.id), %{"" => upload})
+      conn =
+        post(conn, project_locale_upload_locale_path(conn, :upload, project.id, locale.id), %{
+          "" => upload
+        })
+
       assert json_response(conn, 200)
     end
   end

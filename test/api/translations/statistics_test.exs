@@ -128,8 +128,8 @@ defmodule I18NAPI.StatisticsTest do
       co_unverified_k =
         Statistics.calculate_count_of_keys_at_locale_by_status(locale.id, :unverified)
 
-      assert co_verified_k == 0
-      assert co_unverified_k == 2
+      assert co_verified_k == 2
+      assert co_unverified_k == 0
     end
 
     test "update counts at locale" do
@@ -151,8 +151,8 @@ defmodule I18NAPI.StatisticsTest do
       locale = Translations.get_locale!(locale.id)
 
       assert locale.total_count_of_translation_keys == 2
-      assert locale.count_of_not_verified_keys == 2
-      assert locale.count_of_verified_keys == 0
+      assert locale.count_of_not_verified_keys == 0
+      assert locale.count_of_verified_keys == 2
       assert locale.count_of_translated_keys == 2
       assert locale.count_of_untranslated_keys == 0
     end

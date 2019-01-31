@@ -14,8 +14,6 @@ defmodule I18NAPI.Translations.StatisticsInterface do
   # Locale
 
   def update_statistics({:ok, locale}, :locale, _) do
-    #    Statistics.update_all_locale_counts(locale.id, locale.project_id)
-    #    Statistics.update_all_project_counts(locale.project_id)
     StatisticsWatcherInterface.recalculate_locale_statistics([], locale.id, locale.project_id)
     StatisticsWatcherInterface.recalculate_project_statistics([], locale.project_id)
     {:ok, locale}
@@ -30,8 +28,6 @@ defmodule I18NAPI.Translations.StatisticsInterface do
   end
 
   def update_statistics({:ok, translation_key}, :translation_key, :update) do
-    #    Statistics.update_all_child_locales(translation_key.project_id)
-    #    Statistics.update_all_project_counts(translation_key.project_id)
     StatisticsWatcherInterface.recalculate_statistics_all_child_locales_in_project(
       [],
       translation_key.project_id

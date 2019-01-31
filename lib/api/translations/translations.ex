@@ -186,12 +186,10 @@ defmodule I18NAPI.Translations do
 
   def create_translation_for_each_associated_key({:ok, %Locale{} = locale}) do
     list_translation_keys_id(locale.project_id)
-    |> Enum.each(
-      &fn &1 ->
-        %{value: nil, status: :empty, translation_key_id: &1}
-        |> create_translation(locale.id)
-      end
-    )
+    |> Enum.each(fn x ->
+      %{value: nil, status: :empty, translation_key_id: x}
+      |> create_translation(locale.id)
+    end)
 
     {:ok, locale}
   end
@@ -489,7 +487,8 @@ defmodule I18NAPI.Translations do
     %TranslationKey{}
     |> TranslationKey.changeset(attrs)
     |> Repo.insert()
-    |> create_default_translation()
+    |> create_empty_translation_for_each_locale()
+    |> update_default_translation()
     |> StatisticsInterface.update_statistics(:translation_key, :create)
   end
 
@@ -514,30 +513,85 @@ defmodule I18NAPI.Translations do
   end
 
   @doc """
-  Creates a default translation for translation_key.
+  Import a translation_key.
 
   ## Examples
 
-      iex> create_default_translation({:ok, %TranslationKey{}})
+      iex> import_translation_key(%{field: value})
       {:ok, %TranslationKey{}}
 
+      iex> import_translation_key(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
   """
-  def create_default_translation({:ok, %TranslationKey{} = translation_key}) do
-    default_locale = get_default_locale!(translation_key.project_id)
-
-    create_translation(
-      %{
-        "translation_key_id" => translation_key.id,
-        "value" => translation_key.default_value,
-        "status" => :unverified
-      },
-      default_locale.id
-    )
-
-    {:ok, translation_key}
+  def import_translation_key(attrs) do
+    %TranslationKey{}
+    |> TranslationKey.import_changeset(attrs)
+    |> Repo.insert()
+    |> create_empty_translation_for_each_locale()
+    |> update_default_translation()
+    |> StatisticsInterface.update_statistics(:translation_key, :create)
   end
 
-  def create_default_translation(_ = response) do
+  @doc """
+  Create translation for this translation_key for each locales into parent project.
+
+  ## Examples
+
+      iex> create_empty_translation_for_each_locale({:ok, %TranslationKey{}})
+      {:ok, %TranslationKey{}}
+
+      iex> create_empty_translation_for_each_locale(bad_value)
+      bad_value
+
+  """
+  def create_empty_translation_for_each_locale({:ok, %TranslationKey{} = t_k}) do
+    with :ok <-
+           list_locales(t_k.project_id)
+           |> Enum.each(fn locale ->
+             create_translation(
+               %{
+                 translation_key_id: t_k.id,
+                 value: nil,
+                 status: :empty
+               },
+               locale.id
+             )
+           end) do
+      {:ok, t_k}
+    end
+  end
+
+  def create_empty_translation_for_each_locale(_ = response) do
+    response
+  end
+
+  @doc """
+  Update a default translation for this translation_key.
+
+  ## Examples
+
+      iex> update_default_translation({:ok, %TranslationKey{}})
+      {:ok, %TranslationKey{}}
+
+      iex> update_default_translation(bad_value)
+      bad_value
+
+  """
+  def update_default_translation({:ok, %TranslationKey{} = t_k}) do
+    with %Locale{} <- default_locale = get_default_locale!(t_k.project_id),
+         %Translation{} <- default_tr = get_translation(t_k.id, default_locale.id),
+         {:ok, _} <-
+           default_tr
+           |> update_translation(%{
+             "translation_key_id" => t_k.id,
+             "value" => t_k.default_value
+           }) do
+      {:ok, t_k}
+    end
+  end
+
+  def update_default_translation(_ = response) do
     response
   end
 
@@ -727,6 +781,8 @@ defmodule I18NAPI.Translations do
 
   """
   def create_translation(attrs) do
+    attrs = recalculate_translation_status(attrs)
+
     %Translation{}
     |> Translation.changeset(attrs)
     |> Repo.insert()
@@ -737,6 +793,18 @@ defmodule I18NAPI.Translations do
     Map.put(attrs, :locale_id, locale_id)
     |> Utilities.key_to_atom()
     |> create_translation()
+  end
+
+  def recalculate_translation_status(attrs) do
+    with true <- Map.has_key?(attrs, :value) do
+      with false <- Map.has_key?(attrs, :status) do
+        attrs
+      else
+        _ -> Map.put(attrs, :status, :verified)
+      end
+    else
+      _ -> Map.put(attrs, :status, :empty)
+    end
   end
 
   @doc """
@@ -751,7 +819,7 @@ defmodule I18NAPI.Translations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_translation(%Translation{} = translation, attrs \\ %{}) do
+  def update_translation(%Translation{} = translation, attrs) do
     attrs =
       attrs
       |> Map.take(["status", "value", :status, :value])

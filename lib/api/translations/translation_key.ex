@@ -36,6 +36,24 @@ defmodule I18NAPI.Translations.TranslationKey do
   end
 
   @doc false
+  def import_changeset(translation_key, attrs) do
+    translation_key
+    |> cast(attrs, [
+      :key,
+      :default_value,
+      :context,
+      :is_removed,
+      :removed_at,
+      :project_id
+    ])
+    |> validate_required([
+      :key,
+      :project_id
+    ])
+    |> unique_constraint(:key, name: :translation_keys_project_id_key_is_removed_index)
+  end
+
+  @doc false
   def update_changeset(translation_key, attrs) do
     translation_key
     |> cast(attrs, [
