@@ -11,7 +11,7 @@ defmodule I18NAPI.ParserTest do
     @content_invalid ~s({a: 1}})
 
     test "valid" do
-      assert %{"a" => 1} = Parsers.parse(@content_valid, "json")
+      assert %{"a" => "1"} = Parsers.parse(@content_valid, "json")
     end
 
     test "empty" do

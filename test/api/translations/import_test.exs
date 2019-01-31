@@ -58,7 +58,6 @@ defmodule I18NAPI.Translations.ImportTest do
     end
 
     test "import_locale to not empty locale", %{locale: locale} do
-      fixture_t_k =
         fixture(:translation_key, %{
           project_id: locale.project_id,
           key: "a_key",
@@ -84,8 +83,9 @@ defmodule I18NAPI.Translations.ImportTest do
           default_value: "a_default_value"
         })
 
-        assert {:ok, _} = Import.process_translation({fixture_t_k, "a_value", locale})
+      assert {:ok, _} = Import.process_translation({fixture_t_k, "a_value", locale})
     end
+
     test "process_translation create translation if not valid", %{locale: locale} do
       fixture_t_k =
         fixture(:translation_key, %{

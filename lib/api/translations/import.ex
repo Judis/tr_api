@@ -7,16 +7,19 @@ defmodule I18NAPI.Translations.Import do
   alias I18NAPI.Repo
   alias I18NAPI.Utilities
   alias I18NAPI.Translations
-  alias I18NAPI.Translations.{Locale, Translation, TranslationKey}
+  alias I18NAPI.Translations.{Locale, StatisticsInterface, Translation, TranslationKey}
 
   def import_locale(locale_id, data) do
     with %Locale{} = locale <- Translations.get_locale(locale_id) do
-      data
-      |> Enum.each(fn {key, value} ->
-        {key, value, locale}
-        |> process_translation_key()
-        |> process_translation()
-      end)
+        data
+        |> Enum.each(fn {key, value} ->
+          {key, value, locale}
+          |> process_translation_key()
+          |> process_translation()
+        end)
+
+      {:ok, locale}
+      |> StatisticsInterface.update_statistics(:locale, :update)
     else
       _ -> {:error, :unknown_locale}
     end
@@ -46,7 +49,7 @@ defmodule I18NAPI.Translations.Import do
   def create_new_translation_key_if_not_exists(%TranslationKey{} = t_key, _), do: t_key
 
   def create_new_translation_key_if_not_exists(t_key, attrs) do
-    {:ok, t_key} = Translations.create_translation_key(attrs)
+    {:ok, t_key} = Translations.import_translation_key(attrs)
     t_key
   end
 
@@ -62,9 +65,7 @@ defmodule I18NAPI.Translations.Import do
         status: :verified
       })
     else
-      locale -> {:error, :bad_locale}
-      t_key -> {:error, :bad_translation_key}
-      translation -> {:error, :not_found_translation}
+      _ -> {:error, :bad_request}
     end
   end
 end

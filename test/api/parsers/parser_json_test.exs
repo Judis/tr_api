@@ -6,7 +6,7 @@ defmodule I18NAPI.ParserJsonTest do
   use I18NAPI.Fixtures, [:setup]
   alias I18NAPI.Parsers.JSON
 
-  @extentions ["json"]
+  @extensions ["json"]
   @json_valid_nested ~s({"a": {"b": {"key": "value_1.2"}, "c": {"key": "value_1.3"}}})
   @json_valid_flat ~s({"a.b": {"key": "value_1.2"},"a.c": {"key": "value_1.3"}})
   @json_invalid ~s({"a.b": {"key": "value_1.2"},"a.c": {"key": "value_1.3"}}})
@@ -32,7 +32,7 @@ defmodule I18NAPI.ParserJsonTest do
 
   describe "JSON extensions" do
     test "get valid" do
-      assert ["json"] == JSON.extensions()
+      assert @extensions == JSON.extensions()
     end
   end
 end
