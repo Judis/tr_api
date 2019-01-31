@@ -1,6 +1,6 @@
 defmodule I18NAPI.Translations.ImportTest do
   use ExUnit.Case, async: false
-  @moduletag :translations_import_api
+  @moduletag :locale_import_api
 
   use I18NAPIWeb.ConnCase
   use I18NAPI.Fixtures, [:setup, :user, :project, :locale, :translation_key, :import_locale]

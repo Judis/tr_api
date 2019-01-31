@@ -4,7 +4,8 @@ defmodule I18NAPI.Composers.JSON do
   @doc """
   Return file extensions, valid for this MIME type
   """
-  def extensions(), do: [:json, :json_flat, :json_nested]
+  def formats(), do: [:json, :json_flat, :json_nested]
+  def extension(), do: "json"
 
   @impl I18NAPI.Composers
   def compose(keywords_list, _) when is_nil(keywords_list), do: {:error, :nil_found}

@@ -1,6 +1,7 @@
 defmodule I18NAPI.Composers do
   @callback compose(String.t(), Atom.t()) :: {:ok, term} | {:error, :invalid_data} | {:error, :nil_found}
-  @callback extensions() :: String.t()
+  @callback formats() :: String.t()
+  @callback extension() :: String.t()
   alias I18NAPI.Utilities
 
   @doc """
@@ -15,24 +16,31 @@ defmodule I18NAPI.Composers do
           {:error, :parser_not_defined}
   """
   def compose(keywords_list, _) when is_nil(keywords_list), do: {:error, :nil_found}
-  def compose(keywords_list, ext) do
-    ext
-    |> get_module()
-    |> call_composer(keywords_list, ext)
+  def compose(keywords_list, format) do
+    with [module] <- get_module(format),
+    {:ok, data} <- call_composer([module], keywords_list, format) do
+      {:ok, data, call_extension([module])}
+    end
   end
 
-  defp call_composer([], keywords_list, ext), do: {:error, :composer_not_defined}
+  defp call_composer([], keywords_list, format), do: {:error, :composer_not_defined}
 
-  defp call_composer([module], keywords_list, ext) do
+  defp call_composer([module], keywords_list, format) do
     module
-    |> Kernel.apply(:compose, [keywords_list, ext])
+    |> Kernel.apply(:compose, [keywords_list, format])
   end
-  
-  defp get_module(ext) do
+
+  defp call_extension([]), do: {:error, :composer_not_defined}
+  defp call_extension([module]) do
+    module
+    |> Kernel.apply(:extension, [])
+  end
+
+  def get_module(ext) do
     with {:ok, raw_list} <- :application.get_key(:api, :modules) do
       raw_list
       |> Enum.filter(&valid_module_name?(&1))
-      |> Enum.filter(&(Kernel.apply(&1, :extensions, []) |> Enum.member?(ext)))
+      |> Enum.filter(&(Kernel.apply(&1, :formats, []) |> Enum.member?(ext)))
     end
   end
 

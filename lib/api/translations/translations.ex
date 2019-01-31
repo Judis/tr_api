@@ -741,7 +741,6 @@ defmodule I18NAPI.Translations do
   """
   def list_translation_keys_with_values(locale_id) do
     with %Locale{} <- locale = get_locale!(locale_id) do
-      query =
         from(
           t_k in TranslationKey,
           join: t in Translation,
