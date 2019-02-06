@@ -1,11 +1,12 @@
 defmodule I18NAPI.Parsers.JSON do
-  @behaviour I18NAPI.Parsers.Parser
+  @behaviour I18NAPI.Parsers
 
   alias I18NAPI.Utilities
 
   @doc """
   Return file extensions, valid for this MIME type
   """
+  @impl I18NAPI.Parsers
   def extensions(), do: ["json"]
 
   @impl I18NAPI.Parsers
@@ -28,12 +29,12 @@ defmodule I18NAPI.Parsers.JSON do
   @doc """
   Flatten given map with nested key.
 
-  All keys must be atom or binary.
+  All keys must be binary.
   Returns map
 
   ## Examples
-      iex> flatten_with_parent_key(%{a: 1, b: %{ba: 21, bb: %{bba: 241}}, c: 3})
-      %{:a => 1, :c => 3, "b.ba" => 21, "b.bb.bba" => 241}
+      iex> flatten_key(%{"a" => "1", "b" => %{"ba" => "21", "bb" => %{"bba" => "241"}}, "c" => "3"})
+      %{"a" => "1", "c" => "3", "b.ba" => "21", "b.bb.bba" => "241"}
 
   """
   @spec flatten_key(map) :: map
