@@ -29,7 +29,7 @@ defmodule I18NAPI.Mixfile do
   def application do
     [
       mod: {I18NAPI.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :yamerl]
     ]
   end
 
