@@ -1,9 +1,14 @@
 defmodule I18NAPI.Composers do
   @callback compose(String.t(), Atom.t()) ::
               {:ok, term} | {:error, :invalid_data} | {:error, :nil_found}
+  @doc """
+  Return file extensions, valid for this MIME type
+  """
   @callback formats() :: String.t()
+  @doc """
+  Return file extension legal for generated file type
+  """
   @callback extension() :: String.t()
-  alias I18NAPI.Utilities
 
   @doc """
     Compose keywords list to file with concrete extension
@@ -27,7 +32,7 @@ defmodule I18NAPI.Composers do
     end
   end
 
-  defp call_composer([], keywords_list, format), do: {:error, :composer_not_defined}
+  defp call_composer([], _, _), do: {:error, :composer_not_defined}
 
   defp call_composer([module], keywords_list, format) do
     module

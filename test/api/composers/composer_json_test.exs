@@ -7,9 +7,9 @@ defmodule I18NAPI.ComposerJsonTest do
   alias I18NAPI.Composers.JSON
 
   @formats [:json, :json_flat, :json_nested]
-  @json_valid_nested ~s({"a":{"b":{"key":"value_1.2"}}})
-  @json_valid_flat ~s({"a.b.key":"value_1.2"})
-  @map_valid %{"a.b.key" => "value_1.2"}
+  @json_valid_nested ~s({"a":{"b":{"c":"c"}}})
+  @json_valid_flat ~s({"a.b.c":"c"})
+  @map_valid %{"a.b.c" => "c"}
 
   describe "parse JSON" do
     test "valid nested" do
