@@ -1,10 +1,9 @@
 defmodule I18NAPI.Composers.JSON do
-  @behaviour I18NAPI.Composers.Composer
+  @behaviour I18NAPI.Composers
 
-  @doc """
-  Return file extensions, valid for this MIME type
-  """
+  @impl I18NAPI.Composers
   def formats(), do: [:json, :json_flat, :json_nested]
+  @impl I18NAPI.Composers
   def extension(), do: "json"
 
   @impl I18NAPI.Composers
@@ -25,8 +24,8 @@ defmodule I18NAPI.Composers.JSON do
     |> Poison.encode()
   end
 
-  def to_nested_map(keywords_list) do
-    Enum.reduce(keywords_list, %{}, fn {key, value}, nested_map ->
+  def to_nested_map(map) do
+    Enum.reduce(map, %{}, fn {key, value}, nested_map ->
       merge(nested_map, String.split(key, "."), value)
     end)
   end
