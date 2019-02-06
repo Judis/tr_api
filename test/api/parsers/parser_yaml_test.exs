@@ -9,8 +9,6 @@ defmodule I18NAPI.ParserYamlTest do
   @extensions ["yaml"]
   @yaml_valid_level_1 ~s([{a: a}])
   @map_valid_level_1 %{"a" => "a"}
-  @yaml_valid_level_1_1 ~s([{a: a, b: b])
-  @map_valid_level_1_1 %{"a" => "a", "b" => "b"}
   @yaml_valid_level_2 ~s([{a: {b: b}}])
   @map_valid_level_2 %{"a.b" => "b"}
   @yaml_valid_level_3 ~s([{a: {b: {c: c}}}])
