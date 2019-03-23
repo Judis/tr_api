@@ -94,7 +94,10 @@ defmodule I18NAPIWeb.TranslationControllerTest do
       %{translation_key_id: translation_key_id}
       |> Enum.into(attrs)
 
-    {:ok, translation} = Translations.create_translation(attrs, locale_id)
+    {:ok, translation} =
+      Translations.get_translation(translation_key_id, locale_id)
+      |> Translations.update_translation(attrs)
+
     translation
   end
 

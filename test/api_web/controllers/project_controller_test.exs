@@ -51,10 +51,9 @@ defmodule I18NAPIWeb.ProjectControllerTest do
       assert project.default_locale == attrs(:project).default_locale
       assert project.total_count_of_translation_keys == 1
       assert project.count_of_not_verified_keys == 0
-      assert project.count_of_verified_keys == 0
+      assert project.count_of_verified_keys == 1
       # because default translation is
       assert project.count_of_translated_keys == 1
-      assert project.count_of_untranslated_keys == 0
     end
   end
 

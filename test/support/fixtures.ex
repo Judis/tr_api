@@ -271,8 +271,17 @@ defmodule I18NAPI.Fixtures do
       def attrs(:locale_nil), do: @locale_nil
 
       def fixture(:locale, locale: attrs) do
-        {:ok, locale} = (attrs || @locale) |> Translations.create_locale(attrs.project_id)
-        locale
+        attrs = attrs || @locale
+
+        with %Locale{} <-
+               locale =
+                 Translations.get_locale_by_name_and_project(attrs.locale, attrs.project_id) do
+          locale
+        else
+          _ ->
+            {:ok, locale} = attrs |> Translations.create_locale(attrs.project_id)
+            locale
+        end
       end
 
       def fixture(:locale, %{project_id: _} = attrs) do
@@ -439,6 +448,13 @@ defmodule I18NAPI.Fixtures do
         attrs = @translation_key_nil |> Map.merge(attrs)
         fixture(:translation_key, translation_key: attrs)
       end
+    end
+  end
+
+  def import_locale do
+    quote do
+      @import_locale_valid %{"a_key" => "a_value", "b_key" => "b_value"}
+      def attrs(:import_locale_valid), do: @import_locale_valid
     end
   end
 

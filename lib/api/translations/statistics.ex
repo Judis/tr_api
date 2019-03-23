@@ -130,34 +130,36 @@ defmodule I18NAPI.Translations.Statistics do
   end
 
   def update_count_choice(locale_id, prev_status, new_status) do
-    case prev_status do
-      :empty ->
-        update_count_of_keys_at_locales(locale_id, :inc, :translated)
-        update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
+    if prev_status != new_status do
+      case prev_status do
+        :empty ->
+          update_count_of_keys_at_locales(locale_id, :inc, :translated)
+          update_count_of_keys_at_locales(locale_id, :dec, :untranslated)
 
-      :unverified ->
-        update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
+        :unverified ->
+          update_count_of_keys_at_locales(locale_id, :dec, :not_verified)
 
-      :verified ->
-        update_count_of_keys_at_locales(locale_id, :dec, :verified)
+        :verified ->
+          update_count_of_keys_at_locales(locale_id, :dec, :verified)
 
-      _ ->
-        nil
-    end
+        _ ->
+          nil
+      end
 
-    case new_status do
-      :empty ->
-        update_count_of_keys_at_locales(locale_id, :dec, :translated)
-        update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
+      case new_status do
+        :empty ->
+          update_count_of_keys_at_locales(locale_id, :dec, :translated)
+          update_count_of_keys_at_locales(locale_id, :inc, :untranslated)
 
-      :unverified ->
-        update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
+        :unverified ->
+          update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
 
-      :verified ->
-        update_count_of_keys_at_locales(locale_id, :inc, :verified)
+        :verified ->
+          update_count_of_keys_at_locales(locale_id, :inc, :verified)
 
-      _ ->
-        nil
+        _ ->
+          nil
+      end
     end
   end
 
@@ -296,51 +298,6 @@ defmodule I18NAPI.Translations.Statistics do
         update_count_of_keys_at_locales(locale_id, :inc, :not_verified)
         update_count_of_keys_at_locales(locale_id, :inc, :translated)
     end
-  end
-
-  @doc """
-  Updated all statistics fields on all child locales for this project
-
-  ## Examples
-
-      iex> update_all_child_locales(project_id)
-
-  """
-  def update_all_child_locales(project_id) do
-    total = Projects.get_total_count_of_translation_keys(project_id)
-
-    Translations.list_locale_identities(project_id)
-    |> process_update_locales_by_id_list(total)
-  end
-
-  defp process_update_locales_by_id_list([], _), do: []
-
-  defp process_update_locales_by_id_list([locale_id | tail], total_counts) do
-    Repo.transaction(fn ->
-      verified = calculate_count_of_keys_at_locale_by_status(locale_id, :verified)
-      unverified = calculate_count_of_keys_at_locale_by_status(locale_id, :unverified)
-      translated = verified + unverified
-      untranslated = total_counts - translated
-
-      from(
-        l in Locale,
-        where: [
-          id: ^locale_id
-        ],
-        update: [
-          set: [
-            total_count_of_translation_keys: ^total_counts,
-            count_of_verified_keys: ^verified,
-            count_of_not_verified_keys: ^unverified,
-            count_of_translated_keys: ^translated,
-            count_of_untranslated_keys: ^untranslated
-          ]
-        ]
-      )
-      |> Repo.update_all([])
-    end)
-
-    process_update_locales_by_id_list(tail, total_counts)
   end
 
   @doc """

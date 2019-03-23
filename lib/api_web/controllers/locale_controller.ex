@@ -1,8 +1,10 @@
 defmodule I18NAPIWeb.LocaleController do
   use I18NAPIWeb, :controller
 
+  alias I18NAPI.Composers
+  alias I18NAPI.Parsers
   alias I18NAPI.Translations
-  alias I18NAPI.Translations.Locale
+  alias I18NAPI.Translations.{Export, Import, Locale}
 
   action_fallback(I18NAPIWeb.FallbackController)
 
@@ -47,8 +49,28 @@ defmodule I18NAPIWeb.LocaleController do
   def keys_and_translations(conn, %{"locale_id" => id}) do
     render(conn, "keys_and_translations.json",
       keys_and_translations:
-        Translations.get_locale_not_removed!(id)
+        Translations.get_locale_not_removed(id)
         |> Translations.get_keys_and_translations()
     )
+  end
+
+  def export(conn, %{"project_id" => project_id, "locale_id" => locale_id, "format" => format}) do
+    with %Locale{} <- locale = Translations.get_locale(locale_id),
+         {:ok, data, ext} <- Export.export_locale(locale_id, format) do
+      send_download(conn, {:binary, data}, filename: create_filename(locale.locale, ext))
+    end
+  end
+
+  defp create_filename(name, ext) do
+    String.replace(name <> "." <> ext, ~r/\s+/, "_")
+  end
+
+  def import(conn, %{"" => %Plug.Upload{} = file_params}) do
+    {:ok, content} = File.read(file_params.path)
+    [_, ext] = Regex.run(~r/\.(\w*)\z/, file_params.filename)
+
+    with {:ok, _} <- Import.import_locale(conn.params["locale_id"], Parsers.parse(content, ext)) do
+      render(conn, "200.json")
+    end
   end
 end

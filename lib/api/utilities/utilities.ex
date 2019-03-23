@@ -19,6 +19,7 @@ defmodule I18NAPI.Utilities do
         # creating too many atoms. It'll always succeed because all the fields
         # in the database already exist as atoms at runtime.
         {key, value}, acc when is_binary(key) -> Map.put(acc, String.to_existing_atom(key), value)
+        {key, value}, acc -> Map.put(acc, key |> to_string() |> String.to_existing_atom(), value)
       end
     )
   end
@@ -38,6 +39,25 @@ defmodule I18NAPI.Utilities do
       fn
         {key, value}, acc when is_binary(key) -> Map.put(acc, key, value)
         {key, value}, acc when is_atom(key) -> Map.put(acc, Atom.to_string(key), value)
+      end
+    )
+  end
+
+  @doc """
+  Translate values to strings
+
+  ## Examples
+
+      iex> value_to_string(%{field_a: 123, "field_b" => true})
+      %{field_a: => "123", field_b: => "true"}
+  """
+  def value_to_string(map) do
+    Enum.reduce(
+      map,
+      %{},
+      fn
+        {key, value}, acc when is_binary(value) -> Map.put(acc, key, value)
+        {key, value}, acc -> Map.put(acc, key, to_string(value))
       end
     )
   end

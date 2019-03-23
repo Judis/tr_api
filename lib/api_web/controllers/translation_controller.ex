@@ -13,11 +13,15 @@ defmodule I18NAPIWeb.TranslationController do
   end
 
   def create(conn, %{"translation" => translation_params}) do
-    with {:ok, %Translation{} = translation} <-
-           Translations.create_translation(
-             translation_params,
-             conn.params["locale_id"]
-           ) do
+    with true <- Map.has_key?(translation_params, "translation_key_id"),
+         %Translation{} <-
+           translation =
+             Translations.get_translation(
+               translation_params["translation_key_id"],
+               conn.params["locale_id"]
+             ),
+         {:ok, %Translation{} = translation} <-
+           translation |> Translations.update_translation(translation_params) do
       conn
       |> put_status(:created)
       |> put_resp_header(
