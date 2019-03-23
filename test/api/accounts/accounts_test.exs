@@ -83,9 +83,6 @@ defmodule I18NAPI.AccountsTest do
       assert user.is_confirmed == false
       assert user.password_hash =~ ~r/^\$2[ayb]\$.{56}$/
       assert user.source == @update_attrs.source
-
-      assert DateTime.from_naive!(user.updated_at, "Etc/UTC") >
-               DateTime.from_naive!(user_prepared.updated_at, "Etc/UTC")
     end
 
     test "update_user/2 with invalid data returns error changeset" do

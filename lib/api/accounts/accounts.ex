@@ -23,6 +23,19 @@ defmodule I18NAPI.Accounts do
   end
 
   @doc """
+  Returns the list of users if not removed.
+
+  ## Examples
+
+      iex> list_users_not_removed()
+      [%User{}, ...]
+
+  """
+  def list_users_not_removed do
+    from(User, where: [is_removed: false]) |> Repo.all()
+  end
+
+  @doc """
   Gets a single user.
 
   Raises `Ecto.NoResultsError` if the User does not exist.
@@ -45,14 +58,30 @@ defmodule I18NAPI.Accounts do
 
   ## Examples
 
-      iex> get_user!(123)
+      iex> get_user(123)
       %User{}
 
-      iex> get_user!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_user(456)
+      nil
 
   """
   def get_user(id), do: Repo.get(User, id)
+
+  @doc """
+  Gets a single user if not removed.
+
+  Return nil if the User does not exist.
+
+  ## Examples
+
+      iex> get_user_not_removed(123)
+      %User{}
+
+      iex> get_user_not_removed(456)
+      nil
+
+  """
+  def get_user_not_removed(id), do: from(User, where: [id: ^id, is_removed: false]) |> Repo.one()
 
   @doc """
   Creates a user.
@@ -131,6 +160,24 @@ defmodule I18NAPI.Accounts do
   """
   def delete_user(%User{} = user) do
     Repo.delete(user)
+  end
+
+  @doc """
+  Safely deletes a User.
+
+  ## Examples
+
+      iex> safely_delete_user(user)
+      {:ok, %User{}}
+
+      iex> safely_delete_user(user)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def safely_delete_user(%User{} = user) do
+    user
+    |> User.remove_changeset()
+    |> Repo.update()
   end
 
   @doc """

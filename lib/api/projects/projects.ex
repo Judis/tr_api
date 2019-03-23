@@ -16,6 +16,8 @@ defmodule I18NAPI.Projects do
     %{project | default_locale: locale.locale}
   end
 
+  def default_locale_to_project(project), do: project
+
   @doc """
   Returns the list of projects.
 
@@ -44,6 +46,27 @@ defmodule I18NAPI.Projects do
       p in Project,
       join: ur in "user_roles",
       on: p.id == ur.project_id,
+      where: ur.user_id == ^user_id,
+      order_by: p.name
+    )
+    |> Repo.all()
+    |> Enum.map(fn p -> default_locale_to_project(p) end)
+  end
+
+  @doc """
+  Returns the list of projects chained with specific user if not removed.
+
+  ## Examples
+
+      iex> list_projects_not_removed(1)
+      [%Project{}, ...]
+
+  """
+  def list_projects_not_removed(user_id) do
+    from(
+      p in Project,
+      join: ur in "user_roles",
+      on: p.id == ur.project_id,
       where: ur.user_id == ^user_id and p.is_removed == false,
       order_by: p.name
     )
@@ -66,6 +89,26 @@ defmodule I18NAPI.Projects do
 
   """
   def get_project!(id), do: Repo.get!(Project, id) |> default_locale_to_project()
+
+  @doc """
+  Gets a single project if not removed.
+
+  Raises `Ecto.NoResultsError` if the Project does not exist.
+
+  ## Examples
+
+      iex> get_project_not_removed(123)
+      %Project{}
+
+      iex> get_project_not_removed(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_project_not_removed(id) do
+    from(Project, where: [id: ^id, is_removed: false])
+    |> Repo.one()
+    |> default_locale_to_project()
+  end
 
   @doc """
   Gets a single project.
@@ -122,7 +165,7 @@ defmodule I18NAPI.Projects do
 
   """
   def create_owner_for_project({:ok, %Project{} = project}, %{} = user) do
-    create_user_roles(%{
+    create_user_role(%{
       project_id: project.id,
       user_id: user.id,
       role: 1
@@ -162,7 +205,7 @@ defmodule I18NAPI.Projects do
   end
 
   defp create_default_locale_relation_for_owner({:ok, %Locale{} = locale}, %{} = user) do
-    create_user_locales(%{
+    Translations.create_user_locale(%{
       user_id: user.id,
       locale_id: locale.id,
       role: 1
@@ -220,16 +263,9 @@ defmodule I18NAPI.Projects do
 
   """
   def safely_delete_project(%Project{} = project) do
-    changeset = %{
-      is_removed: true,
-      removed_at: DateTime.utc_now()
-    }
-
     project
-    |> Project.remove_changeset(changeset)
+    |> Project.remove_changeset()
     |> Repo.update()
-    |> safely_delete_nested_entities(:locales)
-    |> safely_delete_nested_entities(:translation_keys)
   end
 
   @doc """
@@ -245,7 +281,7 @@ defmodule I18NAPI.Projects do
     Project.changeset(project, %{})
   end
 
-  alias I18NAPI.Projects.UserRoles
+  alias I18NAPI.Projects.UserRole
 
   @doc """
   Returns the list of user_roles.
@@ -253,259 +289,218 @@ defmodule I18NAPI.Projects do
   ## Examples
 
       iex> list_user_roles()
-      [%UserRoles{}, ...]
+      [%UserRole{}, ...]
 
   """
   def list_user_roles do
-    Repo.all(UserRoles)
+    Repo.all(UserRole)
   end
 
   @doc """
-  Gets a single user_roles.
+  Gets a single user_role.
 
   Raises `Ecto.NoResultsError` if the User roles does not exist.
 
   ## Examples
 
-      iex> get_user_roles!(123)
-      %UserRoles{}
+      iex> get_user_role!(123)
+      %UserRole{}
 
-      iex> get_user_roles!(456)
+      iex> get_user_role!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_user_roles!(id), do: Repo.get!(UserRoles, id)
+  def get_user_role!(id), do: Repo.get!(UserRole, id)
 
   @doc """
-  Gets a single user_roles.
+  Gets a single user_role.
+
+  Return nil if the User roles does not exist.
+
+  ## Examples
+
+      iex> get_user_role(123, 321)
+      %UserRole{}
+
+      iex> get_user_role(456, 654)
+      nil
+
+  """
+  def get_user_role_non_removed(id) do
+    from(UserRole, where: [id: ^id, is_removed: false])
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets a single user_role.
 
   Raises `Ecto.NoResultsError` if the User roles does not exist.
 
   ## Examples
 
-      iex> get_user_roles!(123, 321)
-      %UserRoles{}
+      iex> get_user_role!(123, 321)
+      %UserRole{}
 
-      iex> get_user_roles!(456, 654)
+      iex> get_user_role!(456, 654)
       ** (Ecto.NoResultsError)
 
   """
-  def get_user_roles!(project_id, user_id) do
+  def get_user_role!(project_id, user_id) do
     from(
-      ur in UserRoles,
+      ur in UserRole,
       where: ur.project_id == ^project_id and ur.user_id == ^user_id
     )
     |> Repo.one()
   end
 
   @doc """
-  Creates a user_roles.
+  Gets a single user_role.
+
+  Return nil if the User roles does not exist.
 
   ## Examples
 
-      iex> create_user_roles(%{field: value})
-      {:ok, %UserRoles{}}
+      iex> get_user_role(123, 321)
+      %UserRole{}
 
-      iex> create_user_roles(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_user_roles(attrs \\ %{}) do
-    %UserRoles{}
-    |> UserRoles.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a user_roles.
-
-  ## Examples
-
-      iex> update_user_roles(user_roles, %{field: new_value})
-      {:ok, %UserRoles{}}
-
-      iex> update_user_roles(user_roles, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+      iex> get_user_role(456, 654)
+      nil
 
   """
-  def update_user_roles(%UserRoles{} = user_roles, attrs) do
-    user_roles
-    |> UserRoles.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a UserRoles.
-
-  ## Examples
-
-      iex> delete_user_roles(user_roles)
-      {:ok, %UserRoles{}}
-
-      iex> delete_user_roles(user_roles)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_user_roles(%UserRoles{} = user_roles) do
-    Repo.delete(user_roles)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user_roles changes.
-
-  ## Examples
-
-      iex> change_user_roles(user_roles)
-      %Ecto.Changeset{source: %UserRoles{}}
-
-  """
-  def change_user_roles(%UserRoles{} = user_roles) do
-    UserRoles.changeset(user_roles, %{})
-  end
-
-  alias I18NAPI.Projects.UserLocales
-
-  @doc """
-  Returns the list of user_locales.
-
-  ## Examples
-
-      iex> list_user_locales()
-      [%UserLocales{}, ...]
-
-  """
-  def list_user_locales do
-    Repo.all(UserLocales)
-  end
-
-  @doc """
-  Gets a single user_locales.
-
-  Raises `Ecto.NoResultsError` if the User locales does not exist.
-
-  ## Examples
-
-      iex> get_user_locales!(123)
-      %UserLocales{}
-
-      iex> get_user_locales!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_user_locales!(id), do: Repo.get!(UserLocales, id)
-
-  @doc """
-  Gets a single user_locales.
-
-  Raises `Ecto.NoResultsError` if the User locales does not exist.
-
-  ## Examples
-
-      iex> get_user_locales!(123, 321)
-      %UserLocales{}
-
-      iex> get_user_locales!(456, 654)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_user_locales!(locale_id, user_id) do
-    from(
-      ul in UserLocales,
-      where: ul.locale_id == ^locale_id and ul.user_id == ^user_id
-    )
+  def get_user_role(project_id, user_id) do
+    from(UserRole, where: [project_id: ^project_id, user_id: ^user_id])
     |> Repo.one()
   end
 
   @doc """
-  Creates a user_locales.
+  Gets a single user_role.
+
+  Return nil if the User roles does not exist.
 
   ## Examples
 
-      iex> create_user_locales(%{field: value})
-      {:ok, %UserLocales{}}
+      iex> get_user_role(123, 321)
+      %UserRole{}
 
-      iex> create_user_locales(%{field: bad_value})
+      iex> get_user_role(456, 654)
+      nil
+
+  """
+  def get_user_role_non_removed(project_id, user_id) do
+    from(UserRole, where: [project_id: ^project_id, user_id: ^user_id, is_removed: false])
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets a single user_role but not this.
+
+  Return nil if the User roles does not exist.
+
+  ## Examples
+
+      iex> get_user_role(123, 321, 4)
+      %UserRole{}
+
+      iex> get_user_role(456, 654, 7)
+      nil
+
+  """
+
+  def get_user_role_non_removed_but_not_this(project_id, user_id, user_role_id)
+      when not is_nil(user_role_id) do
+    from(
+      ur in UserRole,
+      where:
+        ur.project_id == ^project_id and ur.user_id == ^user_id and ur.is_removed == false and
+          ur.id != ^user_role_id
+    )
+    |> Repo.one()
+  end
+
+  def get_user_role_non_removed_but_not_this(project_id, user_id, _),
+    do: get_user_role_non_removed(project_id, user_id)
+
+  @doc """
+  Creates a user_role.
+
+  ## Examples
+
+      iex> create_user_role(%{field: value})
+      {:ok, %UserRole{}}
+
+      iex> create_user_role(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_user_locales(attrs \\ %{}) do
-    %UserLocales{}
-    |> UserLocales.create_changeset(attrs)
+  def create_user_role(attrs \\ %{}) do
+    %UserRole{}
+    |> UserRole.changeset(attrs)
     |> Repo.insert()
   end
 
   @doc """
-  Updates a user_locales.
+  Updates a user_role.
 
   ## Examples
 
-      iex> update_user_locales(user_locales, %{field: new_value})
-      {:ok, %UserLocales{}}
+      iex> update_user_role(user_role, %{field: new_value})
+      {:ok, %UserRole{}}
 
-      iex> update_user_locales(user_locales, %{field: bad_value})
+      iex> update_user_role(user_role, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_user_locales(%UserLocales{} = user_locales, attrs) do
-    user_locales
-    |> UserLocales.update_changeset(attrs)
+  def update_user_role(%UserRole{} = user_role, attrs) do
+    user_role
+    |> UserRole.changeset(attrs)
     |> Repo.update()
   end
 
   @doc """
-  Deletes a UserLocales.
+  Deletes a UserRole.
 
   ## Examples
 
-      iex> delete_user_locales(user_locales)
-      {:ok, %UserLocales{}}
+      iex> delete_user_role(user_role)
+      {:ok, %UserRole{}}
 
-      iex> delete_user_locales(user_locales)
+      iex> delete_user_role(user_role)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_user_locales(%UserLocales{} = user_locales) do
-    Repo.delete(user_locales)
+  def delete_user_role(%UserRole{} = user_role) do
+    Repo.delete(user_role)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user_locales changes.
+  Safely deletes a UserRole.
 
   ## Examples
 
-      iex> change_user_locales(user_locales)
-      %Ecto.Changeset{source: %UserLocales{}}
+      iex> safely_delete_user_role(user_role)
+      {:ok, %UserRole{}}
+
+      iex> safely_delete_user_role(user_role)
+      {:error, %Ecto.Changeset{}}
 
   """
-  def change_user_locales(%UserLocales{} = user_locales) do
-    UserLocales.update_changeset(user_locales, %{})
+  def safely_delete_user_role(%UserRole{} = user_role) do
+    user_role
+    |> UserRole.remove_changeset()
+    |> Repo.update()
   end
 
   @doc """
-  Safely Deletes nested Entities
+  Returns an `%Ecto.Changeset{}` for tracking user_role changes.
 
   ## Examples
 
-      iex> safely_delete_nested_entities({:ok, %TranslationKey{}})
-      {:ok, %TranslationKey{}}
+      iex> change_user_role(user_role)
+      %Ecto.Changeset{source: %UserRole{}}
+
   """
-  def safely_delete_nested_entities({:ok, %{} = parent}, children_key) do
-    parent
-    |> Repo.preload(children_key)
-    |> Map.fetch!(children_key)
-    |> Enum.each(fn children ->
-      safely_delete_entity(children)
-    end)
-
-    {:ok, parent}
-  end
-
-  def safely_delete_entity(%I18NAPI.Translations.TranslationKey{} = child) do
-    I18NAPI.Translations.safely_delete_translation_key(child)
-  end
-
-  def safely_delete_entity(%I18NAPI.Translations.Locale{} = child) do
-    I18NAPI.Translations.safely_delete_locale(child)
+  def change_user_role(%UserRole{} = user_role) do
+    UserRole.changeset(user_role, %{})
   end
 
   alias I18NAPI.Projects.Invite
@@ -708,13 +703,8 @@ defmodule I18NAPI.Projects do
 
   """
   def safely_delete_invite(%Invite{} = invite) do
-    changeset = %{
-      is_removed: true,
-      removed_at: DateTime.utc_now()
-    }
-
     invite
-    |> Invite.remove_changeset(changeset)
+    |> Invite.remove_changeset()
     |> Repo.update()
   end
 end

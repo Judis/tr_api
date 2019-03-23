@@ -1,119 +1,113 @@
-defmodule I18NAPIWeb.UserLocalesControllerTest do
+defmodule I18NAPIWeb.UserLocaleControllerTest do
   use ExUnit.Case, async: false
-  @moduletag :user_locales_controller
+  @moduletag :user_locale_controller
 
   use I18NAPIWeb.ConnCase
+  use I18NAPI.Fixtures, [:setup_with_auth, :user, :project, :locale, :user_locale]
 
-  alias I18NAPI.Accounts
-  alias I18NAPI.Projects
-  alias I18NAPI.Projects.UserLocales
   import Ecto.Query, warn: false
 
-  @valid_attrs %{role: 0}
-  @update_attrs %{role: 1}
-  @invalid_attrs %{role: nil}
-
-  def user_locales_fixture(attrs \\ %{}) do
-    {:ok, user_locales} =
-      attrs
-      |> Enum.into(@valid_attrs)
-      |> Projects.create_user_locales()
-
-    user_locales
-  end
-
-  @user_attrs %{
-    name: "test name",
-    email: "test@email.test",
-    password: "Qw!23456",
-    password_confirmation: "Qw!23456",
-    source: "test source"
-  }
-
-  def user_fixture(attrs \\ %{}) do
-    {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
-
-    if :error == result do
-      with {:ok, new_user} <-
-             attrs
-             |> Enum.into(@user_attrs)
-             |> Accounts.create_user(),
-           do: new_user
-    else
-      user
-    end
-  end
-
-  setup %{conn: conn} do
-    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
-    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
-
-    user = user_fixture()
-    {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
-
-    conn =
-      conn
-      |> put_req_header("accept", "application/json")
-      |> put_req_header("authorization", "Bearer #{jwt}")
-      |> Map.put(:user, user)
-
-    {:ok, conn: conn}
-  end
-
   describe "index" do
-    test "lists all user_locales", %{conn: conn} do
-      conn = get(conn, user_locales_path(conn, :index))
-      assert json_response(conn, 200)["data"] == []
+    setup [:project, :locale]
+
+    test "lists all user_locales", %{conn: conn, project: project, locale: locale} do
+      conn = get(conn, project_locale_user_locale_path(conn, :index, project.id, locale.id))
+      assert json_response(conn, 200)["data"]
     end
   end
 
-  describe "create user_locales" do
-    test "renders user_locales when data is valid", %{conn: conn} do
-      conn = post(conn, user_locales_path(conn, :create), user_locales: @valid_attrs)
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+  describe "create user_locale" do
+    setup [:project, :locale]
 
-      conn = get(conn, user_locales_path(conn, :show, id))
-      assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 42}
-    end
+    test "renders user_locale when data is valid", %{
+      conn: conn,
+      project: project,
+      locale: locale
+    } do
+      result_conn =
+        post(conn, project_locale_user_locale_path(conn, :create, project.id, locale.id),
+          user_locale: attrs(:user_locale)
+        )
 
-    test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, user_locales_path(conn, :create), user_locales: @invalid_attrs)
-      assert json_response(conn, 422)["errors"] != %{}
-    end
-  end
+      assert %{"id" => id} = json_response(result_conn, 201)["data"]
 
-  describe "update user_locales" do
-    test "renders user_locales when data is valid", %{conn: conn} do
-      user_locales = user_locales_fixture()
-
-      conn =
-        put(conn, user_locales_path(conn, :update, user_locales), user_locales: @update_attrs)
-
+      conn = get(conn, project_locale_user_locale_path(conn, :show, project.id, locale.id, id))
       assert %{"id" => id} = json_response(conn, 200)["data"]
-
-      conn = get(conn, user_locales_path(conn, :show, id))
-      assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 43}
     end
 
-    test "renders errors when data is invalid", %{conn: conn} do
-      user_locales = user_locales_fixture()
-
+    test "renders errors when data is invalid", %{conn: conn, project: project, locale: locale} do
       conn =
-        put(conn, user_locales_path(conn, :update, user_locales), user_locales: @invalid_attrs)
+        post(conn, project_locale_user_locale_path(conn, :create, project.id, locale.id),
+          user_locale: attrs(:user_locale_nil)
+        )
 
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
 
-  describe "delete user_locales" do
-    test "deletes chosen user_locales", %{conn: conn} do
-      user_locales = user_locales_fixture()
-      conn = delete(conn, user_locales_path(conn, :delete, user_locales))
-      assert response(conn, 204)
+  describe "update user_locale" do
+    setup [:project, :locale]
 
-      assert_error_sent(404, fn ->
-        get(conn, user_locales_path(conn, :show, user_locales))
-      end)
+    test "renders user_locale when data is valid", %{conn: conn, project: project} do
+      locale = fixture(:locale, %{project_id: project.id})
+      user_locale = fixture(:user_locale, %{user_id: conn.user.id, locale_id: locale.id})
+
+      result_conn =
+        put(
+          conn,
+          project_locale_user_locale_path(conn, :update, project.id, locale.id, user_locale),
+          user_locale: attrs(:user_locale_alter)
+        )
+
+      assert %{"id" => id} = json_response(result_conn, 200)["data"]
+
+      conn = get(conn, project_locale_user_locale_path(conn, :show, project.id, locale.id, id))
+      assert %{"id" => id} = json_response(conn, 200)["data"]
     end
+
+    test "renders errors when data is invalid", %{conn: conn, project: project} do
+      locale = fixture(:locale, %{project_id: project.id})
+      user_locale = fixture(:user_locale, %{user_id: conn.user.id, locale_id: locale.id})
+
+      conn =
+        put(
+          conn,
+          project_locale_user_locale_path(conn, :update, project.id, locale.id, user_locale),
+          user_locale: attrs(:user_locale_nil)
+        )
+
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+  end
+
+  describe "delete user_locale" do
+    setup [:project]
+
+    test "deletes chosen user_locale", %{conn: conn, project: project} do
+      locale = fixture(:locale, %{project_id: project.id})
+      user_locale = fixture(:user_locale, %{user_id: conn.user.id, locale_id: locale.id})
+
+      result_conn =
+        delete(
+          conn,
+          project_locale_user_locale_path(conn, :delete, project.id, locale.id, user_locale)
+        )
+
+      assert json_response(result_conn, 200)["success"]
+
+      result_conn =
+        get(
+          conn,
+          project_locale_user_locale_path(conn, :show, project.id, locale.id, user_locale)
+        )
+
+      assert response(result_conn, 204)
+    end
+  end
+
+  defp project(%{conn: conn}), do: {:ok, project: fixture(:project, user: conn.user)}
+
+  defp locale(%{conn: conn}) do
+    {:ok, locale: fixture(:locale, %{project_id: fixture(:project, user: conn.user).id})}
   end
 end

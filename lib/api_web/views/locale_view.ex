@@ -2,6 +2,10 @@ defmodule I18NAPIWeb.LocaleView do
   use I18NAPIWeb, :view
   alias I18NAPIWeb.LocaleView
 
+  def render("200.json", %{}) do
+    %{success: true}
+  end
+
   def render("index.json", %{locales: locales}) do
     %{data: render_many(locales, LocaleView, "locale.json")}
   end
@@ -39,9 +43,5 @@ defmodule I18NAPIWeb.LocaleView do
 
   def render("keys_and_translations.json", %{keys_and_translations: keys_and_translations}) do
     %{data: render_many(keys_and_translations, LocaleView, "key_with_translations.json")}
-  end
-
-  def render("204.json", _) do
-    %{errors: %{detail: "No Content"}}
   end
 end

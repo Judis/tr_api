@@ -2,6 +2,10 @@ defmodule I18NAPIWeb.TranslationKeyView do
   use I18NAPIWeb, :view
   alias I18NAPIWeb.TranslationKeyView
 
+  def render("200.json", %{}) do
+    %{success: true}
+  end
+
   def render("index.json", %{translation_keys: translation_keys}) do
     %{data: render_many(translation_keys, TranslationKeyView, "translation_key.json")}
   end
@@ -19,9 +23,5 @@ defmodule I18NAPIWeb.TranslationKeyView do
       is_removed: translation_key.is_removed,
       removed_at: translation_key.removed_at
     }
-  end
-
-  def render("204.json", _) do
-    %{errors: %{detail: "No Content"}}
   end
 end

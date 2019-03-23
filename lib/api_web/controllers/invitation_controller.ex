@@ -3,7 +3,7 @@ defmodule I18NAPIWeb.InvitationController do
 
   alias I18NAPI.Accounts.User
   alias I18NAPI.Projects
-  alias I18NAPI.Projects.{Invitation, Invite, UserRoles}
+  alias I18NAPI.Projects.{Invitation, Invite, UserRole}
   alias I18NAPI.Utilities
 
   action_fallback(I18NAPIWeb.FallbackController)
@@ -19,13 +19,12 @@ defmodule I18NAPIWeb.InvitationController do
            |> Invitation.start_invitation(conn.user) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", project_invitation_path(conn, :invite, project_id))
       |> render("show.json", invite: invite)
     end
   end
 
   defp check_access_policy(project_id, user_id) do
-    with %UserRoles{} <- user_role = Projects.get_user_roles!(project_id, user_id) do
+    with %UserRole{} <- user_role = Projects.get_user_role!(project_id, user_id) do
       case user_role.role do
         :admin -> :ok
         :manager -> :ok
@@ -43,8 +42,9 @@ defmodule I18NAPIWeb.InvitationController do
           "password_confirmation" => password_confirmation
         }
       })
-      when is_nil(token) or is_nil(password) or is_nil(password_confirmation),
-      do: {:error, :bad_request}
+      when is_nil(token) or is_nil(password) or is_nil(password_confirmation) do
+    {:error, :bad_request}
+  end
 
   def accept_user(conn, %{
         "user" => %{
@@ -54,7 +54,7 @@ defmodule I18NAPIWeb.InvitationController do
         }
       }) do
     with {:ok, %User{}} <- Invitation.accept_user_by_token(token, password, password_confirmation) do
-      conn |> put_status(200) |> render("200.json")
+      render(conn, "200.json")
     end
   end
 
@@ -64,7 +64,7 @@ defmodule I18NAPIWeb.InvitationController do
 
   def accept_project(conn, %{"token" => token}) do
     with {:ok, %Invite{}} <- Invitation.accept_project_by_token(token) do
-      conn |> put_status(200) |> render("200.json")
+      render(conn, "200.json")
     end
   end
 
@@ -74,8 +74,8 @@ defmodule I18NAPIWeb.InvitationController do
 
   def reject(conn, %{"invite_id" => invite_id}) do
     with {:ok, invite} <- check_invite_access_policy(invite_id, conn.user.id),
-         Projects.safely_delete_invite(invite) do
-      send_resp(conn, :no_content, "")
+         {:ok, _} <- Projects.safely_delete_invite(invite) do
+      render(conn, "200.json")
     else
       _ -> {:error, :forbidden}
     end
@@ -83,7 +83,7 @@ defmodule I18NAPIWeb.InvitationController do
 
   defp check_invite_access_policy(invite_id, user_id) do
     with %Invite{} <- invite = Projects.get_invite(invite_id),
-         user_id == invite.inviter_id do
+         user_id <- invite.inviter_id do
       {:ok, invite}
     else
       _ -> {:error, :forbidden}

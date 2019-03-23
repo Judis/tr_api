@@ -2,6 +2,10 @@ defmodule I18NAPIWeb.ProjectView do
   use I18NAPIWeb, :view
   alias I18NAPIWeb.ProjectView
 
+  def render("200.json", %{}) do
+    %{success: true}
+  end
+
   def render("index.json", %{projects: projects}) do
     %{data: render_many(projects, ProjectView, "project.json")}
   end
@@ -22,9 +26,5 @@ defmodule I18NAPIWeb.ProjectView do
       is_removed: project.is_removed,
       removed_at: project.removed_at
     }
-  end
-
-  def render("204.json", _) do
-    %{errors: %{detail: "No Content"}}
   end
 end

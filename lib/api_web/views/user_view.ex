@@ -2,6 +2,10 @@ defmodule I18NAPIWeb.UserView do
   use I18NAPIWeb, :view
   alias I18NAPIWeb.UserView
 
+  def render("200.json", %{}) do
+    %{success: true}
+  end
+
   def render("index.json", %{users: users}) do
     %{data: render_many(users, UserView, "user.json")}
   end

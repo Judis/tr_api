@@ -57,7 +57,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       more_alter_user = fixture(:user_more_alter)
       project = fixture(:project, user: more_alter_user)
 
-      I18NAPI.Projects.create_user_roles(%{
+      I18NAPI.Projects.create_user_role(%{
         role: :translator,
         project_id: project.id,
         user_id: conn.user.id
@@ -301,9 +301,7 @@ defmodule I18NAPIWeb.InvitationControllerTest do
       no_content_response =
         delete(conn, project_invitation_path(conn, :reject, project.id), invite_id: invite.id)
 
-      assert response(no_content_response, 204)
-      no_content_response = delete(conn, user_path(conn, :show, conn.user))
-      assert response(no_content_response, 204)
+      assert response(no_content_response, 200)
     end
 
     test "if user_id is another", %{conn: conn} do

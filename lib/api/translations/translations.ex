@@ -6,9 +6,7 @@ defmodule I18NAPI.Translations do
   import Ecto.Query, warn: false
   alias I18NAPI.Repo
   alias I18NAPI.Utilities
-  alias I18NAPI.Translations.StatisticsInterface
-  alias I18NAPI.Translations.Locale
-  alias I18NAPI.Translations.Translation
+  alias I18NAPI.Translations.{Locale, Translation, StatisticsInterface, UserLocale}
 
   @doc """
   Returns the list of locales.
@@ -21,6 +19,19 @@ defmodule I18NAPI.Translations do
   """
   def list_locales do
     Repo.all(Locale)
+  end
+
+  @doc """
+  Returns the list of locales not removed.
+
+  ## Examples
+
+      iex> list_locales_not_removed()
+      [%Locale{}, ...]
+
+  """
+  def list_locales_not_removed do
+    from(Locale, where: [is_removed: false]) |> Repo.all()
   end
 
   @doc """
@@ -75,6 +86,39 @@ defmodule I18NAPI.Translations do
 
   """
   def get_locale!(id), do: Repo.get!(Locale, id)
+
+  @doc """
+  Gets a single locale not removed.
+
+  Return nil if the Locale does not exist.
+
+  ## Examples
+
+      iex> get_locale_not_removed(123)
+      %Locale{}
+
+      iex> get_locale_not_removed(456)
+      nil
+
+  """
+  def get_locale_not_removed(id),
+    do: from(Locale, where: [id: ^id, is_removed: false]) |> Repo.one()
+
+  @doc """
+  Gets a single locale.
+
+  Return nil if the Locale does not exist.
+
+  ## Examples
+
+      iex> get_locale(123)
+      %Locale{}
+
+      iex> get_locale(456)
+      nil
+
+  """
+  def get_locale(id), do: Repo.get(Locale, id)
 
   @doc """
   Returns the default locale chained with specific project.
@@ -213,7 +257,6 @@ defmodule I18NAPI.Translations do
     locale
     |> Locale.remove_changeset(changeset)
     |> Repo.update()
-    |> safely_delete_nested_entities(:translations)
     |> StatisticsInterface.update_statistics(:locale, :delete, locale.id, locale.project_id)
   end
 
@@ -261,10 +304,35 @@ defmodule I18NAPI.Translations do
   """
   def list_translation_keys(project_id) do
     from(
-      p in TranslationKey,
+      tk in TranslationKey,
       join: pr in I18NAPI.Projects.Project,
-      on: p.project_id == pr.id,
+      on: tk.project_id == pr.id,
       where: pr.id == ^project_id
+    )
+    |> Repo.all()
+    |> Enum.map(fn translation_key ->
+      default_value = get_default_translation_value(translation_key.id)
+
+      Map.put(translation_key, :default_value, default_value)
+      |> Utilities.key_to_atom()
+    end)
+  end
+
+  @doc """
+  Returns the list of translation keys chained with specific project if not removed.
+
+  ## Examples
+
+      iex> list_translation_keys_not_removed(1)
+      [%TranslationKey{}, ...]
+
+  """
+  def list_translation_keys_not_removed(project_id) do
+    from(
+      tk in TranslationKey,
+      join: pr in I18NAPI.Projects.Project,
+      on: tk.project_id == pr.id,
+      where: pr.id == ^project_id and tk.is_removed == false
     )
     |> Repo.all()
     |> Enum.map(fn translation_key ->
@@ -296,6 +364,26 @@ defmodule I18NAPI.Translations do
   end
 
   @doc """
+  Returns the list of translation keys id chained with specific project if not removed.
+
+  ## Examples
+
+      iex> list_translation_keys_id_not_removed(1)
+      [integer(), ...]
+
+  """
+  def list_translation_keys_id_not_removed(project_id) do
+    from(
+      tk in TranslationKey,
+      join: pr in I18NAPI.Projects.Project,
+      on: tk.project_id == pr.id,
+      where: pr.id == ^project_id and tk.is_removed == false,
+      select: tk.id
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single translation_key.
 
   Raises `Ecto.NoResultsError` if the Translation key does not exist.
@@ -310,9 +398,32 @@ defmodule I18NAPI.Translations do
 
   """
   def get_translation_key!(id) do
-    translation_key = Repo.get!(TranslationKey, id)
-    default_value = get_default_translation_value(translation_key.id)
-    Map.put(translation_key, :default_value, default_value)
+    with %TranslationKey{} = translation_key <- Repo.get!(TranslationKey, id) do
+      default_value = get_default_translation_value(translation_key.id)
+      Map.put(translation_key, :default_value, default_value)
+    end
+  end
+
+  @doc """
+  Gets a single translation_key if not removed.
+
+  Return nil if the Translation key does not exist.
+
+  ## Examples
+
+      iex> get_translation_key_not_removed!(123)
+      %TranslationKey{}
+
+      iex> get_translation_key_not_removed!(456)
+      nil
+
+  """
+  def get_translation_key_not_removed(id) do
+    with %TranslationKey{} = translation_key <-
+           from(TranslationKey, where: [id: ^id, is_removed: false]) |> Repo.one() do
+      default_value = get_default_translation_value(translation_key.id)
+      Map.put(translation_key, :default_value, default_value)
+    end
   end
 
   @doc """
@@ -387,6 +498,7 @@ defmodule I18NAPI.Translations do
 
   defp update_default_translation_if_translation_key_was_updated({:ok, translation_key}, attrs) do
     attrs = Utilities.key_to_atom(attrs)
+
     get_default_translation(translation_key.id)
     |> Translation.changeset(%{value: attrs.default_value})
     |> Repo.update()
@@ -436,7 +548,6 @@ defmodule I18NAPI.Translations do
     translation_key
     |> TranslationKey.remove_changeset(changeset)
     |> Repo.update()
-    |> safely_delete_nested_entities(:translations)
     |> StatisticsInterface.update_statistics(:translation_key, :delete)
   end
 
@@ -643,27 +754,6 @@ defmodule I18NAPI.Translations do
   end
 
   @doc """
-  Safely Deletes nested Entities
-
-  ## Examples
-
-      iex> safely_delete_nested_entities({:ok, %TranslationKey{}})
-      {:ok, %TranslationKey{}}
-  """
-  def safely_delete_nested_entities({:ok, parent}, child_key) do
-    parent
-    |> Repo.preload(child_key)
-    |> Map.fetch!(child_key)
-    |> Enum.each(fn child -> safely_delete_entity(child) end)
-
-    {:ok, parent}
-  end
-
-  def safely_delete_nested_entities(response, _), do: response
-
-  def safely_delete_entity(%Translation{} = child), do: safely_delete_translation(child)
-
-  @doc """
   Get all translation_keys and translations for locale
 
   ## Example
@@ -723,5 +813,226 @@ defmodule I18NAPI.Translations do
       where: tr.translation_key_id == ^key_id and locl.is_default == true
     )
     |> Repo.one()
+  end
+
+  @doc """
+  Returns the list of user_locales.
+
+  ## Examples
+
+      iex> list_user_locales()
+      [%UserLocale{}, ...]
+
+  """
+  def list_user_locales do
+    Repo.all(UserLocale)
+  end
+
+  @doc """
+  Returns the list of user_locales then is_removed == false.
+
+  ## Examples
+
+      iex> list_user_locales_not_removed()
+      [%UserLocale{}, ...]
+
+  """
+  def list_user_locales_not_removed do
+    from(UserLocale, where: [is_removed: false]) |> Repo.all()
+  end
+
+  @doc """
+  Gets a single user_locales.
+
+  Raises `Ecto.NoResultsError` if the User locales does not exist.
+
+  ## Examples
+
+      iex> get_user_locale!(123)
+      %UserLocale{}
+
+      iex> get_user_locale!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_user_locale!(id), do: Repo.get!(UserLocale, id)
+
+  @doc """
+  Gets a single user_locales.
+
+  Return nil if the User locales does not exist.
+
+  ## Examples
+
+      iex> get_user_locale!(123)
+      %UserLocale{}
+
+      iex> get_user_locale!(456)
+      nil
+
+  """
+  def get_user_locale(id), do: Repo.get(UserLocale, id)
+
+  @doc """
+  Gets a single user_locales then is_removed == false.
+
+  Raises `Ecto.NoResultsError` if the User locales does not exist.
+
+  ## Examples
+
+      iex> get_user_locale_not_removed!(123)
+      %UserLocale{}
+
+      iex> get_user_locale_not_removed!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_user_locale_not_removed!(id) do
+    from(UserLocale, where: [id: ^id, is_removed: false])
+    |> Repo.one!()
+  end
+
+  @doc """
+  Gets a single user_locales then is_removed == false.
+
+  Return nil if the User locales does not exist.
+
+  ## Examples
+
+      iex> get_user_locale_not_removed!(123)
+      %UserLocale{}
+
+      iex> get_user_locale_not_removed!(456)
+      nil
+
+  """
+  def get_user_locale_not_removed(id) do
+    from(UserLocale, where: [id: ^id, is_removed: false])
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets a single user_locales.
+
+  Raises `Ecto.NoResultsError` if the User locales does not exist.
+
+  ## Examples
+
+      iex> get_user_locale!(123, 321)
+      %UserLocale{}
+
+      iex> get_user_locale!(456, 654)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_user_locale!(locale_id, user_id) do
+    from(
+      ul in UserLocale,
+      where: ul.locale_id == ^locale_id and ul.user_id == ^user_id
+    )
+    |> Repo.one!()
+  end
+
+  @doc """
+  Gets a single user_locales.
+
+  Return nil if the User locales does not exist.
+
+  ## Examples
+
+      iex> get_user_locale(123, 321)
+      %UserLocale{}
+
+      iex> get_user_locale(456, 654)
+      nil
+
+  """
+  def get_user_locale(locale_id, user_id) do
+    from(
+      ul in UserLocale,
+      where: ul.locale_id == ^locale_id and ul.user_id == ^user_id
+    )
+    |> Repo.one()
+  end
+
+  @doc """
+  Creates a user_locales.
+
+  ## Examples
+
+      iex> create_user_locale(%{field: value})
+      {:ok, %UserLocale{}}
+
+      iex> create_user_locale(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_user_locale(attrs \\ %{}) do
+    %UserLocale{}
+    |> UserLocale.create_changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a user_locales.
+
+  ## Examples
+
+      iex> update_user_locale(user_locales, %{field: new_value})
+      {:ok, %UserLocale{}}
+
+      iex> update_user_locale(user_locales, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_locale(%UserLocale{} = user_locales, attrs) do
+    user_locales
+    |> UserLocale.update_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a UserLocale.
+
+  ## Examples
+
+      iex> delete_user_locale(user_locales)
+      {:ok, %UserLocale{}}
+
+      iex> delete_user_locale(user_locales)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_user_locale(%UserLocale{} = user_locales), do: Repo.delete(user_locales)
+
+  @doc """
+  Safely Deletes a UserLocale.
+
+  ## Examples
+
+      iex> safely_delete_user_locale(user_locales)
+      {:ok, %UserLocale{}}
+
+      iex> safely_delete_user_locale(user_locales)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def safely_delete_user_locale(%UserLocale{} = user_locales) do
+    user_locales
+    |> UserLocale.remove_changeset()
+    |> Repo.update()
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking user_locales changes.
+
+  ## Examples
+
+      iex> change_user_locales(user_locales)
+      %Ecto.Changeset{source: %UserLocale{}}
+
+  """
+  def change_user_locales(%UserLocale{} = user_locales) do
+    UserLocale.update_changeset(user_locales, %{})
   end
 end

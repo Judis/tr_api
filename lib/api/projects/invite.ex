@@ -1,6 +1,7 @@
 defmodule I18NAPI.Projects.Invite do
   use Ecto.Schema
   import Ecto.Changeset
+  alias I18NAPI.Utilities
 
   schema "invite" do
     belongs_to(:inviter, I18NAPI.Accounts.User)
@@ -47,9 +48,9 @@ defmodule I18NAPI.Projects.Invite do
   end
 
   @doc false
-  def remove_changeset(invite, attrs) do
+  def remove_changeset(invite) do
     invite
-    |> cast(attrs, [:is_removed, :removed_at])
+    |> cast(%{is_removed: true, removed_at: Utilities.get_utc_now()}, [:is_removed, :removed_at])
     |> validate_required([:is_removed, :removed_at])
   end
 end

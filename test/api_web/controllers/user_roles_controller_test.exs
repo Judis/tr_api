@@ -1,114 +1,97 @@
-defmodule I18NAPIWeb.UserRolesControllerTest do
+defmodule I18NAPIWeb.UserRoleControllerTest do
+  use ExUnit.Case, async: true
+  @moduletag :user_role_controller
+
   use I18NAPIWeb.ConnCase
+  use I18NAPI.Fixtures, [:setup_with_auth, :user, :project, :user_role]
 
-  alias I18NAPI.Projects
-  alias I18NAPI.Projects.UserRoles
-
-  @create_attrs %{role: 0}
-  @update_attrs %{role: 1}
-  @invalid_attrs %{role: nil}
-
-  def fixture(:user_roles) do
-    {:ok, user_roles} = Projects.create_user_roles(@create_attrs)
-    user_roles
-  end
-
-  @user_attrs %{
-    name: "test name",
-    email: "test@email.test",
-    password: "Qw!23456",
-    password_confirmation: "Qw!23456",
-    source: "test source"
-  }
-
-  def user_fixture(attrs \\ %{}) do
-    {result, user} = Accounts.find_and_confirm_user(@user_attrs.email, @user_attrs.password)
-
-    if :error == result do
-      with {:ok, new_user} <- attrs |> Enum.into(@user_attrs) |> Accounts.create_user(),
-           do: new_user
-    else
-      user
-    end
-  end
-
-  setup %{conn: conn} do
-    Ecto.Adapters.SQL.Sandbox.checkout(I18NAPI.Repo)
-    Ecto.Adapters.SQL.Sandbox.mode(I18NAPI.Repo, {:shared, self()})
-
-    user = user_fixture()
-    {:ok, jwt, _claims} = I18NAPI.Guardian.encode_and_sign(user)
-
-    conn =
-      conn
-      |> put_req_header("accept", "application/json")
-      |> put_req_header("authorization", "Bearer #{jwt}")
-      |> Map.put(:user, user)
-
-    {:ok, conn: conn}
-  end
+  alias I18NAPI.Projects.UserRole
 
   describe "index" do
-    test "lists all user_roles", %{conn: conn} do
-      conn = get(conn, user_roles_path(conn, :index))
-      assert json_response(conn, 200)["data"] == []
+    setup [:project]
+
+    test "lists all user_roles", %{conn: conn, project: project} do
+      conn = get(conn, project_user_role_path(conn, :index, project.id))
+
+      assert project.id ==
+               json_response(conn, 200)["data"] |> List.first() |> Map.get("project_id")
     end
   end
 
-  describe "create user_roles" do
-    test "renders user_roles when data is valid", %{conn: conn} do
+  describe "create user_role" do
+    setup [:user, :project]
+
+    test "renders user_role when data is valid", %{conn: conn, user: user, project: project} do
+      attrs = attrs(:user_role) |> Map.put(:project_id, project.id) |> Map.put(:user_id, user.id)
+
+      result_conn =
+        post(conn, project_user_role_path(conn, :create, project.id), user_role: attrs)
+
+      assert %{"id" => id} = json_response(result_conn, 201)["data"]
+    end
+
+    test "renders errors when data is invalid", %{conn: conn, user: user, project: project} do
+      attrs =
+        attrs(:user_role_invalid)
+        |> Map.put(:project_id, project.id)
+        |> Map.put(:user_id, user.id)
+
+      result_conn =
+        post(conn, project_user_role_path(conn, :create, project.id), user_role: attrs)
+
+      assert json_response(result_conn, 422)["errors"] == %{"role" => ["is invalid"]}
+    end
+  end
+
+  describe "update user_role" do
+    setup [:project, :user_role]
+
+    test "renders user_role when data is valid", %{
+      conn: conn,
+      project: project,
+      user_role: %UserRole{id: id} = user_role
+    } do
       conn =
-        post(conn, user_roles_path(conn, :create, fixture(:user_roles).project_id),
-          user_roles: @create_attrs
+        put(conn, project_user_role_path(conn, :update, project.id, user_role),
+          user_role: attrs(:user_role_manager)
         )
 
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      conn = get(conn, user_roles_path(conn, :show, id))
-      assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 0}
-    end
-
-    test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, user_roles_path(conn, :create), user_roles: @invalid_attrs)
-      assert json_response(conn, 422)["errors"] != %{}
-    end
-  end
-
-  describe "update user_roles" do
-    setup [:create_user_roles]
-
-    test "renders user_roles when data is valid", %{
-      conn: conn,
-      user_roles: %UserRoles{id: id} = user_roles
-    } do
-      conn = put(conn, user_roles_path(conn, :update, user_roles), user_roles: @update_attrs)
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
-
-      conn = get(conn, user_roles_path(conn, :show, id))
-      assert json_response(conn, 200)["data"] == %{"id" => id, "role" => 1}
     end
 
-    test "renders errors when data is invalid", %{conn: conn, user_roles: user_roles} do
-      conn = put(conn, user_roles_path(conn, :update, user_roles), user_roles: @invalid_attrs)
+    test "renders errors when data is invalid", %{conn: conn, user_role: user_role} do
+      project = fixture(:project, user: conn.user)
+
+      conn =
+        put(conn, project_user_role_path(conn, :update, project.id, user_role),
+          user_role: attrs(:user_role_invalid)
+        )
+
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
 
-  describe "delete user_roles" do
-    setup [:create_user_roles]
+  describe "delete user_role" do
+    setup [:project, :user_role]
 
-    test "deletes chosen user_roles", %{conn: conn, user_roles: user_roles} do
-      conn = delete(conn, user_roles_path(conn, :delete, user_roles))
-      assert response(conn, 204)
+    test "deletes chosen user_role", %{conn: conn, project: project, user_role: user_role} do
+      result_conn = delete(conn, project_user_role_path(conn, :delete, project.id, user_role))
+      assert json_response(result_conn, 200)["success"]
 
-      assert_error_sent(404, fn ->
-        get(conn, user_roles_path(conn, :show, user_roles))
-      end)
+      result_conn = get(conn, project_user_role_path(conn, :show, project.id, user_role.id))
+      assert response(result_conn, 204)
     end
   end
 
-  defp create_user_roles(_) do
-    user_roles = fixture(:user_roles)
-    {:ok, user_roles: user_roles}
+  defp user(%{conn: _}), do: {:ok, user: fixture(:user_alter)}
+  defp project(%{conn: conn}), do: {:ok, project: fixture(:project, user: conn.user)}
+
+  defp user_role(%{conn: conn}) do
+    {:ok,
+     user_role:
+       fixture(:user_role, %{
+         user_id: conn.user.id,
+         project_id: fixture(:project, user: conn.user).id
+       })}
   end
 end
