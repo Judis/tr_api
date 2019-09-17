@@ -41,7 +41,7 @@ config :api, I18NAPI.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "i18n_api_dev",
   username: System.get_env("DB_USERNAME") || "postgres",
-  password: System.get_env("DB_PASSWORD") || "",
+  password: System.get_env("DB_PASSWORD") || "postgres",
   hostname: System.get_env("DB_HOSTNAME") || "localhost",
   pool_size: 10
 
