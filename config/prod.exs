@@ -68,15 +68,21 @@ config :api, I18NAPI.Guardian,
   serializer: I18NAPI.Guardian
 
 config :api, I18NAPIWeb.Endpoint,
-  secret_key_base: System.get_env("BASE_SECRET_KEY")
+       secret_key_base: System.get_env("BASE_SECRET_KEY"),
+       http: [ip: {127, 0, 0, 1}, port: 4000],
+       url: [host: "localhost", port: 4000],
+       root: ".",
+       server: true,
+       version: Mix.Project.config[:version]
+
 
 # Configure your database
 config :api, I18NAPI.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: System.get_env("DATABASE_USERNAME"),
-  password: System.get_env("DATABASE_PASSWORD"),
-  database: System.get_env("DATABASE_DB_NAME"),
-  hostname: System.get_env("DATABASE_HOSTNAME"),
+  username: System.get_env("DB_USERNAME"),
+  password: System.get_env("DB_PASSWORD"),
+  database: System.get_env("DB_NAME"),
+  hostname: System.get_env("DB_HOSTNAME"),
   pool_size: 15
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.

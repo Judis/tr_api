@@ -1,7 +1,7 @@
-FROM elixir:1.6.4
+FROM elixir:1.9.1
 
 RUN mix local.hex --force \
- && mix archive.install --force  https://github.com/phoenixframework/archives/raw/master/phx_new-1.3.2.ez \
+ && mix archive.install --force  https://github.com/phoenixframework/archives/raw/master/phx_new-1.3.4.ez \
  && apt-get update \
  && curl -sL https://deb.nodesource.com/setup_6.x | bash \
  && apt-get install -y apt-utils \
@@ -10,22 +10,21 @@ RUN mix local.hex --force \
  && apt-get install -y inotify-tools \
  && mix local.rebar --force
 
-# create app folder
-RUN mkdir /app
-COPY . /app
-WORKDIR /app
+ENV APP_HOME /app
+ENV DB_USERNAME postgres
+ENV DB_PASSWORD postgres
+ENV DB_HOSTNAME localhost
+ENV DB_NAME i18napi_prod
+ENV DB_PORT 25060
+RUN mkdir -p $APP_HOME
+COPY . $APP_HOME
+WORKDIR $APP_HOME
 
-# setting the port and the environment (prod = PRODUCTION!)
-ENV MIX_ENV=prod
-ENV PORT=4000
+EXPOSE $PORT
 
-# install dependencies (production only)
-RUN mix local.rebar --force
+RUN ls -la
+RUN mix local.hex --force
 RUN mix deps.get --only prod
-RUN mix compile
-
-# create the digests
-RUN mix phoenix.digest
-
-# run phoenix in production on PORT 4000
-CMD mix phx.server
+RUN MIX_ENV=prod mix compile
+RUN mix phx.digest
+CMD mix ecto.create && mix ecto.migrate && iex -S mix phx.server
